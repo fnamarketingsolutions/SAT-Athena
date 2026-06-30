@@ -189,34 +189,50 @@ CREATE TABLE IF NOT EXISTS "users" (
 );
 
 
+ALTER TABLE "learning_queue" DROP CONSTRAINT IF EXISTS "learning_queue_user_id_users_id_fk";
 ALTER TABLE "learning_queue" ADD CONSTRAINT "learning_queue_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
 
+ALTER TABLE "learning_queue" DROP CONSTRAINT IF EXISTS "learning_queue_lesson_id_lessons_id_fk";
 ALTER TABLE "learning_queue" ADD CONSTRAINT "learning_queue_lesson_id_lessons_id_fk" FOREIGN KEY ("lesson_id") REFERENCES "public"."lessons"("id") ON DELETE cascade ON UPDATE no action;
 
+ALTER TABLE "lessons" DROP CONSTRAINT IF EXISTS "lessons_question_id_questions_id_fk";
 ALTER TABLE "lessons" ADD CONSTRAINT "lessons_question_id_questions_id_fk" FOREIGN KEY ("question_id") REFERENCES "public"."questions"("id") ON DELETE cascade ON UPDATE no action;
 
+ALTER TABLE "onboarding_progress" DROP CONSTRAINT IF EXISTS "onboarding_progress_user_id_users_id_fk";
 ALTER TABLE "onboarding_progress" ADD CONSTRAINT "onboarding_progress_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
 
+ALTER TABLE "quiz_attempts" DROP CONSTRAINT IF EXISTS "quiz_attempts_user_id_users_id_fk";
 ALTER TABLE "quiz_attempts" ADD CONSTRAINT "quiz_attempts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
 
+ALTER TABLE "quiz_attempts" DROP CONSTRAINT IF EXISTS "quiz_attempts_question_id_questions_id_fk";
 ALTER TABLE "quiz_attempts" ADD CONSTRAINT "quiz_attempts_question_id_questions_id_fk" FOREIGN KEY ("question_id") REFERENCES "public"."questions"("id") ON DELETE cascade ON UPDATE no action;
 
+ALTER TABLE "sat_problems" DROP CONSTRAINT IF EXISTS "sat_problems_subtopic_id_subtopics_id_fk";
 ALTER TABLE "sat_problems" ADD CONSTRAINT "sat_problems_subtopic_id_subtopics_id_fk" FOREIGN KEY ("subtopic_id") REFERENCES "public"."subtopics"("id") ON DELETE cascade ON UPDATE no action;
 
+ALTER TABLE "sat_quiz_answers" DROP CONSTRAINT IF EXISTS "sat_quiz_answers_session_id_sat_quiz_sessions_id_fk";
 ALTER TABLE "sat_quiz_answers" ADD CONSTRAINT "sat_quiz_answers_session_id_sat_quiz_sessions_id_fk" FOREIGN KEY ("session_id") REFERENCES "public"."sat_quiz_sessions"("id") ON DELETE cascade ON UPDATE no action;
 
+ALTER TABLE "sat_quiz_answers" DROP CONSTRAINT IF EXISTS "sat_quiz_answers_problem_id_sat_problems_id_fk";
 ALTER TABLE "sat_quiz_answers" ADD CONSTRAINT "sat_quiz_answers_problem_id_sat_problems_id_fk" FOREIGN KEY ("problem_id") REFERENCES "public"."sat_problems"("id") ON DELETE cascade ON UPDATE no action;
 
+ALTER TABLE "sat_quiz_sessions" DROP CONSTRAINT IF EXISTS "sat_quiz_sessions_user_id_users_id_fk";
 ALTER TABLE "sat_quiz_sessions" ADD CONSTRAINT "sat_quiz_sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
 
+ALTER TABLE "sat_quiz_sessions" DROP CONSTRAINT IF EXISTS "sat_quiz_sessions_subtopic_id_subtopics_id_fk";
 ALTER TABLE "sat_quiz_sessions" ADD CONSTRAINT "sat_quiz_sessions_subtopic_id_subtopics_id_fk" FOREIGN KEY ("subtopic_id") REFERENCES "public"."subtopics"("id") ON DELETE cascade ON UPDATE no action;
 
+ALTER TABLE "schedules" DROP CONSTRAINT IF EXISTS "schedules_user_id_users_id_fk";
 ALTER TABLE "schedules" ADD CONSTRAINT "schedules_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
 
+ALTER TABLE "sessions" DROP CONSTRAINT IF EXISTS "sessions_user_id_users_id_fk";
 ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
 
+ALTER TABLE "sessions" DROP CONSTRAINT IF EXISTS "sessions_schedule_id_schedules_id_fk";
 ALTER TABLE "sessions" ADD CONSTRAINT "sessions_schedule_id_schedules_id_fk" FOREIGN KEY ("schedule_id") REFERENCES "public"."schedules"("id") ON DELETE cascade ON UPDATE no action;
 
+ALTER TABLE "subtopics" DROP CONSTRAINT IF EXISTS "subtopics_topic_id_topics_id_fk";
 ALTER TABLE "subtopics" ADD CONSTRAINT "subtopics_topic_id_topics_id_fk" FOREIGN KEY ("topic_id") REFERENCES "public"."topics"("id") ON DELETE cascade ON UPDATE no action;
 
+ALTER TABLE "user_preferences" DROP CONSTRAINT IF EXISTS "user_preferences_user_id_users_id_fk";
 ALTER TABLE "user_preferences" ADD CONSTRAINT "user_preferences_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
