@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
+import type { Json } from "@/types/supabase";
 
 export type CurriculumSubject =
   | "math"
@@ -61,12 +62,12 @@ function topicDefaults(name: string, subject: string) {
 function subtopicDefaults(name: string) {
   return {
     description: name,
-    learning_objectives: [] as string[],
-    conceptual_overview: {} as Record<string, unknown>,
-    key_formulas: [] as string[],
-    common_mistakes: [] as string[],
-    tips_and_tricks: [] as string[],
-    prerequisite_subtopic_slugs: [] as string[],
+    learning_objectives: [] as Json,
+    conceptual_overview: {} as Json,
+    key_formulas: [] as Json,
+    common_mistakes: [] as Json,
+    tips_and_tricks: [] as Json,
+    prerequisite_subtopic_slugs: [] as Json,
   };
 }
 

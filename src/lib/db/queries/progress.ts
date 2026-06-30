@@ -98,7 +98,7 @@ export async function getProgressData(userId: string) {
     ...questProblems.map((p) => ({
       session_id: p.quest_id,
       problem_id: p.problem_id,
-      is_correct: p.is_correct,
+      is_correct: p.is_correct ?? false,
       subtopic_id: p.subtopic_id,
     })),
   ];

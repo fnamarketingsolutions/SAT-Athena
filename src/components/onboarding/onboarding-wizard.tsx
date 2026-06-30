@@ -8,14 +8,9 @@ import { ArrowRight, Calendar, Target, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MathContent } from "@/components/quiz/math-content";
 import { BottomBar } from "@/components/quiz/bottom-bar";
+import type { OnboardingStep } from "@/lib/db/queries/onboarding";
 
-type OnboardingStep =
-  | "welcome"
-  | "baseline"
-  | "diagnostic"
-  | "self_report"
-  | "goals"
-  | "schedule";
+type WizardStep = Exclude<OnboardingStep, "done">;
 
 type DayOfWeek =
   | "monday"
@@ -84,7 +79,7 @@ function addHour(time: string): string {
   return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
 }
 
-const STEP_ORDER: OnboardingStep[] = [
+const STEP_ORDER: WizardStep[] = [
   "welcome",
   "baseline",
   "diagnostic",
@@ -93,7 +88,7 @@ const STEP_ORDER: OnboardingStep[] = [
   "schedule",
 ];
 
-function stepIndex(step: OnboardingStep) {
+function stepIndex(step: WizardStep) {
   if (step === "diagnostic" || step === "self_report") return 2;
   return STEP_ORDER.indexOf(step);
 }
@@ -115,7 +110,7 @@ export function OnboardingWizard() {
     refetchOnMount: "always",
   });
 
-  const [step, setStep] = useState<OnboardingStep>("welcome");
+  const [step, setStep] = useState<WizardStep>("welcome");
 
   const [rwScore, setRwScore] = useState(500);
   const [mathScore, setMathScore] = useState(500);
@@ -139,7 +134,7 @@ export function OnboardingWizard() {
     if (!data || data.completed) return;
     const saved = data.progress?.currentStep;
     if (saved && saved !== "done") {
-      setStep(saved as OnboardingStep);
+      setStep(saved);
     }
     if (data.scores.currentReadingWriting) setRwScore(data.scores.currentReadingWriting);
     if (data.scores.currentMath) setMathScore(data.scores.currentMath);
@@ -154,7 +149,7 @@ export function OnboardingWizard() {
   }, [data]);
 
   const saveStep = useMutation({
-    mutationFn: (next: OnboardingStep) =>
+    mutationFn: (next: WizardStep) =>
       fetch("/api/onboarding", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -166,7 +161,7 @@ export function OnboardingWizard() {
   });
 
   const goToStep = useCallback(
-    (next: OnboardingStep) => {
+    (next: WizardStep) => {
       setStep(next);
       saveStep.mutate(next);
     },
