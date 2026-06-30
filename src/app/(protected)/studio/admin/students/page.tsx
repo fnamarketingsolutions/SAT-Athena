@@ -62,7 +62,7 @@ export default function StudentsPage() {
             <thead>
               <tr className="border-b border-border bg-card">
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Students
+                  Student
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Sessions
