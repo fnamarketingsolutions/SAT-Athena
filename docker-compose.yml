@@ -1,0 +1,8 @@
+services:
+  agents:
+    build: ./agents
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./agents/.env
+    restart: unless-stopped
