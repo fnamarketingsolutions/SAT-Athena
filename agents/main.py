@@ -90,6 +90,12 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Athena Agents", version="0.1.0", lifespan=lifespan)
 
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
