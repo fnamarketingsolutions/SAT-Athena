@@ -8,6 +8,7 @@ import {
   composeDailyQuestBuckets,
   distributeQuestQuestions,
 } from "@/lib/adaptive/engine";
+import { getSeenProblemIds } from "@/lib/db/queries/problem-stream";
 import { supabase } from "@/lib/supabase/client";
 import type { SubsectionSkill } from "@/types/adaptive";
 
@@ -53,28 +54,7 @@ export async function generateQuestForDate(
   const buckets = composeDailyQuestBuckets(adjustedSkills, globalFloor);
   const distribution = distributeQuestQuestions(buckets, 20);
 
-  // Fetch recently answered problem IDs to avoid repeats (last 200)
-  const { data: recentAnswers } = await (supabase as any)
-    .from("daily_quest_problems")
-    .select("problem_id, daily_quests!inner(user_id)")
-    .eq("daily_quests.user_id", userId)
-    .not("is_correct", "is", null)
-    .limit(200);
-
-  const recentProblemIds = new Set(
-    (recentAnswers ?? []).map((r: any) => r.problem_id as string)
-  );
-
-  // Also exclude problems from quiz_answers (per-subtopic quizzes)
-  const { data: quizAnswers } = await (supabase as any)
-    .from("quiz_answers")
-    .select("problem_id, quiz_sessions!inner(user_id)")
-    .eq("quiz_sessions.user_id", userId)
-    .limit(200);
-
-  for (const a of quizAnswers ?? []) {
-    recentProblemIds.add((a as any).problem_id);
-  }
+  const seenProblemIds = await getSeenProblemIds(userId);
 
   // Select problems for each bucket assignment
   const selectedProblems: {
@@ -90,24 +70,34 @@ export async function generateQuestForDate(
   for (const entry of distribution) {
     if (entry.questionCount === 0) continue;
 
-    // Find problems at target difficulty ±1
+    // Prefer problems at target difficulty ±1; widen to any level in subtopic if none match
     const minDiff = Math.max(1, entry.targetDifficulty - 1);
     const maxDiff = Math.min(10, entry.targetDifficulty + 1);
 
-    const { data: candidates } = await (supabase as any)
-      .from("problems")
-      .select("id, difficulty_level")
-      .eq("source", "sat")
-      .eq("subtopic_id", entry.subtopicId)
+    const baseQuery = () =>
+      (supabase as any)
+        .from("problems")
+        .select("id, difficulty_level")
+        .eq("source", "sat")
+        .eq("subtopic_id", entry.subtopicId)
+        .order("order_index", { ascending: true });
+
+    let { data: candidates } = (await baseQuery()
       .gte("difficulty_level", minDiff)
-      .lte("difficulty_level", maxDiff)
-      .order("order_index", { ascending: true }) as {
+      .lte("difficulty_level", maxDiff)) as {
       data: { id: string; difficulty_level: number }[] | null;
     };
 
-    // Filter out recently seen, prefer exact match, then nearby
+    if (!candidates?.length) {
+      const { data: anyDifficulty } = (await baseQuery()) as {
+        data: { id: string; difficulty_level: number }[] | null;
+      };
+      candidates = anyDifficulty ?? [];
+    }
+
+    // Only serve problems this user has never seen before.
     const available = (candidates ?? []).filter(
-      (c) => !recentProblemIds.has(c.id)
+      (c) => !seenProblemIds.has(c.id)
     );
 
     // Sort by closeness to target difficulty
@@ -117,16 +107,7 @@ export async function generateQuestForDate(
         Math.abs(b.difficulty_level - entry.targetDifficulty)
     );
 
-    // If not enough after filtering, include recent ones too
-    let pool = available;
-    if (pool.length < entry.questionCount) {
-      const fallback = (candidates ?? []).filter(
-        (c) => !pool.some((p) => p.id === c.id)
-      );
-      pool = [...pool, ...fallback];
-    }
-
-    const picked = pool.slice(0, entry.questionCount);
+    const picked = available.slice(0, entry.questionCount);
 
     for (const problem of picked) {
       selectedProblems.push({
@@ -136,7 +117,7 @@ export async function generateQuestForDate(
         bucket: entry.bucket,
         difficultyLevel: problem.difficulty_level,
       });
-      recentProblemIds.add(problem.id);
+      seenProblemIds.add(problem.id);
       orderIndex++;
     }
   }

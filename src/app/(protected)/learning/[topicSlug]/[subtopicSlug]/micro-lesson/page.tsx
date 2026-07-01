@@ -1,79 +1,13 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { MicroLesson } from "@/components/learning/micro-lesson";
 import { getWrapUp } from "@/lib/wrap-ups";
-import type { Problem } from "@/components/quiz/types";
 import { WhiteboardSkeleton } from "@/components/whiteboard/whiteboard-skeleton";
 import { GenerationProgress } from "@/components/lessons/generation-progress";
-
-/** Shuffle a problem's answer options, keeping `correctOption` pointed
- *  at the option whose text was originally correct. The hardcoded set
- *  authors `correctOption: 0` for every problem; without shuffling the
- *  student would always pick the first option once they noticed the
- *  pattern. Fisher–Yates over a fresh array so the source data isn't
- *  mutated. */
-function shuffleProblemOptions(p: Problem): Problem {
-  const correctText = p.options[p.correctOption];
-  const order = p.options.map((_, i) => i);
-  for (let i = order.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [order[i], order[j]] = [order[j], order[i]];
-  }
-  const shuffled = order.map((i) => p.options[i]);
-  return {
-    ...p,
-    options: shuffled,
-    correctOption: shuffled.indexOf(correctText),
-  };
-}
-
-const HARDCODED_PROBLEMS: Problem[] = [
-  {
-    id: "hardcoded-linear-eq-1",
-    orderIndex: 0,
-    difficulty: "medium",
-    questionText:
-      "The equation y = -2x - 1 is graphed in the xy-plane. What is the slope and y-intercept of the line?",
-    options: [
-      "Slope: -2, y-intercept: -1",
-      "Slope: -1, y-intercept: -2",
-      "Slope: 2, y-intercept: -1",
-      "Slope: -2, y-intercept: 1",
-    ],
-    correctOption: 0,
-    explanation:
-      "In the slope-intercept form y = mx + b, the coefficient of x is the slope (m = -2) and the constant term is the y-intercept (b = -1).",
-    solutionSteps: [
-      { step: 1, instruction: "Identify the slope-intercept form", math: "y = mx + b" },
-      { step: 2, instruction: "Read off the slope", math: "m = -2" },
-      { step: 3, instruction: "Read off the y-intercept", math: "b = -1" },
-    ],
-    hint: "Compare the equation to the slope-intercept form y = mx + b.",
-    timeRecommendationSeconds: 30,
-  },
-  {
-    id: "hardcoded-linear-eq-2",
-    orderIndex: 1,
-    difficulty: "medium",
-    questionText:
-      "The equation y = 5x + 5 is graphed in the xy-plane. At what point does the line cross the x-axis?",
-    options: ["(-1, 0)", "(0, 5)", "(1, 0)", "(5, 0)"],
-    correctOption: 0,
-    explanation:
-      "The line crosses the x-axis when y = 0. Setting 0 = 5x + 5 and solving gives x = -1, so the x-intercept is (-1, 0).",
-    solutionSteps: [
-      { step: 1, instruction: "Set y = 0 to find the x-intercept", math: "0 = 5x + 5" },
-      { step: 2, instruction: "Subtract 5 from both sides", math: "-5 = 5x" },
-      { step: 3, instruction: "Divide both sides by 5", math: "x = -1" },
-    ],
-    hint: "The x-axis is where y = 0. Plug that in and solve for x.",
-    timeRecommendationSeconds: 45,
-  },
-];
 
 function MicroLessonPageInner() {
   const params = useParams<{ topicSlug: string; subtopicSlug: string }>();
@@ -92,14 +26,6 @@ function MicroLessonPageInner() {
   // Once we start generating locally, stop polling so the refetch
   // doesn't unmount MicroLesson by switching to the "generating" spinner.
   const generatingLocallyRef = useRef(false);
-
-  // Shuffle the hardcoded practice problems' answer positions ONCE per
-  // page mount so the correct answer isn't always at index 0. Re-mounts
-  // get a fresh shuffle; same-mount re-renders keep the same order.
-  const shuffledHardcodedProblems = useMemo(
-    () => HARDCODED_PROBLEMS.map(shuffleProblemOptions),
-    [],
-  );
 
   // Force dark mode on <html> for this route so the whiteboard's
   // useIsDarkMode() hook activates and its elements adapt their colors.
@@ -241,18 +167,8 @@ function MicroLessonPageInner() {
       existingLesson={existingLesson}
       subtopicApiPath={`/api/learning/${topicSlug}/${subtopicSlug}/micro-lesson`}
       practiceMode={{ subject: lessonSubject }}
-      practiceProblems={
-        subtopicSlug === "linear-equations-two-variables"
-          ? shuffledHardcodedProblems
-          : undefined
-      }
       wrapUpVideoUrl={wrapUp?.videoUrl}
       wrapUpNarration={wrapUp?.beats}
-      introVideoUrl={
-        subtopicSlug === "linear-equations-two-variables"
-          ? "/intros/linear-equations-two-variables.mp4"
-          : undefined
-      }
       ambientMusicUrl="/audio/lesson-ambient.mp3"
       onClose={() => router.push("/dashboard")}
       tracking={storedLesson?.id ? { microLessonId: storedLesson.id, subtopicId: storedLesson.subtopicId ?? data.subtopic.id } : undefined}

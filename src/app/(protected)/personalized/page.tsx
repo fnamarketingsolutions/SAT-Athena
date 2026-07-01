@@ -97,57 +97,14 @@ export default function PersonalizedPage() {
     setPlan(EXAMPLE_PLAN);
     setLoadingExample(true);
     try {
-      const res = await fetch(
-        `/api/learning/${EXAMPLE_SLUGS.topicSlug}/${EXAMPLE_SLUGS.subtopicSlug}`
-      );
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.error || `Failed (${res.status})`);
-      }
-      const data = (await res.json()) as {
-        topic: { slug: string; name: string; subject: string };
-        subtopic: { id: string; slug: string; name: string };
-        problems: Problem[];
-      };
-      const pool = [...(data.problems ?? [])].sort(() => Math.random() - 0.5);
-      const picks = pool.slice(0, count).map((p, i) => ({
-        ...p,
-        orderIndex: i,
+      await mutation.mutateAsync({
+        plan: EXAMPLE_PLAN,
+        count,
         topicSlug: EXAMPLE_SLUGS.topicSlug,
         subtopicSlug: EXAMPLE_SLUGS.subtopicSlug,
-      }));
-      if (picks.length === 0) {
-        toast.error("No practice problems found for the example topic.");
-        return;
-      }
-      const session: ApiResponse = {
-        classification: {
-          subject:
-            data.topic.subject === "reading-writing"
-              ? "reading-writing"
-              : "math",
-          matches: [
-            {
-              topicSlug: data.topic.slug,
-              topicName: data.topic.name,
-              subtopicSlug: data.subtopic.slug,
-              subtopicName: data.subtopic.name,
-              subtopicId: data.subtopic.id,
-              weight: 1,
-              problemCount: picks.length,
-              rationale: "Example: linear equations lesson plan.",
-            },
-          ],
-          notes: null,
-        },
-        problems: picks,
-      };
-      sessionStorage.setItem(PERSONALIZED_SESSION_KEY, JSON.stringify(session));
-      router.push("/personalized/quiz/1");
-    } catch (e) {
-      toast.error(
-        e instanceof Error ? e.message : "Could not load example problems."
-      );
+      });
+    } catch {
+      // mutation.onError shows the toast
     } finally {
       setLoadingExample(false);
     }

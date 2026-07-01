@@ -28,15 +28,10 @@ export type ProblemLinkage = {
 // ── Seen-set ───────────────────────────────────────────────────────────────
 
 /**
- * Every problem id this user has already been served. Unions two existing
- * sources (no dedicated table needed):
- *  - `quiz_question_events` — keyed directly on user_id; covers graded quizzes
- *    AND practice (via `practice_problem_id`).
- *  - `quiz_answers` — graded answers, joined through the user's sessions.
- *
- * Note: this captures problems the user *engaged with*. A problem that was
- * streamed but abandoned before any interaction isn't here — acceptable for
- * v1 (the dominant path is served → answered → tracked).
+ * Every problem id this user has already been served. Unions:
+ *  - `quiz_question_events` — quizzes and tutor practice
+ *  - `quiz_answers` — graded quiz sessions
+ *  - `daily_quest_problems` — daily quests (served, answered or not)
  */
 export async function getSeenProblemIds(userId: string): Promise<Set<string>> {
   const seen = new Set<string>();
@@ -63,6 +58,15 @@ export async function getSeenProblemIds(userId: string): Promise<Set<string>> {
     for (const a of answers ?? []) {
       if (a.problem_id) seen.add(a.problem_id);
     }
+  }
+
+  // Daily quests — any problem served in a quest (answered or not).
+  const { data: questProblems } = await supabase
+    .from("daily_quest_problems")
+    .select("problem_id, daily_quests!inner(user_id)")
+    .eq("daily_quests.user_id", userId);
+  for (const row of questProblems ?? []) {
+    if (row.problem_id) seen.add(row.problem_id);
   }
 
   return seen;

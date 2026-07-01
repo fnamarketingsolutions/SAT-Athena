@@ -1,7 +1,9 @@
-import { getAuthIdentity } from "@/lib/auth/current-user";
-import { PROBLEM_SELECT_COLUMNS_LEGACY } from "@/lib/db/problem-columns";
+import { getAuthIdentity, getAppUser } from "@/lib/auth/current-user";
+import {
+  getSeenProblemIds,
+  getUnseenSeededProblems,
+} from "@/lib/db/queries/problem-stream";
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase/client";
 
 export async function GET(
   req: Request,
@@ -10,40 +12,23 @@ export async function GET(
   const { userId: clerkId } = await getAuthIdentity();
   if (!clerkId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const user = await getAppUser(clerkId);
+  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
   const { topicSlug, subtopicSlug } = await params;
   const { searchParams } = new URL(req.url);
   const difficulty = searchParams.get("difficulty");
 
-  let query = supabase
-    .from("problems")
-    .select(PROBLEM_SELECT_COLUMNS_LEGACY)
-    .eq("source", "practice")
-    .eq("topic_slug", topicSlug)
-    .eq("subtopic_slug", subtopicSlug);
+  const seenIds = await getSeenProblemIds(user.id);
+  let problems = await getUnseenSeededProblems({
+    linkage: { topicSlug, subtopicSlug },
+    seenIds,
+    limit: 20,
+  });
 
   if (difficulty) {
-    query = query.eq("difficulty", difficulty);
+    problems = problems.filter((p) => p.difficulty === difficulty);
   }
 
-  const { data } = await query;
-
-  // Shuffle in JS and return 2
-  const shuffled = (data ?? []).sort(() => Math.random() - 0.5).slice(0, 2);
-
-  const rows = shuffled.map((p) => ({
-    id: p.id,
-    orderIndex: p.order_index,
-    difficulty: p.difficulty,
-    questionText: p.question_text,
-    questionPhonetic: undefined,
-    options: p.options,
-    correctOption: p.correct_option,
-    explanation: p.explanation,
-    solutionSteps: p.solution_steps,
-    hint: p.hint,
-    detailedHint: p.detailed_hint ?? undefined,
-    timeRecommendationSeconds: p.time_recommendation_seconds,
-  }));
-
-  return NextResponse.json({ problems: rows });
+  return NextResponse.json({ problems: problems.slice(0, 2) });
 }

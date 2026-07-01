@@ -1,6 +1,7 @@
-import { getAuthIdentity } from "@/lib/auth/current-user";
+import { getAuthIdentity, getAppUser } from "@/lib/auth/current-user";
 import { classifyLessonPlanLocal } from "@/lib/lesson-plan/classify";
 import { PROBLEM_SELECT_COLUMNS } from "@/lib/db/problem-columns";
+import { getSeenProblemIds } from "@/lib/db/queries/problem-stream";
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/client";
 
@@ -66,7 +67,10 @@ function allocateCounts(weights: number[], total: number): number[] {
   return floors;
 }
 
-async function loadSatProblems(subtopicId: string): Promise<ProblemRow[]> {
+async function loadSatProblems(
+  subtopicId: string,
+  seenIds: Set<string>
+): Promise<ProblemRow[]> {
   const { data, error } = await supabase
     .from("problems")
     .select(PROBLEM_SELECT_COLUMNS)
@@ -78,7 +82,7 @@ async function loadSatProblems(subtopicId: string): Promise<ProblemRow[]> {
     console.error("[lesson-plan] loadSatProblems:", error);
     return [];
   }
-  return (data ?? []) as ProblemRow[];
+  return ((data ?? []) as ProblemRow[]).filter((p) => !seenIds.has(p.id));
 }
 
 function mapProblemRow(
@@ -107,10 +111,17 @@ function mapProblemRow(
 }
 
 export async function POST(req: Request) {
-  const { userId } = await getAuthIdentity();
-  if (!userId) {
+  const { userId: clerkId } = await getAuthIdentity();
+  if (!clerkId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const user = await getAppUser(clerkId);
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  const seenIds = await getSeenProblemIds(user.id);
 
   const body = (await req.json().catch(() => ({}))) as {
     plan?: string;
@@ -149,7 +160,7 @@ export async function POST(req: Request) {
         .maybeSingle();
 
       if (subtopic) {
-        const pool = await loadSatProblems(subtopic.id);
+        const pool = await loadSatProblems(subtopic.id, seenIds);
         const picks = shuffle(pool).slice(0, count);
         const problems = picks.map((p, i) =>
           mapProblemRow(p, i, topic.slug, subtopic.slug)
@@ -209,7 +220,7 @@ export async function POST(req: Request) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         plan,
-        request_metadata: { user_id: userId },
+        request_metadata: { user_id: clerkId },
       }),
     });
     if (!res.ok) {
@@ -228,10 +239,10 @@ export async function POST(req: Request) {
           "[api/lesson-plan/practice-problems] agent classify unavailable, trying local fallback:",
           err
         );
-        classification = await classifyLessonPlanLocal(plan, userId);
+        classification = await classifyLessonPlanLocal(plan, clerkId);
       }
     } else {
-      classification = await classifyLessonPlanLocal(plan, userId);
+      classification = await classifyLessonPlanLocal(plan, clerkId);
     }
   } catch (fallbackErr) {
     console.error(
@@ -307,7 +318,7 @@ export async function POST(req: Request) {
     resolved.map(async (r, i) => {
       const need = allocations[i];
       if (need <= 0) return { match: r, problems: [] as ProblemRow[] };
-      const pool = await loadSatProblems(r.subtopic.id);
+      const pool = await loadSatProblems(r.subtopic.id, seenIds);
       const picks = shuffle(pool).slice(0, need);
       return { match: r, problems: picks };
     })
