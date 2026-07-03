@@ -652,7 +652,7 @@ function TopicPicker({
                 color: s.key === subject ? "var(--p-fg)" : "var(--p-fg-mute)",
               }}
             >
-              {s.shortLabel ?? s.label}
+              {s.shortLabel}
             </button>
           ))}
         </div>
