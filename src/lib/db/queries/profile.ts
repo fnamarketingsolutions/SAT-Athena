@@ -1,4 +1,5 @@
 import { getProgressData } from "@/lib/db/queries/progress";
+import { MBE_PASS_PERCENT } from "@/lib/exam-config";
 import { supabase } from "@/lib/supabase/client";
 
 function computeQuestStreak(
@@ -28,21 +29,6 @@ function computeQuestStreak(
   return streak;
 }
 
-function baselineSectionScores(user: {
-  start_composite: number | null;
-  current_reading_writing: number | null;
-  current_math: number | null;
-}) {
-  if (user.start_composite != null) {
-    const rw = Math.round(user.start_composite / 2);
-    const math = user.start_composite - rw;
-    return { rw, math };
-  }
-  const rw = user.current_reading_writing ?? 400;
-  const math = user.current_math ?? 400;
-  return { rw, math };
-}
-
 export async function getProfileData(userId: string) {
   const today = new Date().toISOString().split("T")[0];
 
@@ -51,7 +37,7 @@ export async function getProfileData(userId: string) {
       supabase
         .from("users")
         .select(
-          "display_name, avatar_url, created_at, target_score, best_streak, start_composite, current_reading_writing, current_math"
+          "display_name, avatar_url, created_at, target_score, best_streak"
         )
         .eq("id", userId)
         .limit(1)
@@ -88,15 +74,8 @@ export async function getProfileData(userId: string) {
   const storedBestStreak = userRecord?.best_streak ?? 0;
   const bestStreak = Math.max(storedBestStreak, streak);
 
-  const baseline = userRecord
-    ? baselineSectionScores(userRecord)
-    : { rw: 400, math: 400 };
-  const rwSection = progress.sectionScores.readingWriting;
-  const mathSection = progress.sectionScores.math;
-
-  const rwScore = rwSection.total > 0 ? rwSection.scaledScore : baseline.rw;
-  const mathScore = mathSection.total > 0 ? mathSection.scaledScore : baseline.math;
-  const totalScore = rwScore + mathScore;
+  const overallAccuracy = progress.overallStats.accuracy;
+  const targetPercent = MBE_PASS_PERCENT;
 
   return {
     user: userRecord
@@ -108,11 +87,13 @@ export async function getProfileData(userId: string) {
           bestStreak: storedBestStreak,
         }
       : null,
-    totalScore,
+    overallAccuracy,
+    targetPercent,
     questsDone: dailyQuests.length,
     totalTimeSeconds: progress.overallStats.totalTimeSeconds + lessonTimeSeconds,
-    accuracy: progress.overallStats.accuracy,
+    accuracy: overallAccuracy,
     streak,
     bestStreak,
+    subjectScores: progress.subjectScores,
   };
 }

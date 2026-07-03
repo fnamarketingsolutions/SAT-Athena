@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
+import { MOCK_EXAM_DESCRIPTION, MOCK_EXAM_LABEL, MBE_SUBJECTS, isMbeSubject, type MbeSubject } from "@/lib/exam-config";
 
 export type ClassifierMatch = {
   topicSlug: string;
@@ -8,10 +9,13 @@ export type ClassifierMatch = {
 };
 
 export type ClassifierResponse = {
-  subject: "math" | "reading-writing";
+  subject: MbeSubject;
   matches: ClassifierMatch[];
   notes: string | null;
 };
+
+const MBE_SUBJECT_SLUGS = MBE_SUBJECTS.map((s) => s.key).join(" | ");
+const DEFAULT_MBE_SUBJECT: MbeSubject = "civil-procedure";
 
 const MAX_MATCHES = 4;
 
@@ -42,7 +46,7 @@ function extractJsonObject(text: string): Record<string, unknown> {
 async function loadTaxonomy() {
   const { data: topics } = await supabase
     .from("topics")
-    .select("id, slug, name")
+    .select("id, slug, name, subject")
     .order("order_index", { ascending: true });
 
   const { data: subtopics } = await supabase
@@ -74,11 +78,10 @@ async function loadTaxonomy() {
     .map((st) => {
       const topic = topicById.get(st.topic_id);
       if (!topic) return null;
-      const label = `${topic.slug} ${topic.name}`.toLowerCase();
-      const subject: "math" | "reading-writing" =
-        /reading|writing|grammar|vocab|english|rhetoric|literacy/.test(label)
-          ? "reading-writing"
-          : "math";
+      const topicSubject = topic.subject as string;
+      const subject: MbeSubject = isMbeSubject(topicSubject)
+        ? topicSubject
+        : DEFAULT_MBE_SUBJECT;
       return {
         topicSlug: topic.slug,
         subtopicSlug: st.slug,
@@ -99,7 +102,7 @@ function keywordFallback(
     subtopicSlug: string;
     name: string;
     description: string;
-    subject: "math" | "reading-writing";
+    subject: MbeSubject;
   }[]
 ): ClassifierResponse {
   const text = plan.toLowerCase();
@@ -127,7 +130,7 @@ function keywordFallback(
   scored.sort((a, b) => b.score - a.score);
   const top = scored.slice(0, MAX_MATCHES);
   if (top.length === 0) {
-    return { subject: "math", matches: [], notes: null };
+    return { subject: DEFAULT_MBE_SUBJECT, matches: [], notes: null };
   }
 
   const total = top.reduce((sum, row) => sum + row.score, 0);
@@ -180,7 +183,7 @@ ${plan.trim()}
 
 Return ONLY valid JSON (no markdown) with this shape:
 {
-  "subject": "math" | "reading-writing",
+  "subject": "<one of: ${MBE_SUBJECT_SLUGS}>",
   "matches": [
     {
       "topicSlug": "<exact slug from taxonomy>",
@@ -195,8 +198,8 @@ Return ONLY valid JSON (no markdown) with this shape:
 Rules:
 - At most ${MAX_MATCHES} matches; weights must sum to 1.0.
 - Use only slugs from the taxonomy verbatim.
-- If the plan does not fit (e.g. Python programming, biology, history), return matches: [] and explain in notes.
-- This app covers SAT Math and Reading & Writing only.`;
+- If the plan does not fit any bar exam subtopic (e.g. unrelated fields), return matches: [] and explain in notes.
+- This app covers bar exam subjects only (Civil Procedure, Constitutional Law, Contracts, Criminal Law, Evidence, Real Property, Torts).`;
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -224,8 +227,9 @@ Rules:
   const text = data.content?.find((c) => c.type === "text")?.text ?? "";
   const obj = extractJsonObject(text);
 
+  const subjectRaw = String(obj.subject ?? DEFAULT_MBE_SUBJECT);
   const raw: ClassifierResponse = {
-    subject: obj.subject === "reading-writing" ? "reading-writing" : "math",
+    subject: isMbeSubject(subjectRaw) ? subjectRaw : DEFAULT_MBE_SUBJECT,
     matches: Array.isArray(obj.matches)
       ? obj.matches.map((m: Record<string, unknown>) => ({
           topicSlug: String(m.topicSlug ?? m.topic_slug ?? ""),

@@ -3231,7 +3231,7 @@ export function MicroLesson({
   const lastUserMessage = chat.chatMessages.findLast((m) => m.role === "user" && !m.hidden)?.content;
 
   return (
-    <div className="dark fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden">
+    <div className="fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden">
       <ObservationFrame className="h-full min-h-0" onBack={onClose}>
       {/* Ambient background-music element. Looping, low volume; playback
           is driven by the musicOn + lessonPhase effect above. Hidden. */}

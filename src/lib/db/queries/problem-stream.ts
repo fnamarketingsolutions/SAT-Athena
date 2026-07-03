@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase/client";
 import type { Problem, SolutionStep } from "@/components/quiz/types";
 import { PROBLEM_SELECT_COLUMNS } from "@/lib/db/problem-columns";
+import { insertQuizQuestionEvents } from "@/lib/db/queries/tracking";
 
 /**
  * Data layer for streamed/write-through quiz problems.
@@ -70,6 +71,101 @@ export async function getSeenProblemIds(userId: string): Promise<Set<string>> {
   }
 
   return seen;
+}
+
+/** Question stems the user has already been served — for AI dedup on generation. */
+export async function getSeenProblemQuestionTexts(
+  seenIds: Set<string>
+): Promise<string[]> {
+  if (seenIds.size === 0) return [];
+  const ids = [...seenIds];
+  const texts: string[] = [];
+  // Supabase `.in()` is capped; chunk large seen-sets.
+  for (let i = 0; i < ids.length; i += 200) {
+    const chunk = ids.slice(i, i + 200);
+    const { data } = await supabase
+      .from("problems")
+      .select("question_text")
+      .in("id", chunk);
+    for (const row of data ?? []) {
+      if (row.question_text) texts.push(row.question_text);
+    }
+  }
+  return texts;
+}
+
+/**
+ * Record that these problems were assigned to the user. Called as soon as
+ * problems are handed to a session (personalized, streaming quiz, etc.) so
+ * closing the tab before submit still prevents repeats.
+ */
+export async function createServedSession(args: {
+  userId: string;
+  totalQuestions: number;
+  subtopicId?: string | null;
+}): Promise<string | null> {
+  const { data: session, error } = await supabase
+    .from("quiz_sessions")
+    .insert({
+      user_id: args.userId,
+      source: "custom",
+      subtopic_id: args.subtopicId ?? null,
+      score: 0,
+      total_questions: args.totalQuestions,
+      time_elapsed_seconds: 0,
+    })
+    .select("id")
+    .single();
+
+  if (error || !session) {
+    console.error("[problem-stream] createServedSession:", error?.message);
+    return null;
+  }
+  return session.id;
+}
+
+export async function recordServedProblems(args: {
+  sessionId: string;
+  userId: string;
+  problemIds: string[];
+}): Promise<void> {
+  const unique = [...new Set(args.problemIds.filter(Boolean))];
+  if (unique.length === 0) return;
+  try {
+    await insertQuizQuestionEvents(
+      unique.map((problemId) => ({
+        sessionId: args.sessionId,
+        problemId,
+        userId: args.userId,
+        eventType: "served",
+      }))
+    );
+  } catch (err) {
+    console.error("[problem-stream] recordServedProblems:", err);
+  }
+}
+
+export async function markProblemsServed(args: {
+  userId: string;
+  problemIds: string[];
+  subtopicId?: string | null;
+}): Promise<string | null> {
+  const unique = [...new Set(args.problemIds.filter(Boolean))];
+  if (unique.length === 0) return null;
+
+  const sessionId = await createServedSession({
+    userId: args.userId,
+    totalQuestions: unique.length,
+    subtopicId: args.subtopicId,
+  });
+  if (!sessionId) return null;
+
+  await recordServedProblems({
+    sessionId,
+    userId: args.userId,
+    problemIds: unique,
+  });
+  return sessionId;
 }
 
 // ── Seeded pool (unseen) ─────────────────────────────────────────────────────

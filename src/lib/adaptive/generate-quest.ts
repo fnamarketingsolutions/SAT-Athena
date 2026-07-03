@@ -10,6 +10,7 @@ import {
 } from "@/lib/adaptive/engine";
 import { getSeenProblemIds } from "@/lib/db/queries/problem-stream";
 import { supabase } from "@/lib/supabase/client";
+import { EXAM_PROBLEM_SOURCES } from "@/lib/exam-config";
 import type { SubsectionSkill } from "@/types/adaptive";
 
 /**
@@ -78,7 +79,7 @@ export async function generateQuestForDate(
       (supabase as any)
         .from("problems")
         .select("id, difficulty_level")
-        .eq("source", "sat")
+        .in("source", [...EXAM_PROBLEM_SOURCES])
         .eq("subtopic_id", entry.subtopicId)
         .order("order_index", { ascending: true });
 

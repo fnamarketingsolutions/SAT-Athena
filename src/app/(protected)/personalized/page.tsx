@@ -7,8 +7,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { ChevronLeft, Sparkles } from "lucide-react";
 import type { Problem } from "@/components/quiz/types";
+import {
+  APP_BRANDING,
+  MBE_SUBJECTS,
+  type MbeSubject,
+} from "@/lib/exam-config";
 
-// ── Response shape (matches /api/lesson-plan/practice-problems) ──────
 type SubtopicMatch = {
   topicSlug: string;
   topicName: string;
@@ -21,7 +25,7 @@ type SubtopicMatch = {
 };
 
 type Classification = {
-  subject: "math" | "reading-writing";
+  subject: MbeSubject;
   matches: SubtopicMatch[];
   notes: string | null;
 };
@@ -31,17 +35,18 @@ type ApiResponse = {
   problems: (Problem & { topicSlug: string; subtopicSlug: string })[];
 };
 
-// Session-storage handoff key — the quiz layout reads from here on mount.
-export const PERSONALIZED_SESSION_KEY = "personalized:session:v1";
+export const PERSONALIZED_SESSION_KEY = "personalized:session:v2-mbe";
 
-const EXAMPLE_PLAN = `Unit 3: Solving two-step linear equations.
-Students isolate the variable by reversing the order of operations.
-Practice: solve 3x + 7 = 22 and check solutions by substitution.`;
+const EXAMPLE_PLAN = `Unit: Contract Formation
+Students learn the elements of valid contract formation — offer, acceptance, and consideration.
+Practice: identify valid offers, analyze acceptance methods (including mailbox rule), and spot missing consideration in short fact patterns.`;
 
 const EXAMPLE_SLUGS = {
-  topicSlug: "algebra",
-  subtopicSlug: "linear-equations",
+  topicSlug: "contracts",
+  subtopicSlug: "formation-offer-acceptance-consideration",
 } as const;
+
+const MBE_SUBJECT_LABELS = MBE_SUBJECTS.map((s) => s.label).join(", ");
 
 export default function PersonalizedPage() {
   const router = useRouter();
@@ -72,10 +77,10 @@ export default function PersonalizedPage() {
     },
     onSuccess: (data) => {
       if (data.problems.length === 0) {
-        toast.error("No specific SAT topic found", {
+        toast.error("No matching bar exam topic found", {
           description:
             data.classification.notes ??
-            "Name a skill from your lesson (e.g. linear equations, comma splices, main idea). A general SAT overview won't match.",
+            "Name a bar exam skill from your notes (e.g. hearsay, negligence, contract formation). A general law overview won't match.",
           duration: 10000,
         });
         return;
@@ -87,7 +92,7 @@ export default function PersonalizedPage() {
       const msg = e.message || "Something went wrong";
       toast.error(
         msg.includes("Failed to classify")
-          ? "Could not read your lesson plan. Try SAT Math or Reading & Writing topics."
+          ? "Could not read your lesson plan. Try bar exam topics like Civil Procedure, Contracts, or Evidence."
           : msg
       );
     },
@@ -128,7 +133,7 @@ export default function PersonalizedPage() {
     mutation.isPending || loadingExample ? "loading" : "input";
 
   return (
-    <div className="play-stage fixed inset-0 z-50 overflow-x-hidden overflow-y-auto">
+    <div className="play-stage fixed inset-x-0 bottom-0 top-14 z-40 overflow-x-hidden overflow-y-auto">
       <div
         aria-hidden
         className="play-vignette pointer-events-none fixed inset-[-10%] z-0"
@@ -204,7 +209,7 @@ function PlanInputView({
           }}
         >
           <Sparkles className="h-3 w-3" />
-          PERSONALIZED PRACTICE
+          PERSONALIZED BAR EXAM PRACTICE
         </div>
         <h1
           className="text-[clamp(32px,4.2vw,48px)] tracking-[-0.01em]"
@@ -217,28 +222,30 @@ function PlanInputView({
           <span className="italic" style={{ color: "var(--p-fg-dim)" }}>
             from your
           </span>{" "}
-          lesson plan
+          bar prep notes
           <span style={{ color: "var(--p-accent)" }}>.</span>
         </h1>
         <p
           className="mt-2 max-w-lg text-sm leading-relaxed"
           style={{ color: "var(--p-fg-dim)" }}
         >
-          Paste a unit plan, syllabus excerpt, or teacher&apos;s notes for{" "}
-          <strong className="font-normal text-[var(--p-fg)]">SAT Math or Reading &amp; Writing</strong>.
-          We&apos;ll match it to our subtopics and pull practice problems — in the same quiz you already know.
-          Topics like Python, history, or biology aren&apos;t in our SAT library yet.
+          Paste a syllabus excerpt, professor&apos;s notes, or study outline for{" "}
+          <strong className="font-normal text-[var(--p-fg)]">
+            {APP_BRANDING.examLabel}
+          </strong>
+          . We&apos;ll match it to bar exam topics and pull practice MCQs — same
+          quiz experience you already know. Covers: {MBE_SUBJECT_LABELS}.
         </p>
       </div>
 
       <textarea
         value={plan}
         onChange={(e) => setPlan(e.target.value)}
-        placeholder="Unit 3: Solving two-step linear equations. Students isolate the variable by reversing the order of operations…"
+        placeholder="Unit: Contract Formation. Students learn offer, acceptance, and consideration. Practice identifying valid offers and analyzing acceptance in fact patterns…"
         rows={10}
         className="w-full resize-y rounded-none px-4 py-3 text-sm leading-relaxed outline-none transition-colors focus:border-[color:var(--p-accent)]"
         style={{
-          background: "oklch(0.05 0.005 80 / 0.55)",
+          background: "var(--p-surface)",
           border: "1px solid var(--p-rule)",
           color: "var(--p-fg)",
           fontFamily: "var(--font-jetbrains-mono)",
@@ -343,7 +350,7 @@ function LoadingView() {
             fontFamily: "var(--font-jetbrains-mono)",
           }}
         >
-          Matching subtopics · selecting problems
+          Matching bar exam topics · selecting problems
         </div>
       </div>
     </motion.div>

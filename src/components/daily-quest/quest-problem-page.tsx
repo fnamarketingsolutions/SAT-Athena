@@ -79,14 +79,14 @@ export function QuestProblemPageContent() {
 
   if (ctx.phase === "completed") {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      <div className="fixed inset-x-0 bottom-0 top-14 z-40 flex flex-col overflow-y-auto bg-background">
         <QuestResultsScreen />
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+    <div className="fixed inset-x-0 bottom-0 top-14 z-40 flex flex-col bg-background">
       <Toolbar
         displayTime={ctx.displayTime}
         isLow={ctx.isTimerLow}

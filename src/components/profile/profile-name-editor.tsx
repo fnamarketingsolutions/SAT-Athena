@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { APP_BRANDING } from "@/lib/exam-config";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Pencil, Check, X } from "lucide-react";
@@ -84,7 +85,7 @@ export function ProfileNameEditor({
 
   return (
     <div className="flex items-center gap-2">
-      <p className="text-base font-semibold">{displayName ?? "SAT Quest"}</p>
+      <p className="text-base font-semibold">{displayName ?? APP_BRANDING.shortName}</p>
       <button
         onClick={() => setEditing(true)}
         className="text-muted-foreground hover:text-foreground"

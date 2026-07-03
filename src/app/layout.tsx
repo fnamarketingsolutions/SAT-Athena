@@ -46,10 +46,11 @@ const cormorantGaramond = Cormorant_Garamond({
   style: ["normal", "italic"],
 });
 
+import { APP_BRANDING } from "@/lib/exam-config";
+
 export const metadata: Metadata = {
-  title: "Athena — SAT Math Prep",
-  description:
-    "AI-powered SAT Math preparation with adaptive tutoring and structured accountability.",
+  title: APP_BRANDING.title,
+  description: APP_BRANDING.description,
 };
 
 export default function RootLayout({

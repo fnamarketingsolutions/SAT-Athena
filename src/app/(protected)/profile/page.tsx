@@ -10,22 +10,24 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { AnimatedSprite } from "@/components/pixel-art/animated-sprite";
 import { ProfileNameEditor } from "@/components/profile/profile-name-editor";
 import { ProfileStreak } from "@/components/profile/profile-streak";
-import { SatScoreHistory } from "@/components/profile/sat-score-history";
+import { MbeMockScore } from "@/components/profile/mbe-mock-score";
 import { ScheduleEditor } from "@/components/profile/schedule-editor";
+import { APP_BRANDING, MBE_PASS_PERCENT } from "@/lib/exam-config";
 
 type TierInfo = {
   name: string;
   threshold: number;
-  weapon: string;
+  description: string;
   emoji: string;
   active: boolean;
 };
 
-type SatAttempt = {
+type MockAttempt = {
   id: string;
-  totalScore: number | null;
-  rwScaledScore: number | null;
-  mathScaledScore: number | null;
+  correct: number;
+  total: number;
+  percentScore: number | null;
+  passed: boolean;
   completedAt: string | null;
 };
 
@@ -33,6 +35,15 @@ type StreakDay = {
   day: string;
   completed: boolean;
   isPast: boolean;
+};
+
+type SubjectScore = {
+  subject: string;
+  label: string;
+  shortLabel: string;
+  total: number;
+  correct: number;
+  accuracy: number;
 };
 
 type ProfileData = {
@@ -43,17 +54,19 @@ type ProfileData = {
     targetScore: number | null;
     bestStreak: number;
   } | null;
-  totalScore: number;
+  overallAccuracy: number;
+  targetPercent: number;
   questsDone: number;
   totalTimeSeconds: number;
   accuracy: number;
   streak: number;
   bestStreak: number;
-  latestSatAttempt: SatAttempt | null;
+  subjectScores: SubjectScore[];
+  latestMockAttempt: MockAttempt | null;
   weeklyStreakDays: StreakDay[];
   rank: {
-    current: { name: string; weapon: string; emoji: string; threshold: number };
-    next: { name: string; weapon: string; emoji: string; threshold: number } | null;
+    current: { name: string; description: string; emoji: string; threshold: number };
+    next: { name: string; description: string; emoji: string; threshold: number } | null;
     pct: number;
     pointsToNext: number;
   };
@@ -95,7 +108,7 @@ export default function ProfilePage() {
     isLoading: profileLoading,
     isError,
   } = useQuery<ProfileData>({
-    queryKey: ["profile", "v2"],
+    queryKey: ["profile", "v3-mbe"],
     queryFn: () =>
       fetch("/api/profile").then((r) => {
         if (!r.ok) throw new Error("Failed to load");
@@ -138,8 +151,19 @@ export default function ProfilePage() {
 
   if (!data || !data.user) return null;
 
-  const { user, totalScore, questsDone, totalTimeSeconds, accuracy, rank, tiers } = data;
+  const {
+    user,
+    overallAccuracy,
+    targetPercent,
+    questsDone,
+    totalTimeSeconds,
+    accuracy,
+    rank,
+    tiers,
+    subjectScores,
+  } = data;
   const bestStreak = Math.max(data.bestStreak, data.streak);
+  const practicedSubjects = subjectScores.filter((s) => s.total > 0);
 
   return (
     <div className="relative z-10 p-6">
@@ -149,22 +173,19 @@ export default function ProfilePage() {
         initial="hidden"
         animate="show"
       >
-        {/* Page title */}
         <motion.h1
           variants={staggerItem}
           className="mb-8 text-2xl font-bold tracking-tight"
         >
-          Hero Profile
+          Bar Exam Profile
         </motion.h1>
 
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_280px]">
-          {/* Left column — main content */}
           <motion.div
             variants={staggerContainer}
             initial="hidden"
             animate="show"
           >
-            {/* Hero header */}
             <motion.div variants={staggerItem} className="flex items-start gap-4">
               <AnimatedSprite
                 src="/images/pixel-art/profile-avatar.png"
@@ -176,18 +197,16 @@ export default function ProfilePage() {
               <div className="min-w-0 flex-1">
                 <ProfileNameEditor displayName={user.displayName} />
                 <p className="text-sm text-muted-foreground">
-                  Quest started {formatDate(user.createdAt)}
+                  Prep started {formatDate(user.createdAt)}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {rank.current.emoji} {rank.current.name} — {rank.current.weapon}
+                  {rank.current.emoji} {rank.current.name} — {rank.current.description}
                 </p>
               </div>
             </motion.div>
 
-            {/* Divider */}
             <div className="my-8 border-b" />
 
-            {/* Stats grid */}
             <motion.div variants={staggerItem}>
               <div className="grid grid-cols-2 gap-x-16 gap-y-8">
                 <div>
@@ -211,29 +230,52 @@ export default function ProfilePage() {
                 <div>
                   <p className="text-2xl font-bold">{accuracy}%</p>
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Accuracy
+                    Bar Exam Accuracy
                   </p>
                 </div>
               </div>
             </motion.div>
 
-            {/* Divider */}
             <div className="my-8 border-b" />
+
+            {practicedSubjects.length > 0 && (
+              <>
+                <motion.div variants={staggerItem}>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Subject Accuracy
+                  </h3>
+                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {practicedSubjects.map((s) => (
+                      <div key={s.subject} className="border bg-card p-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {s.shortLabel}
+                        </p>
+                        <p className="mt-1 text-xl font-bold tabular-nums">
+                          {s.accuracy}%
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {s.correct}/{s.total}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+                <div className="my-8 border-b" />
+              </>
+            )}
 
             <motion.div variants={staggerItem}>
               <Link
                 href="/analytics"
                 className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
               >
-                View full analytics dashboard
+                View full {APP_BRANDING.examLabel} analytics
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </motion.div>
 
-            {/* Divider */}
             <div className="my-8 border-b" />
 
-            {/* Streak section */}
             <motion.div variants={staggerItem}>
               <ProfileStreak
                 streak={data.streak}
@@ -242,28 +284,22 @@ export default function ProfilePage() {
               />
             </motion.div>
 
-            {/* Divider */}
             <div className="my-8 border-b" />
 
-            {/* SAT Score History */}
             <motion.div variants={staggerItem}>
-              <SatScoreHistory latestAttempt={data.latestSatAttempt} />
+              <MbeMockScore latestAttempt={data.latestMockAttempt} />
             </motion.div>
 
-            {/* Divider */}
             <div className="my-8 border-b" />
 
-            {/* Progress to goal */}
             <motion.div variants={staggerItem}>
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Progress to Goal
+                Progress to Pass Target
               </h3>
               <div className="mt-4 flex items-baseline justify-between">
-                <span className="text-2xl font-bold">
-                  {user.targetScore ?? rank.next?.threshold ?? totalScore}
-                </span>
+                <span className="text-2xl font-bold">{targetPercent}%</span>
                 <span className="text-sm text-muted-foreground">
-                  Currently {totalScore}
+                  Currently {overallAccuracy}%
                 </span>
               </div>
               <div className="mt-3 h-2 w-full overflow-hidden bg-muted">
@@ -271,35 +307,36 @@ export default function ProfilePage() {
                   className="h-full bg-foreground"
                   initial={{ width: 0 }}
                   animate={{
-                    width: `${
-                      user.targetScore
-                        ? Math.min(Math.round((totalScore / user.targetScore) * 100), 100)
-                        : rank.pct
-                    }%`,
+                    width: `${Math.min(
+                      Math.round((overallAccuracy / targetPercent) * 100),
+                      100
+                    )}%`,
                   }}
                   transition={{ duration: 0.8, ease: "easeOut" }}
                 />
               </div>
               {rank.next && (
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {rank.pointsToNext} points to {rank.next.name}
+                  {rank.pointsToNext}% to {rank.next.name} ({rank.next.threshold}%)
+                </p>
+              )}
+              {overallAccuracy >= MBE_PASS_PERCENT && (
+                <p className="mt-2 text-sm text-green-600">
+                  You&apos;ve reached the {MBE_PASS_PERCENT}% bar exam pass benchmark.
                 </p>
               )}
             </motion.div>
           </motion.div>
 
-          {/* Right column — sidebar */}
           <motion.div
             variants={staggerContainer}
             initial="hidden"
             animate="show"
           >
-            {/* Schedule editor */}
             <motion.div variants={staggerItem}>
               <ScheduleEditor />
             </motion.div>
 
-            {/* Current tier card */}
             <motion.div
               variants={staggerItem}
               className="mt-4 border bg-card p-4"
@@ -312,13 +349,12 @@ export default function ProfilePage() {
                 <div>
                   <p className="font-semibold">{rank.current.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {rank.current.weapon}
+                    {rank.current.description}
                   </p>
                 </div>
               </div>
             </motion.div>
 
-            {/* All tiers list */}
             <motion.div
               variants={staggerItem}
               className="mt-4 border bg-card p-4"
@@ -338,7 +374,7 @@ export default function ProfilePage() {
                   >
                     <span className="text-base">{tier.emoji}</span>
                     <span className="flex-1">{tier.name}</span>
-                    <span className="tabular-nums">{tier.threshold}</span>
+                    <span className="tabular-nums">{tier.threshold}%</span>
                   </div>
                 ))}
               </div>
@@ -346,7 +382,6 @@ export default function ProfilePage() {
           </motion.div>
         </div>
 
-        {/* Journey section — full width */}
         <motion.div variants={staggerItem} className="mt-10">
           <div className="flex gap-6 overflow-x-auto pb-2">
             {tiers.map((tier) => (
@@ -357,6 +392,7 @@ export default function ProfilePage() {
                 }`}
               >
                 <span className="text-2xl">{tier.emoji}</span>
+                <span className="text-[10px] text-muted-foreground">{tier.name}</span>
               </div>
             ))}
           </div>

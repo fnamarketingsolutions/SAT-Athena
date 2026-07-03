@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { QuizLayoutProvider } from "@/components/learning/quiz/quiz-layout-provider";
 import type { Problem } from "@/components/quiz/types";
+import type { MbeSubject } from "@/lib/exam-config";
 import { PERSONALIZED_SESSION_KEY } from "@/app/(protected)/personalized/page";
 
 type SubtopicMatch = {
@@ -19,7 +20,7 @@ type SubtopicMatch = {
 };
 
 type Classification = {
-  subject: "math" | "reading-writing";
+  subject: MbeSubject;
   matches: SubtopicMatch[];
   notes: string | null;
 };
@@ -71,14 +72,11 @@ export default function PersonalizedQuizLayout({
     );
   }
 
-  // For a single-subtopic match show that subtopic's names; for a mixed
-  // session use a synthetic "Personalized" topic + a count-based subtopic
-  // label. The quiz UI surfaces these in headers/summary.
   const single =
     session.classification.matches.length === 1
       ? session.classification.matches[0]
       : null;
-  const topicName = single?.topicName ?? "Personalized";
+  const topicName = single?.topicName ?? "Personalized Bar Exam";
   const subtopicName =
     single?.subtopicName ??
     `${session.classification.matches.length} subtopics`;
@@ -88,13 +86,24 @@ export default function PersonalizedQuizLayout({
       problems={session.problems}
       topicName={topicName}
       subtopicName={subtopicName}
-      subject={session.classification.subject === "reading-writing" ? "reading-writing" : "math"}
+      subject={session.classification.subject}
       basePath="/personalized"
       enablePostQuizPractice={false}
-      onSaveResults={async () => {
-        // Personalized sessions are ephemeral — nothing to persist. The
-        // submit button still triggers this callback so the quiz UI
-        // transitions to its results state.
+      onSaveResults={async ({ score, totalQuestions, timeElapsedSeconds, answers, events }) => {
+        const res = await fetch("/api/personalized-quiz/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            score,
+            totalQuestions,
+            timeElapsedSeconds,
+            answers,
+            events,
+          }),
+        });
+        if (!res.ok) throw new Error("Failed to save results");
+        const data = (await res.json().catch(() => null)) as { sessionId?: string } | null;
+        return { sessionId: data?.sessionId };
       }}
     >
       {children}

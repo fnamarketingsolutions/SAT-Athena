@@ -555,6 +555,8 @@
   --p-accent-deep: var(--athena-navy);
   --p-surface: color-mix(in oklch, var(--card) 92%, transparent);
   --p-surface-hover: color-mix(in oklch, var(--muted) 75%, transparent);
+  --p-card: color-mix(in oklch, var(--card) 96%, transparent);
+  --p-overlay: color-mix(in oklch, var(--background) 70%, transparent);
   background: var(--p-bg);
   color: var(--p-fg);
   font-family: var(--font-jetbrains-mono), ui-monospace, Menlo, monospace;
@@ -572,12 +574,31 @@
   --p-accent-deep: oklch(0.60 0.14 50);
   --p-surface: oklch(0.05 0.005 80 / 0.55);
   --p-surface-hover: oklch(0.07 0.01 60 / 0.6);
+  --p-card: oklch(0.05 0.005 80 / 0.85);
+  --p-overlay: oklch(0.05 0.005 80 / 0.7);
+}
+
+/* MathContent uses Tailwind `prose` + `dark:prose-invert`, whose invert
+   variant keys off prefers-color-scheme (not our `.dark` class), so prose
+   text stays dark when the app is toggled to dark on a light OS. Bind prose
+   colors to the play-stage palette so text follows the app theme. */
+.play-stage .prose {
+  color: var(--p-fg);
+  --tw-prose-body: var(--p-fg);
+  --tw-prose-headings: var(--p-fg);
+  --tw-prose-bold: var(--p-fg);
+  --tw-prose-code: var(--p-fg);
+  --tw-prose-quotes: var(--p-fg-dim);
+  --tw-prose-counters: var(--p-fg-dim);
+  --tw-prose-bullets: var(--p-fg-dim);
+  --tw-prose-hr: var(--p-rule);
+  --tw-prose-links: var(--p-accent);
 }
 
 .play-vignette {
   background:
     radial-gradient(ellipse 60% 40% at 50% 38%, oklch(0.55 0.10 60 / 0.12), transparent 60%),
-    radial-gradient(ellipse at center, transparent 40%, var(--background) 90%);
+    radial-gradient(ellipse at center, transparent 40%, var(--p-bg) 90%);
 }
 .dark .play-vignette {
   background:

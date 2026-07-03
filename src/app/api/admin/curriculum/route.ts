@@ -4,13 +4,9 @@ import {
   listCurriculum,
   type CurriculumSubject,
 } from "@/lib/db/queries/admin-curriculum";
+import { MBE_SUBJECTS } from "@/lib/exam-config";
 
-const SUBJECTS: CurriculumSubject[] = [
-  "math",
-  "reading-writing",
-  "science",
-  "social-studies",
-];
+const SUBJECTS: CurriculumSubject[] = MBE_SUBJECTS.map((s) => s.key);
 
 export async function GET(req: Request) {
   const denied = await requireAthenaAdminApi();

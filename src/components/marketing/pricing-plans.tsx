@@ -16,10 +16,10 @@ import {
 } from "@/lib/stripe/checkout-paths";
 
 const PERKS = [
-  "Adaptive daily quests tuned to your weak skills",
+  "Adaptive daily quests tuned to your weakest bar exam subjects",
   "AI micro-lessons with an interactive whiteboard",
-  "Voice tutor for Reading, Writing, and Math",
-  "Full Digital SAT practice tests + score tracking",
+  "Voice tutor for all seven bar exam subject areas",
+  "Mock bar exam practice sets + progress tracking",
   "Flashcards, podcasts, and personalized drills",
 ];
 

@@ -1070,7 +1070,7 @@ export function QuizProblemPageContent() {
           <PostLessonPractice
             topic={topicName}
             subtopic={subtopicName}
-            subject={subject ?? "math"}
+            subject={subject ?? "civil-procedure"}
             topicSlug={params.topicSlug}
             subtopicSlug={params.subtopicSlug}
             customTopicId={params.topicId}
@@ -1186,7 +1186,7 @@ export function QuizProblemPageContent() {
   const pinQuestionTop = isTakeoverActive || hasProblemVisual;
 
   return (
-    <div className="dark relative">
+    <div className="relative">
       <ObservationFrame onBack={() => router.push("/dashboard")}>
         {/* Top-right progress strip — sits in the frame's top chrome row
             opposite the BACK affordance. Renders even during takeover so

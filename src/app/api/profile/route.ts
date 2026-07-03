@@ -2,7 +2,11 @@ import { getAuthIdentity, getAppUser } from "@/lib/auth/current-user";
 import { updateUser } from "@/lib/db/queries/users";
 import { getProfileData } from "@/lib/db/queries/profile";
 import { getLastCompletedAttempt } from "@/lib/db/queries/full-sat";
-import { getRankProgress, RANKS } from "@/lib/ranks";
+import {
+  getMbeRankProgress,
+  MBE_PASS_PERCENT,
+  MBE_RANKS,
+} from "@/lib/exam-config";
 import { supabase } from "@/lib/supabase/client";
 import { NextResponse } from "next/server";
 
@@ -24,22 +28,42 @@ export async function GET() {
     getLastCompletedAttempt(user.id),
   ]);
 
-  const rankProgress = getRankProgress(profileData.totalScore);
+  const rankProgress = getMbeRankProgress(profileData.overallAccuracy);
 
-  const latestSatAttempt = lastAttempt
-    ? {
-        id: lastAttempt.id,
-        totalScore: lastAttempt.totalScore,
-        rwScaledScore: lastAttempt.rwScaledScore,
-        mathScaledScore: lastAttempt.mathScaledScore,
-        completedAt: lastAttempt.completedAt,
-      }
-    : null;
+  let latestMockAttempt: {
+    id: string;
+    correct: number;
+    total: number;
+    percentScore: number | null;
+    passed: boolean;
+    completedAt: string | null;
+  } | null = null;
 
-  // Weekly streak days — based on daily quests
+  if (lastAttempt) {
+    const { count } = await supabase
+      .from("full_sat_answers")
+      .select("id", { count: "exact", head: true })
+      .eq("attempt_id", lastAttempt.id);
+
+    const correct =
+      (lastAttempt.rwRawScore ?? 0) + (lastAttempt.mathRawScore ?? 0);
+    const total = count ?? 0;
+    const percentScore =
+      total > 0 ? Math.round((correct / total) * 100) : null;
+
+    latestMockAttempt = {
+      id: lastAttempt.id,
+      correct,
+      total,
+      percentScore,
+      passed: percentScore != null && percentScore >= MBE_PASS_PERCENT,
+      completedAt: lastAttempt.completedAt,
+    };
+  }
+
   const now = new Date();
   const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+  startOfWeek.setDate(now.getDate() - now.getDay());
   startOfWeek.setHours(0, 0, 0, 0);
   const startOfWeekStr = startOfWeek.toISOString().split("T")[0];
   const today = new Date().toISOString().split("T")[0];
@@ -67,19 +91,19 @@ export async function GET() {
 
   return NextResponse.json({
     ...profileData,
-    latestSatAttempt,
+    latestMockAttempt,
     weeklyStreakDays,
     rank: {
       current: {
         name: rankProgress.current.name,
-        weapon: rankProgress.current.weapon,
+        description: rankProgress.current.description,
         emoji: rankProgress.current.emoji,
         threshold: rankProgress.current.threshold,
       },
       next: rankProgress.next
         ? {
             name: rankProgress.next.name,
-            weapon: rankProgress.next.weapon,
+            description: rankProgress.next.description,
             emoji: rankProgress.next.emoji,
             threshold: rankProgress.next.threshold,
           }
@@ -87,12 +111,12 @@ export async function GET() {
       pct: rankProgress.pct,
       pointsToNext: rankProgress.pointsToNext,
     },
-    tiers: RANKS.map((r) => ({
+    tiers: MBE_RANKS.map((r) => ({
       name: r.name,
       threshold: r.threshold,
-      weapon: r.weapon,
+      description: r.description,
       emoji: r.emoji,
-      active: profileData.totalScore >= r.threshold,
+      active: profileData.overallAccuracy >= r.threshold,
     })),
   });
 }

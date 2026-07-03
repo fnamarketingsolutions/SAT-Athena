@@ -16,7 +16,7 @@ export default function FullSatResultsPage() {
     // Try to get results from the attempt history
     async function fetchResults() {
       try {
-        const res = await fetch("/api/full-sat/history");
+        const res = await fetch("/api/mbe-mock/history");
         if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();
         const attempt = data.attempts?.find(
@@ -53,7 +53,7 @@ export default function FullSatResultsPage() {
       <div className="flex flex-col items-center justify-center h-screen gap-4">
         <p className="text-muted-foreground">Results not available yet.</p>
         <button
-          onClick={() => router.push("/full-sat")}
+          onClick={() => router.push("/mbe-mock")}
           className="text-sm font-medium text-primary hover:underline"
         >
           Back to Full SAT
@@ -200,7 +200,7 @@ export default function FullSatResultsPage() {
           className="mt-8 flex flex-col gap-3 sm:flex-row"
         >
           <button
-            onClick={() => router.push("/full-sat")}
+            onClick={() => router.push("/mbe-mock")}
             className="flex-1 rounded-md border px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
           >
             Back to Full SAT

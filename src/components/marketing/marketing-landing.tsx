@@ -2,19 +2,20 @@ import Link from "next/link";
 import { MarketingNav } from "./marketing-nav";
 import { PricingPlans } from "./pricing-plans";
 import { signUpForCheckoutPath } from "@/lib/stripe/checkout-paths";
+import { APP_BRANDING } from "@/lib/exam-config";
 
 const FEATURES = [
   {
     title: "Adaptive daily quests",
-    body: "20-question sessions weighted to your weakest SAT skills, with stretch problems as you improve.",
+    body: "20-question sessions weighted to your weakest bar exam subjects, with harder items as you improve.",
   },
   {
     title: "AI tutoring on canvas",
-    body: "Step-by-step micro-lessons and a voice mentor that explains Reading, Writing, and Math in plain language.",
+    body: "Step-by-step micro-lessons and a voice mentor that explains legal rules, elements, and MCQ strategy in plain language.",
   },
   {
-    title: "Real score tracking",
-    body: "Section scores, composite trends, and practice history so you always know where you stand.",
+    title: "Progress tracking",
+    body: "Subject-level accuracy, mock exam scores, and practice history so you always know where you stand.",
   },
 ];
 
@@ -25,7 +26,11 @@ const FAQ = [
   },
   {
     q: "What subjects are covered?",
-    a: "Full Digital SAT Reading & Writing and Math, with structured lessons, quizzes, and full-length practice tests.",
+    a: "All seven bar exam subjects — Civil Procedure, Constitutional Law, Contracts, Criminal Law & Procedure, Evidence, Real Property, and Torts — with structured lessons, quizzes, and mock practice sets.",
+  },
+  {
+    q: "Does this cover bar exam essays?",
+    a: "This release focuses on bar exam multiple-choice practice. Essay prep is planned for a later phase.",
   },
   {
     q: "Can I use Athena on my phone?",
@@ -49,15 +54,14 @@ export function MarketingLanding() {
         />
         <div className="relative mx-auto max-w-4xl text-center">
           <p className="font-mono-hud hud-dim text-[11px] tracking-[0.35em]">
-            DIGITAL SAT AI COACH
+            {APP_BRANDING.heroTagline}
           </p>
           <h1 className="mt-4 text-4xl font-light tracking-tight md:text-6xl">
-            Your personal SAT coach,
+            {APP_BRANDING.heroTitle}
             <span className="block text-amber-400/90">every day.</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-            Adaptive practice, AI tutoring, voice mentor, and realistic score
-            tracking — built for students aiming for their target SAT score.
+            {APP_BRANDING.heroSubtitle}
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link
@@ -84,7 +88,7 @@ export function MarketingLanding() {
               className="rounded-2xl border border-foreground/10 bg-foreground/[0.02] p-6"
             >
               <h3 className="text-lg font-medium">{f.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                 {f.body}
               </p>
             </div>
@@ -92,16 +96,18 @@ export function MarketingLanding() {
         </div>
       </section>
 
-      <PricingPlans paymentFirst className="border-t border-foreground/10" />
+      <PricingPlans />
 
       <section className="border-t border-foreground/10 px-6 py-20">
         <div className="mx-auto max-w-2xl">
-          <h2 className="text-center text-2xl font-light">FAQ</h2>
-          <dl className="mt-8 space-y-6">
+          <h2 className="text-center text-2xl font-light tracking-tight">
+            Frequently asked questions
+          </h2>
+          <dl className="mt-10 space-y-6">
             {FAQ.map((item) => (
               <div key={item.q}>
                 <dt className="font-medium">{item.q}</dt>
-                <dd className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   {item.a}
                 </dd>
               </div>
@@ -111,8 +117,7 @@ export function MarketingLanding() {
       </section>
 
       <footer className="border-t border-foreground/10 px-6 py-8 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Athena. SAT® is a trademark of College
-        Board, which is not affiliated with Athena.
+        © {new Date().getFullYear()} {APP_BRANDING.copyright}
       </footer>
     </div>
   );

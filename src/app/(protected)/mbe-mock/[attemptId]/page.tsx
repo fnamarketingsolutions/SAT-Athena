@@ -9,7 +9,7 @@ export default function FullSatAttemptPage() {
   const { attempt, currentIndex } = useFullSatContext();
 
   useEffect(() => {
-    router.replace(`/full-sat/${attempt.id}/${currentIndex + 1}`);
+    router.replace(`/mbe-mock/${attempt.id}/${currentIndex + 1}`);
   }, [router, attempt.id, currentIndex]);
 
   return null;

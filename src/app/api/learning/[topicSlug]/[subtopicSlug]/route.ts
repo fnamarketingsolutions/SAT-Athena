@@ -3,6 +3,7 @@ import { splitPassageAndStem } from "@/lib/rw/parse-question";
 import { PROBLEM_SELECT_COLUMNS } from "@/lib/db/problem-columns";
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/client";
+import { EXAM_PROBLEM_SOURCES, isMcqSubject } from "@/lib/exam-config";
 
 export async function GET(
   _req: Request,
@@ -41,7 +42,7 @@ export async function GET(
   const { data: problemsData } = await (supabase as any)
     .from("problems")
     .select(PROBLEM_SELECT_COLUMNS)
-    .eq("source", "sat")
+    .in("source", [...EXAM_PROBLEM_SOURCES])
     .eq("subtopic_id", subtopic.id)
     .order("order_index", { ascending: true }) as { data: any[] | null };
 
@@ -50,7 +51,7 @@ export async function GET(
     let passageText: string | undefined;
     let stem = questionText;
 
-    if (topic.subject === "reading-writing") {
+    if (isMcqSubject(topic.subject)) {
       const split = splitPassageAndStem(questionText);
       if (split.passage) {
         passageText = split.passage;

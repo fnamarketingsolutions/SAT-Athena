@@ -33,7 +33,7 @@ export default function FullSatAttemptLayout({
     async function load() {
       try {
         // Fetch attempt data via the start endpoint (it handles resume)
-        const res = await fetch("/api/full-sat/start", {
+        const res = await fetch("/api/mbe-mock/start", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ testId: "resume" }),
@@ -41,7 +41,7 @@ export default function FullSatAttemptLayout({
 
         if (!res.ok) {
           // If no in-progress attempt, redirect to landing
-          router.push("/full-sat");
+          router.push("/mbe-mock");
           return;
         }
 
@@ -75,7 +75,7 @@ export default function FullSatAttemptLayout({
         });
       } catch {
         toast.error("Failed to load test");
-        router.push("/full-sat");
+        router.push("/mbe-mock");
       } finally {
         setLoading(false);
       }

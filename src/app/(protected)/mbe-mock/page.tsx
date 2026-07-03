@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useFullSatStatus, useStartFullSat, useFullSatHistory } from "@/hooks/use-full-sat";
 import { motion } from "framer-motion";
 import { Clock, Trophy, Lock, ArrowRight, ChevronLeft } from "lucide-react";
+import { MOCK_EXAM_DESCRIPTION, MOCK_EXAM_LABEL } from "@/lib/exam-config";
 
 function formatDaysUntil(dateString: string): string {
   const diff = new Date(dateString).getTime() - Date.now();
@@ -29,12 +30,12 @@ export default function FullSatLandingPage() {
 
   const handleStart = async (testId: string) => {
     const result = await startMutation.mutateAsync({ testId });
-    router.push(`/full-sat/${result.attemptId}`);
+    router.push(`/mbe-mock/${result.attemptId}`);
   };
 
   const handleResume = () => {
     if (status.currentAttempt) {
-      router.push(`/full-sat/${status.currentAttempt.id}`);
+      router.push(`/mbe-mock/${status.currentAttempt.id}`);
     }
   };
 
@@ -53,11 +54,8 @@ export default function FullSatLandingPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-2xl font-bold tracking-tight">Full SAT Practice Test</h1>
-        <p className="mt-2 text-muted-foreground">
-          Take a complete SAT practice test with 98 questions across Reading &amp; Writing and Math.
-          Timed sections, real SAT scoring (400-1600).
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight">{MOCK_EXAM_LABEL}</h1>
+        <p className="mt-2 text-muted-foreground">{MOCK_EXAM_DESCRIPTION}</p>
       </motion.div>
 
       {/* Cooldown notice */}

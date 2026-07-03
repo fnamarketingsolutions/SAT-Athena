@@ -1,12 +1,21 @@
 "use client";
 
-import { RANKS } from "@/lib/ranks";
 import { cn } from "@/lib/utils";
+
+type Rank = {
+  name: string;
+  threshold: number;
+  emoji: string;
+};
 
 export function JourneyRanks({
   currentScore,
+  ranks,
+  unit = "",
 }: {
   currentScore: number;
+  ranks: readonly Rank[];
+  unit?: string;
 }) {
   return (
     <div className="border bg-card p-5">
@@ -14,7 +23,7 @@ export function JourneyRanks({
         Journey
       </h2>
       <div className="space-y-0">
-        {RANKS.map((rank) => {
+        {ranks.map((rank) => {
           const unlocked = currentScore >= rank.threshold;
           return (
             <div
@@ -44,6 +53,7 @@ export function JourneyRanks({
                 )}
               >
                 {rank.threshold}
+                {unit}
               </span>
             </div>
           );

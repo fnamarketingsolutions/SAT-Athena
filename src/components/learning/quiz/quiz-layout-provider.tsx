@@ -8,6 +8,7 @@ import { QuizRouteContext } from "@/components/learning/quiz/quiz-route-context"
 import { NarrationProvider } from "@/components/learning/quiz/narration-provider";
 import type { Problem } from "@/components/quiz/types";
 import type { FeedbackState } from "@/components/quiz/answer-panel";
+import type { QuizSubject } from "@/lib/exam-config";
 
 type QuizEvent = {
   problemId: string;
@@ -42,7 +43,7 @@ type QuizLayoutProviderProps = {
   problems: Problem[];
   topicName: string;
   subtopicName: string;
-  subject?: "math" | "reading-writing";
+  subject?: QuizSubject;
   basePath: string;
   practiceProblemsUrl?: string;
   /** When false, the results screen skips the post-quiz practice round

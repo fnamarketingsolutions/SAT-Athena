@@ -2,6 +2,7 @@ import { getAuthIdentity, getAppUser } from "@/lib/auth/current-user";
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/client";
 import { getLatestSessionsBySubtopic } from "@/lib/db/queries/tracking";
+import { isMbeSubject } from "@/lib/exam-config";
 
 export async function GET(request: NextRequest) {
   const { userId: clerkId } = await getAuthIdentity();
@@ -31,7 +32,9 @@ export async function GET(request: NextRequest) {
     user ? getLatestSessionsBySubtopic(user.id) : Promise.resolve(new Map()),
   ]);
 
-  const allTopics = (topicsRes.data ?? []).map((t) => ({
+  const allTopics = (topicsRes.data ?? [])
+    .filter((t) => isMbeSubject(t.subject))
+    .map((t) => ({
     id: t.id,
     slug: t.slug,
     name: t.name,

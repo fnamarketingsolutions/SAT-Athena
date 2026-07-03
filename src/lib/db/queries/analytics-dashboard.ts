@@ -3,6 +3,7 @@ import "server-only";
 import { getEngagementSummary, getStuckPoints } from "@/lib/db/queries/analytics";
 import { getUserAttempts } from "@/lib/db/queries/full-sat";
 import { getProgressData } from "@/lib/db/queries/progress";
+import { MBE_PASS_PERCENT } from "@/lib/exam-config";
 import { supabase } from "@/lib/supabase/client";
 
 type AnalyticsUser = {
@@ -44,15 +45,14 @@ function computeQuestStreak(
   return streak;
 }
 
-function baselineSectionScores(user: AnalyticsUser) {
+function baselineAccuracy(user: AnalyticsUser): number {
   if (user.startComposite != null) {
-    const rw = Math.round(user.startComposite / 2);
-    const math = user.startComposite - rw;
-    return { rw, math };
+    return Math.min(100, Math.round(user.startComposite / 16));
   }
-  const rw = user.currentReadingWriting ?? 400;
-  const math = user.currentMath ?? 400;
-  return { rw, math };
+  if (user.currentComposite != null) {
+    return Math.min(100, Math.round(user.currentComposite / 16));
+  }
+  return 0;
 }
 
 export async function getAnalyticsDashboard(
@@ -64,7 +64,7 @@ export async function getAnalyticsDashboard(
   weekAgo.setDate(weekAgo.getDate() - 6);
   const weekAgoStr = weekAgo.toISOString().split("T")[0];
 
-  const [progress, stuckPoints, engagement, fullSatAttempts, weekQuestsRes, streakHistoryRes] =
+  const [progress, stuckPoints, engagement, mockAttempts, weekQuestsRes, streakHistoryRes] =
     await Promise.all([
       getProgressData(userId),
       getStuckPoints(userId),
@@ -85,15 +85,9 @@ export async function getAnalyticsDashboard(
         .limit(60),
     ]);
 
-  const baseline = baselineSectionScores(user);
-  const rwSection = progress.sectionScores.readingWriting;
-  const mathSection = progress.sectionScores.math;
-
-  const rwScore =
-    rwSection.total > 0 ? rwSection.scaledScore : baseline.rw;
-  const mathScore =
-    mathSection.total > 0 ? mathSection.scaledScore : baseline.math;
-  const compositeScore = rwScore + mathScore;
+  const overallAccuracy = progress.overallStats.accuracy;
+  const startAccuracy = baselineAccuracy(user);
+  const targetPercent = MBE_PASS_PERCENT;
 
   const questStreak = computeQuestStreak(streakHistoryRes.data ?? [], today);
 
@@ -111,27 +105,47 @@ export async function getAnalyticsDashboard(
     };
   });
 
-  const completedFullSats = fullSatAttempts
-    .filter((a) => a.status === "completed" && a.totalScore != null)
-    .slice(0, 5)
-    .map((a) => ({
+  const completedMocks = mockAttempts
+    .filter((a) => a.status === "completed")
+    .slice(0, 5);
+
+  const attemptIds = completedMocks.map((a) => a.id);
+  const answerCountByAttempt: Record<string, number> = {};
+  if (attemptIds.length > 0) {
+    const { data: answerRows } = await supabase
+      .from("full_sat_answers")
+      .select("attempt_id")
+      .in("attempt_id", attemptIds);
+    for (const row of answerRows ?? []) {
+      answerCountByAttempt[row.attempt_id] =
+        (answerCountByAttempt[row.attempt_id] ?? 0) + 1;
+    }
+  }
+
+  const mbeMockAttempts = completedMocks.map((a) => {
+    const correct = (a.rwRawScore ?? 0) + (a.mathRawScore ?? 0);
+    const total = answerCountByAttempt[a.id] ?? 0;
+    const percentScore =
+      total > 0 ? Math.round((correct / total) * 100) : null;
+    return {
       id: a.id,
-      totalScore: a.totalScore!,
-      rwScaledScore: a.rwScaledScore,
-      mathScaledScore: a.mathScaledScore,
+      correct,
+      total,
+      percentScore,
+      passed: percentScore != null && percentScore >= targetPercent,
       completedAt: a.completedAt,
-    }));
+    };
+  });
 
   const forecastWeeks =
-    user.targetScore &&
-    user.startComposite &&
-    compositeScore < user.targetScore &&
-    compositeScore > user.startComposite
+    overallAccuracy < targetPercent &&
+    startAccuracy < overallAccuracy &&
+    overallAccuracy > 0
       ? Math.max(
           1,
           Math.ceil(
-            (user.targetScore - compositeScore) /
-              Math.max(1, (compositeScore - user.startComposite) / 4)
+            (targetPercent - overallAccuracy) /
+              Math.max(1, (overallAccuracy - startAccuracy) / 4)
           )
         )
       : null;
@@ -142,12 +156,10 @@ export async function getAnalyticsDashboard(
       avatarUrl: user.avatarUrl,
       targetScore: user.targetScore,
       skillScore: user.skillScore,
-      startComposite: user.startComposite,
+      startAccuracy,
     },
-    compositeScore,
-    rwScore,
-    mathScore,
-    targetScore: user.targetScore ?? 1400,
+    overallAccuracy,
+    targetPercent,
     forecastWeeks,
     ...progress,
     stuckPoints: stuckPoints.slice(0, 6),
@@ -158,6 +170,6 @@ export async function getAnalyticsDashboard(
       weekQuestDays,
       questsCompletedThisWeek: weekQuestDays.filter((d) => d.completed).length,
     },
-    fullSatAttempts: completedFullSats,
+    mbeMockAttempts,
   };
 }

@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 
-type Subject = "math" | "reading-writing" | "science" | "social-studies";
+import { MBE_SUBJECTS, type MbeSubject } from "@/lib/exam-config";
+
+type Subject = MbeSubject;
 
 type Subtopic = {
   id: string;
@@ -33,10 +35,7 @@ type Topic = {
 
 const SUBJECTS: { key: Subject | "all"; label: string }[] = [
   { key: "all", label: "All" },
-  { key: "math", label: "Math" },
-  { key: "reading-writing", label: "Reading & Writing" },
-  { key: "science", label: "Science" },
-  { key: "social-studies", label: "Social Studies" },
+  ...MBE_SUBJECTS.map((s) => ({ key: s.key as Subject | "all", label: s.label })),
 ];
 
 function slugify(name: string) {
@@ -115,7 +114,7 @@ export default function CurriculumAdminPage() {
   async function deleteSubtopic(sub: Subtopic) {
     if (
       !confirm(
-        `Delete subtopic "${sub.name}"? (${sub.problemCount} SAT problem(s) will be removed.)`
+        `Delete subtopic "${sub.name}"? (${sub.problemCount} practice problem(s) will be removed.)`
       )
     ) {
       return;
@@ -138,7 +137,7 @@ export default function CurriculumAdminPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Curriculum</h1>
           <p className="text-sm text-muted-foreground mt-1 max-w-xl">
-            Manage SAT topics and subtopics shown on the dashboard. Changes
+            Manage bar exam topics and subtopics shown on the dashboard. Changes
             appear immediately — no seed script required. Generate practice
             problems separately via{" "}
             <code className="text-primary">npm run seed:content:math</code>.

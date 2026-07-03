@@ -1,11 +1,34 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { RefreshCw } from "lucide-react";
 import { MathContent } from "@/components/quiz/math-content";
-import type { Flashcard } from "@/types/flashcards";
+import type { Flashcard, FlashcardOption } from "@/types/flashcards";
 import { cn } from "@/lib/utils";
+
+/** Some stored questions (esp. AI-generated) embed the lettered options inside
+ *  `questionText` in addition to the clean `options` array. Split the stem off
+ *  so we can render each option on its own line without duplicating them. */
+function splitFront(front: Flashcard["front"]): {
+  stem: string;
+  options: FlashcardOption[];
+} {
+  const text = (front.questionText ?? "").trim();
+  const options = front.options ?? [];
+  const hasEmbedded =
+    /\(?A[).]\s/.test(text) &&
+    /\(?B[).]\s/.test(text) &&
+    /\(?C[).]\s/.test(text) &&
+    /\(?D[).]\s/.test(text);
+  if (!hasEmbedded) return { stem: text, options };
+  const match = text.match(/\n?\s*\(?A[).]\s/);
+  const stem =
+    match && match.index !== undefined
+      ? text.slice(0, match.index).trim()
+      : text;
+  return { stem, options };
+}
 
 type FlashcardCardProps = {
   card: Flashcard;
@@ -54,7 +77,7 @@ export function FlashcardCard({
         <div
           className="pointer-events-none absolute inset-0 flex items-center justify-center"
           style={{
-            background: "oklch(0.05 0.005 80 / 0.7)",
+            background: "var(--p-overlay)",
             border: "1px solid var(--p-rule)",
           }}
         >
@@ -83,12 +106,52 @@ function CardFace({
   totalCards: number;
 }) {
   const isBack = side === "back";
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // The card lives inside a `preserve-3d` rotated element, which breaks wheel /
+  // touch routing to nested scroll containers in Chrome (only the scrollbar
+  // thumb works). Drive the scroll manually so the wheel scrolls the content.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const canScroll = () => el.scrollHeight > el.clientHeight;
+
+    const onWheel = (e: WheelEvent) => {
+      if (!canScroll()) return;
+      e.preventDefault();
+      e.stopPropagation();
+      el.scrollTop += e.deltaY;
+    };
+
+    let lastY = 0;
+    const onTouchStart = (e: TouchEvent) => {
+      lastY = e.touches[0]?.clientY ?? 0;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!canScroll()) return;
+      const y = e.touches[0]?.clientY ?? lastY;
+      const dy = lastY - y;
+      lastY = y;
+      e.preventDefault();
+      e.stopPropagation();
+      el.scrollTop += dy;
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+    };
+  }, []);
 
   return (
     <div
       className={cn("absolute inset-0 flex flex-col overflow-hidden")}
       style={{
-        background: "oklch(0.05 0.005 80 / 0.85)",
+        background: "var(--p-card)",
         border: "1px solid var(--p-rule)",
         backfaceVisibility: "hidden",
         transform: isBack ? "rotateY(180deg)" : undefined,
@@ -124,7 +187,11 @@ function CardFace({
         style={{ background: "var(--p-rule)" }}
       />
 
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
+      <div
+        ref={scrollRef}
+        className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain"
+        style={{ touchAction: "pan-y" }}
+      >
         {isBack ? <BackBody card={card} /> : <FrontBody card={card} />}
       </div>
 
@@ -140,14 +207,32 @@ function CardFace({
 }
 
 function FrontBody({ card }: { card: Flashcard }) {
+  const { stem, options } = splitFront(card.front);
   return (
     <div
-      className="flashcard-question flex flex-1 items-center justify-center text-left"
+      className="flashcard-question flex flex-1 flex-col justify-center gap-4 text-left"
       style={{ color: "var(--p-fg)" }}
     >
       <div className="w-full">
-        <MathContent content={card.front.questionText} size="lg" />
+        <MathContent content={stem} size="lg" />
       </div>
+      {options.length > 0 && (
+        <ol className="flex list-none flex-col gap-2 p-0">
+          {options.map((o) => (
+            <li key={o.letter} className="flex gap-2.5 text-[15px] leading-snug">
+              <span
+                className="font-mono font-semibold"
+                style={{ color: "var(--p-accent)" }}
+              >
+                {o.letter}.
+              </span>
+              <span className="flex-1">
+                <MathContent content={o.text} size="base" />
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
     </div>
   );
 }

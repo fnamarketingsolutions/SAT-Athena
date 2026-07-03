@@ -14,7 +14,7 @@ export function useFullSatStatus() {
   const { data, isLoading, isError, refetch } = useQuery<FullSatStatusResponse>({
     queryKey: ["full-sat"],
     queryFn: async () => {
-      const res = await fetch("/api/full-sat");
+      const res = await fetch("/api/mbe-mock");
       if (!res.ok) throw new Error("Failed to fetch full SAT status");
       return res.json();
     },
@@ -33,7 +33,7 @@ export function useStartFullSat() {
 
   return useMutation<FullSatStartResponse, Error, { testId: string }>({
     mutationFn: async ({ testId }) => {
-      const res = await fetch("/api/full-sat/start", {
+      const res = await fetch("/api/mbe-mock/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ testId }),
@@ -65,7 +65,7 @@ export function useAnswerFullSat() {
       isCorrect: boolean;
       responseTimeMs?: number;
     }) => {
-      const res = await fetch("/api/full-sat/answer", {
+      const res = await fetch("/api/mbe-mock/answer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -85,7 +85,7 @@ export function useSubmitFullSat() {
     { attemptId: string; rwTimeSeconds: number; mathTimeSeconds: number }
   >({
     mutationFn: async (payload) => {
-      const res = await fetch("/api/full-sat/submit", {
+      const res = await fetch("/api/mbe-mock/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -109,7 +109,7 @@ export function useFullSatHistory() {
   const { data, isLoading, isError } = useQuery<FullSatHistoryResponse>({
     queryKey: ["full-sat-history"],
     queryFn: async () => {
-      const res = await fetch("/api/full-sat/history");
+      const res = await fetch("/api/mbe-mock/history");
       if (!res.ok) throw new Error("Failed to fetch history");
       return res.json();
     },

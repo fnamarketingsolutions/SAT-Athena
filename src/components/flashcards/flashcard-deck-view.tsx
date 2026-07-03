@@ -145,7 +145,7 @@ export function FlashcardDeckView({
   const totalCards = cards.length;
 
   return (
-    <div className="play-stage fixed inset-0 z-50 overflow-x-hidden overflow-y-auto">
+    <div className="play-stage fixed inset-x-0 bottom-0 top-14 z-40 overflow-x-hidden overflow-y-auto">
       <div
         aria-hidden
         className="play-vignette pointer-events-none fixed inset-[-10%] z-0"
@@ -166,7 +166,7 @@ export function FlashcardDeckView({
         onExit={() => router.push("/dashboard")}
       />
 
-      <div className="relative z-[2] mx-auto grid w-[min(1100px,94vw)] place-items-center px-6 py-6">
+      <div className="relative z-[2] mx-auto flex w-[min(1100px,94vw)] flex-col items-center px-6 py-8">
         {phase === "error" && (
           <ErrorBlock message={errorMessage} onRetry={() => router.refresh()} />
         )}
@@ -327,7 +327,7 @@ function HeaderButton({
       style={{
         color: "var(--p-fg-mute)",
         border: "1px solid var(--p-rule)",
-        background: "oklch(0.05 0.005 80 / 0.55)",
+        background: "var(--p-surface)",
       }}
     >
       {children}
@@ -474,7 +474,7 @@ function ControlButton({
         border: "1px solid var(--p-rule)",
         background: primary
           ? "color-mix(in oklch, var(--p-accent) 14%, transparent)"
-          : "oklch(0.05 0.005 80 / 0.55)",
+          : "var(--p-surface)",
         borderColor: primary
           ? "color-mix(in oklch, var(--p-accent) 45%, var(--p-rule))"
           : "var(--p-rule)",
@@ -503,7 +503,7 @@ function SkeletonCard() {
     <div
       className="flex h-[400px] w-[640px] items-center justify-center"
       style={{
-        background: "oklch(0.05 0.005 80 / 0.55)",
+        background: "var(--p-surface)",
         border: "1px dashed var(--p-rule)",
       }}
     >
@@ -547,7 +547,7 @@ function EmptyBlock({ onExit }: { onExit: () => void }) {
         style={{
           color: "var(--p-fg)",
           border: "1px solid var(--p-rule)",
-          background: "oklch(0.05 0.005 80 / 0.55)",
+          background: "var(--p-surface)",
         }}
       >
         Pick another topic
@@ -587,7 +587,7 @@ function ErrorBlock({
         style={{
           color: "var(--p-fg)",
           border: "1px solid var(--p-rule)",
-          background: "oklch(0.05 0.005 80 / 0.55)",
+          background: "var(--p-surface)",
         }}
       >
         Retry

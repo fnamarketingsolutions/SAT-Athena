@@ -35,7 +35,7 @@ export default function FullSatQuestionPage() {
       }
       return;
     }
-    router.push(`/full-sat/${params.attemptId}/${ctx.currentIndex + 1}`);
+    router.push(`/mbe-mock/${params.attemptId}/${ctx.currentIndex + 1}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ctx.currentIndex]);
 
@@ -84,7 +84,7 @@ export default function FullSatQuestionPage() {
         onToggleTimer={() => setTimerHidden((h) => !h)}
         calcOpen={calcOpen}
         onToggleCalc={() => setCalcOpen((o) => !o)}
-        onClose={() => router.push("/full-sat")}
+        onClose={() => router.push("/mbe-mock")}
         hasAnswers={ctx.answeredCount > 0}
         subtopicName={`${ctx.sectionLabel} - ${ctx.moduleLabel}`}
         showCalc={isMathSection}

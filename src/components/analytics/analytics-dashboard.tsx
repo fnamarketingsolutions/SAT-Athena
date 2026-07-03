@@ -7,9 +7,9 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ChevronLeft } from "lucide-react";
 import { ProgressHeader } from "@/components/progress/progress-header";
-import { SectionScores } from "@/components/progress/section-scores";
+import { MbeSubjectScores } from "@/components/progress/mbe-subject-scores";
 import { SatSkills } from "@/components/progress/sat-skills";
-import { CompositeScore } from "@/components/progress/composite-score";
+import { OverallAccuracy } from "@/components/progress/overall-accuracy";
 import { ScoreHistory } from "@/components/progress/score-history";
 import { StudyStats } from "@/components/progress/study-stats";
 import { TopicMastery } from "@/components/progress/topic-mastery";
@@ -19,6 +19,12 @@ import { StuckPointsPanel } from "@/components/analytics/stuck-points-panel";
 import { EngagementPanel } from "@/components/analytics/engagement-panel";
 import { ConsistencyPanel } from "@/components/analytics/consistency-panel";
 import type { StuckPoint, EngagementSummary } from "@/lib/db/queries/analytics";
+import {
+  APP_BRANDING,
+  MBE_RANKS,
+  MOCK_EXAM_ROUTE,
+  MOCK_EXAM_LABEL,
+} from "@/lib/exam-config";
 
 type AnalyticsData = {
   user: {
@@ -26,12 +32,10 @@ type AnalyticsData = {
     avatarUrl: string | null;
     targetScore: number | null;
     skillScore: number | null;
-    startComposite: number | null;
+    startAccuracy: number;
   };
-  compositeScore: number;
-  rwScore: number;
-  mathScore: number;
-  targetScore: number;
+  overallAccuracy: number;
+  targetPercent: number;
   forecastWeeks: number | null;
   scoreHistory: { date: string; score: number }[];
   topicPerformance: {
@@ -57,22 +61,14 @@ type AnalyticsData = {
     sessionCount: number;
     avgScore: number;
   };
-  sectionScores: {
-    readingWriting: {
-      subject: string;
-      total: number;
-      correct: number;
-      accuracy: number;
-      scaledScore: number;
-    };
-    math: {
-      subject: string;
-      total: number;
-      correct: number;
-      accuracy: number;
-      scaledScore: number;
-    };
-  };
+  subjectScores: {
+    subject: string;
+    label: string;
+    shortLabel: string;
+    total: number;
+    correct: number;
+    accuracy: number;
+  }[];
   topicMastery: {
     items: { name: string; mastered: boolean; attempted: boolean }[];
     masteredCount: number;
@@ -91,11 +87,12 @@ type AnalyticsData = {
     }[];
     questsCompletedThisWeek: number;
   };
-  fullSatAttempts: {
+  mbeMockAttempts: {
     id: string;
-    totalScore: number;
-    rwScaledScore: number | null;
-    mathScaledScore: number | null;
+    correct: number;
+    total: number;
+    percentScore: number | null;
+    passed: boolean;
     completedAt: string | null;
   }[];
 };
@@ -112,7 +109,7 @@ const staggerItem = {
 
 export function AnalyticsDashboard() {
   const { data, isLoading, isError } = useQuery<AnalyticsData>({
-    queryKey: ["analytics-dashboard", "v2"],
+    queryKey: ["analytics-dashboard", "v3-mbe"],
     queryFn: () =>
       fetch("/api/analytics/dashboard").then((r) => {
         if (!r.ok) throw new Error("Failed to load analytics");
@@ -142,15 +139,6 @@ export function AnalyticsDashboard() {
 
   if (!data) return null;
 
-  const rwSection = {
-    ...data.sectionScores.readingWriting,
-    scaledScore: data.rwScore,
-  };
-  const mathSection = {
-    ...data.sectionScores.math,
-    scaledScore: data.mathScore,
-  };
-
   return (
     <div className="p-6 pb-16">
       <motion.div
@@ -169,22 +157,22 @@ export function AnalyticsDashboard() {
           </Link>
           <ProgressHeader
             eyebrow="Analytics"
-            title="Your SAT Analytics"
-            subtitle="Scores, mastery, weak areas, and consistency"
+            title={`Your ${APP_BRANDING.examLabel} Analytics`}
+            subtitle="Accuracy by subject, weak areas, and study consistency"
           />
         </motion.div>
 
         {data.forecastWeeks &&
-          data.user.startComposite &&
-          data.compositeScore < data.targetScore && (
+          data.user.startAccuracy > 0 &&
+          data.overallAccuracy < data.targetPercent && (
           <motion.p
             variants={staggerItem}
             className="mt-4 text-sm text-muted-foreground"
           >
-            At your current pace, you could reach {data.targetScore} in about{" "}
+            At your current pace, you could reach {data.targetPercent}% in about{" "}
             <span className="font-medium text-foreground">{data.forecastWeeks} weeks</span>
-            {data.user.startComposite < data.compositeScore && (
-              <> (up from {data.user.startComposite})</>
+            {data.user.startAccuracy < data.overallAccuracy && (
+              <> (up from {data.user.startAccuracy}%)</>
             )}
             .
           </motion.p>
@@ -192,20 +180,19 @@ export function AnalyticsDashboard() {
 
         <motion.div variants={staggerItem}>
           <h2 className="mb-3 mt-8 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            Score Overview
+            Bar Exam Subject Accuracy
           </h2>
         </motion.div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
           <motion.div className="grid gap-6 lg:col-span-3" variants={staggerItem}>
-            <SectionScores
-              rw={rwSection}
-              math={mathSection}
-              targetScore={data.targetScore}
+            <MbeSubjectScores
+              subjects={data.subjectScores}
+              targetPercent={data.targetPercent}
             />
-            <CompositeScore
-              score={data.compositeScore}
-              targetScore={data.targetScore}
+            <OverallAccuracy
+              accuracy={data.overallAccuracy}
+              targetPercent={data.targetPercent}
             />
           </motion.div>
           <motion.div className="lg:col-span-2" variants={staggerItem}>
@@ -233,20 +220,20 @@ export function AnalyticsDashboard() {
         </div>
 
         <motion.div className="mt-6" variants={staggerItem}>
-          <SatSkills topics={data.topicPerformance} />
+          <SatSkills topics={data.topicPerformance} title="Topic Performance" />
         </motion.div>
 
         <motion.div className="mt-6" variants={staggerItem}>
           <PracticeTestResults sessions={data.recentSessions} />
         </motion.div>
 
-        {data.fullSatAttempts.length > 0 && (
+        {data.mbeMockAttempts.length > 0 && (
           <motion.div className="mt-6 border bg-card p-5" variants={staggerItem}>
             <h2 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              Full SAT Attempts
+              {MOCK_EXAM_LABEL} Attempts
             </h2>
             <div className="space-y-3">
-              {data.fullSatAttempts.map((attempt) => (
+              {data.mbeMockAttempts.map((attempt) => (
                 <div
                   key={attempt.id}
                   className="flex items-center justify-between border-b border-border/40 py-2 last:border-0"
@@ -258,27 +245,31 @@ export function AnalyticsDashboard() {
                         : "Completed"}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      R&amp;W {attempt.rwScaledScore ?? "—"} · Math{" "}
-                      {attempt.mathScaledScore ?? "—"}
+                      {attempt.correct}/{attempt.total} correct
+                      {attempt.passed ? " · Pass target met" : ""}
                     </p>
                   </div>
                   <span className="text-2xl font-bold tabular-nums">
-                    {attempt.totalScore}
+                    {attempt.percentScore != null ? `${attempt.percentScore}%` : "—"}
                   </span>
                 </div>
               ))}
             </div>
             <Link
-              href="/full-sat"
+              href={MOCK_EXAM_ROUTE}
               className="mt-4 inline-block text-xs font-medium text-primary hover:underline"
             >
-              Take another full SAT →
+              Take another {MOCK_EXAM_LABEL} →
             </Link>
           </motion.div>
         )}
 
         <motion.div className="mt-6" variants={staggerItem}>
-          <JourneyRanks currentScore={data.compositeScore} />
+          <JourneyRanks
+            currentScore={data.overallAccuracy}
+            ranks={MBE_RANKS}
+            unit="%"
+          />
         </motion.div>
       </motion.div>
     </div>

@@ -18,10 +18,11 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { useAccountabilityStatus } from "@/hooks/use-accountability-status";
 import { DailyQuestHero } from "@/components/dashboard/daily-quest-hero";
 import { cn } from "@/lib/utils";
+import { MBE_SUBJECTS, type MbeSubject } from "@/lib/exam-config";
 
 // ── Types ────────────────────────────────────────────────────────────
 type Mode = "lesson" | "practice" | "chat";
-type Subject = "math" | "reading-writing" | "science" | "social-studies";
+type Subject = MbeSubject;
 
 type Subtopic = {
   id: string;
@@ -95,12 +96,7 @@ const MODES: ModeMeta[] = [
   },
 ];
 
-const SUBJECTS: { key: Subject; label: string }[] = [
-  { key: "math", label: "Math" },
-  { key: "reading-writing", label: "Reading & Writing" },
-  { key: "science", label: "Science" },
-  { key: "social-studies", label: "Social Studies" },
-];
+const SUBJECTS = MBE_SUBJECTS;
 
 // Deterministic spark constellation rising from the orb. Hand-distributed
 // so each spark has its own travel path; values intentionally fixed so
@@ -141,7 +137,7 @@ export default function PlayPage() {
     useAccountabilityStatus();
   const questLocked = Boolean(accountability?.enabled && accountability.locked);
   const [mode, setMode] = useState<Mode | null>(null);
-  const [subject, setSubject] = useState<Subject>("math");
+  const [subject, setSubject] = useState<Subject>("civil-procedure");
   const [expandedTopicId, setExpandedTopicId] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useQuery<{ topics: Topic[] }>({
@@ -202,6 +198,13 @@ export default function PlayPage() {
   }, [mode, questLocked]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const topics = (data?.topics ?? []).filter((t) => t.subject === subject);
+
+  // SAT-style UX: auto-expand first topic when subject changes (like Algebra under Math).
+  useEffect(() => {
+    if (mode === null || mode === "chat") return;
+    const filtered = (data?.topics ?? []).filter((t) => t.subject === subject);
+    setExpandedTopicId(filtered.length > 0 ? filtered[0].id : null);
+  }, [subject, mode, data?.topics]);
 
   return (
     <div className="play-stage fixed inset-0 z-50 overflow-x-hidden overflow-y-auto pt-14">
@@ -625,28 +628,34 @@ function TopicPicker({
         </h2>
       </div>
 
-      {/* Subject toggle */}
+      {/* Subject toggle — scrollable pills (like MATH / READING & WRITING tabs) */}
       <div
-        className="flex gap-1 rounded-full p-1"
-        style={{ border: "1px solid var(--p-rule)" }}
+        className="w-full overflow-x-auto pb-1"
+        style={{ scrollbarWidth: "none" }}
       >
-        {SUBJECTS.map((s) => (
-          <button
-            key={s.key}
-            onClick={() => onSubject(s.key)}
-            className="rounded-full px-4 py-1.5 text-[10px] uppercase tracking-[0.18em] transition-colors"
-            style={{
-              fontFamily: "var(--font-jetbrains-mono)",
-              background:
-                s.key === subject
-                  ? "color-mix(in oklch, var(--p-accent) 22%, transparent)"
-                  : "transparent",
-              color: s.key === subject ? "var(--p-fg)" : "var(--p-fg-mute)",
-            }}
-          >
-            {s.label}
-          </button>
-        ))}
+        <div
+          className="mx-auto flex w-max min-w-full justify-center gap-1 rounded-full p-1"
+          style={{ border: "1px solid var(--p-rule)" }}
+        >
+          {SUBJECTS.map((s) => (
+            <button
+              key={s.key}
+              onClick={() => onSubject(s.key)}
+              title={s.label}
+              className="shrink-0 rounded-full px-4 py-1.5 text-[10px] uppercase tracking-[0.18em] transition-colors"
+              style={{
+                fontFamily: "var(--font-jetbrains-mono)",
+                background:
+                  s.key === subject
+                    ? "color-mix(in oklch, var(--p-accent) 22%, transparent)"
+                    : "transparent",
+                color: s.key === subject ? "var(--p-fg)" : "var(--p-fg-mute)",
+              }}
+            >
+              {s.shortLabel ?? s.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Personalized — only on practice mode. Sits above the canonical
@@ -705,7 +714,7 @@ function TopicPicker({
                   fontFamily: "var(--font-jetbrains-mono)",
                 }}
               >
-                Paste a lesson plan · we match the subtopics
+                Paste bar prep notes · we match bar exam topics
               </div>
             </div>
           </div>

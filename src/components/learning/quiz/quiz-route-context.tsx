@@ -5,12 +5,13 @@ import type { Problem } from "@/components/quiz/types";
 import type { FeedbackState } from "@/components/quiz/answer-panel";
 import type { useQuizState } from "./use-quiz-state";
 import type { useQuizTimer } from "./use-quiz-timer";
+import type { QuizSubject } from "@/lib/exam-config";
 
 export type QuizRouteContextValue = {
   problems: Problem[];
   topicName: string;
   subtopicName: string;
-  subject?: "math" | "reading-writing";
+  subject?: QuizSubject;
   basePath: string;
   practiceProblemsUrl?: string;
   /** When false, the results screen skips the mandatory "Practice 2 More

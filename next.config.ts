@@ -51,6 +51,18 @@ const nextConfig: NextConfig = {
       ],
     },
   ],
+  redirects: async () => [
+    {
+      source: "/full-sat",
+      destination: "/mbe-mock",
+      permanent: true,
+    },
+    {
+      source: "/full-sat/:path*",
+      destination: "/mbe-mock/:path*",
+      permanent: true,
+    },
+  ],
 };
 
 export default nextConfig;

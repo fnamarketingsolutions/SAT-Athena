@@ -27,17 +27,6 @@ function MicroLessonPageInner() {
   // doesn't unmount MicroLesson by switching to the "generating" spinner.
   const generatingLocallyRef = useRef(false);
 
-  // Force dark mode on <html> for this route so the whiteboard's
-  // useIsDarkMode() hook activates and its elements adapt their colors.
-  useEffect(() => {
-    const root = document.documentElement;
-    const hadDark = root.classList.contains("dark");
-    if (!hadDark) root.classList.add("dark");
-    return () => {
-      if (!hadDark) root.classList.remove("dark");
-    };
-  }, []);
-
   // Opt-in: ?debug=ops paints dashed outlines around the four op-* roles
   // the AI tagged on LaTeX spans. Only active while the URL has the flag.
   useEffect(() => {
@@ -108,7 +97,7 @@ function MicroLessonPageInner() {
 
   if (metaLoading || lessonLoading) {
     return (
-      <div className="dark fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] items-center justify-center overflow-hidden observation-record">
+      <div className="fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] items-center justify-center overflow-hidden observation-record">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--obs-border)] border-t-[var(--obs-glow-mid)]" />
       </div>
     );
@@ -120,7 +109,7 @@ function MicroLessonPageInner() {
   // (but not if we're the one generating)
   if (storedLesson?.status === "generating" && !generatingLocallyRef.current) {
     return (
-      <div className="dark fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden observation-record">
+      <div className="fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden observation-record">
         <div className="flex items-center justify-center py-6">
           <GenerationProgress />
         </div>
@@ -186,7 +175,7 @@ export default function MicroLessonPage() {
   return (
     <Suspense
       fallback={
-        <div className="dark fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] items-center justify-center overflow-hidden observation-record">
+        <div className="fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] items-center justify-center overflow-hidden observation-record">
           <WhiteboardSkeleton />
         </div>
       }

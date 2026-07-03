@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getTopicIcon } from "@/lib/topic-icons";
+import { getSubjectLabel } from "@/lib/exam-config";
 
 type Topic = {
   slug: string;
@@ -10,12 +11,11 @@ type Topic = {
   subject: string;
 };
 
-const SUBJECT_LABELS: Record<string, string> = {
-  math: "Math",
-  "reading-writing": "Reading & Writing",
-  science: "Science",
-  "social-studies": "Social Studies",
-};
+const SUBJECT_LABELS: Record<string, string> = {};
+
+function subjectLabel(subject: string): string {
+  return SUBJECT_LABELS[subject] ?? getSubjectLabel(subject);
+}
 
 export function TopicSidebar({
   topics,
@@ -31,7 +31,7 @@ export function TopicSidebar({
       {subjects.map((subject) => (
         <div key={subject}>
           <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {SUBJECT_LABELS[subject] ?? subject}
+            {subjectLabel(subject)}
           </p>
           <div className="space-y-1">
             {topics

@@ -4,6 +4,8 @@ import {
   getSeenProblemIds,
   getUnseenSeededProblems,
   getWriteThroughBaseOrderIndex,
+  createServedSession,
+  recordServedProblems,
   persistGeneratedProblem,
   type ProblemLinkage,
 } from "@/lib/db/queries/problem-stream";
@@ -97,6 +99,7 @@ export async function POST(req: Request) {
     async start(controller) {
       const priorStems: Set<string>[] = [];
       let served = 0;
+      let servedSessionId: string | null = null;
 
       // Enqueue helper that swallows post-close errors (client disconnected).
       const push = (chunk: Uint8Array) => {
@@ -109,6 +112,23 @@ export async function POST(req: Request) {
       const emit = (p: Problem) => {
         push(sse({ problem: p }));
         served += 1;
+        // Mark served immediately — never repeat this MCQ for this student.
+        void (async () => {
+          if (!servedSessionId) {
+            servedSessionId = await createServedSession({
+              userId: user.id,
+              totalQuestions: target,
+              subtopicId: linkage.subtopicId ?? null,
+            });
+          }
+          if (servedSessionId) {
+            await recordServedProblems({
+              sessionId: servedSessionId,
+              userId: user.id,
+              problemIds: [p.id],
+            });
+          }
+        })();
       };
 
       try {

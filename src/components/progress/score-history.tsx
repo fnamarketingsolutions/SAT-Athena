@@ -14,15 +14,23 @@ type ScorePoint = {
   score: number;
 };
 
-export function ScoreHistory({ data }: { data: ScorePoint[] }) {
+export function ScoreHistory({
+  data,
+  title = "Accuracy History",
+  valueSuffix = "%",
+}: {
+  data: ScorePoint[];
+  title?: string;
+  valueSuffix?: string;
+}) {
   if (data.length === 0) {
     return (
       <div className="border bg-muted/30 p-6 h-full">
         <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          Score History
+          {title}
         </h2>
         <p className="mt-6 text-sm text-muted-foreground">
-          Complete quizzes to see your score history.
+          Complete practice to see your accuracy trend.
         </p>
       </div>
     );
@@ -61,7 +69,7 @@ export function ScoreHistory({ data }: { data: ScorePoint[] }) {
   return (
     <div className="border bg-muted/30 p-6 h-full flex flex-col">
       <h2 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-        Score History
+        {title}
       </h2>
       <div className="flex-1 min-h-[200px]">
         <ResponsiveContainer width="100%" height="100%">
@@ -79,6 +87,8 @@ export function ScoreHistory({ data }: { data: ScorePoint[] }) {
               tickLine={false}
               axisLine={false}
               width={40}
+              domain={[0, 100]}
+              tickFormatter={(v) => `${v}${valueSuffix}`}
             />
             <Tooltip
               contentStyle={{
@@ -86,6 +96,9 @@ export function ScoreHistory({ data }: { data: ScorePoint[] }) {
                 border: "1px solid hsl(var(--border))",
                 fontSize: 12,
               }}
+              formatter={(value) =>
+                value != null ? [`${value}${valueSuffix}`, "Accuracy"] : ["—", "Accuracy"]
+              }
             />
             <Line
               type="monotone"
@@ -103,9 +116,11 @@ export function ScoreHistory({ data }: { data: ScorePoint[] }) {
           </LineChart>
         </ResponsiveContainer>
       </div>
-      {delta > 0 && (
+      {delta !== 0 && (
         <p className="mt-3 text-xs text-muted-foreground">
-          +{delta} points since start
+          {delta > 0 ? "+" : ""}
+          {delta}
+          {valueSuffix} since start
         </p>
       )}
     </div>

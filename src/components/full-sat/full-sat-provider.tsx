@@ -197,7 +197,7 @@ export function FullSatProvider({
 
     // Move to break phase
     setPhase("break");
-    router.push(`/full-sat/${attempt.id}/break`);
+    router.push(`/mbe-mock/${attempt.id}/break`);
   }, [attempt.id, router]);
 
   // Called from break page to start math section
@@ -230,7 +230,7 @@ export function FullSatProvider({
       },
       {
         onSuccess: () => {
-          router.push(`/full-sat/${attempt.id}/results`);
+          router.push(`/mbe-mock/${attempt.id}/results`);
         },
       }
     );

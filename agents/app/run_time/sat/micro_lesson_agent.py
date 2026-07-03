@@ -1194,6 +1194,45 @@ _GENERAL_LESSON_INSTRUCTIONS = (
     "Just teach naturally."
 )
 
+_LAW_LESSON_INSTRUCTIONS = (
+    "Create a micro-lesson on this MBE (Multistate Bar Examination) subtopic. "
+    "You are a bar exam tutor: TEACH the legal rule first, then test with MCQ-style checks.\n"
+    "Output ONLY <<<WHITEBOARD>>> followed by whiteboard steps as JSON Lines. "
+    "No markdown text before the delimiter.\n\n"
+    "STRUCTURE: 3 sections, 18-24 total steps.\n"
+    "Each section: TEACH (4-5 teaching steps) -> VERIFY (1 predict or fill_blank) -> ASSESS (1 check_in).\n"
+    "Teaching steps are ~75% of the lesson. Build the black-letter rule before asking.\n\n"
+    "This is BAR EXAM LAW, NOT mathematics. TEACH with write_text for rules and elements, "
+    "callout for definitions and key cases/statutes, table to compare answer choices or rule elements, "
+    "and highlight to mark critical language in a fact pattern. Include at least one short fact pattern "
+    "(2-4 sentences) per section — model how to apply the rule to facts. "
+    "Do NOT use coordinate planes, graphs, or geometry diagrams.\n"
+    "VERIFY phase: ONE easy MCQ-style question about the rule on the board. Include a hint pointing back to the rule.\n"
+    "ASSESS phase: ONE harder check_in with a NEW fact pattern that tests transfer.\n\n"
+    "For each wrong answer in explanations, briefly state why it is incorrect (common bar exam trap).\n"
+    "Hints NEVER give away the answer. They guide the student back to the rule or the fact pattern.\n"
+    "fill_blank MUST include hint AND detailedHint.\n"
+    "For teaching: narration = what is shown (read aloud on arrival, auto-advances).\n"
+    "For predict/fill_blank: narration = answer explanation (read aloud AFTER student responds).\n\n"
+    "IMPORTANT: Do NOT include structural labels like 'Section 1:', 'TEACH', 'VERIFY', 'ASSESS' in narration "
+    "or displayText. Just teach naturally."
+)
+
+_MBE_SUBJECTS = frozenset({
+    "civil-procedure",
+    "constitutional-law",
+    "contracts",
+    "criminal-law",
+    "evidence",
+    "real-property",
+    "torts",
+})
+
+
+def _is_mbe_subject(subject: str) -> bool:
+    return subject in _MBE_SUBJECTS
+
+
 _RW_LESSON_INSTRUCTIONS = (
     "Create a micro-lesson on this SAT Reading & Writing subtopic. You are a real tutor: TEACH first, then ask.\n"
     "Output ONLY <<<WHITEBOARD>>> followed by whiteboard steps as JSON Lines. "
@@ -1260,6 +1299,15 @@ def _build_lesson_prompt(
         if overview.get("sat_context"):
             overview_lines.append(f"Additional context: {overview['sat_context']}")
         sections.append("\n".join(overview_lines))
+
+    # MBE bar exam subjects use law-specific instructions.
+    if _is_mbe_subject(subject):
+        return (
+            "[LESSON CONTEXT]\n"
+            + "\n\n".join(sections)
+            + "\n[END LESSON CONTEXT]\n\n"
+            + _LAW_LESSON_INSTRUCTIONS
+        )
 
     # General academic subjects (science, social-studies, …) use concept-based
     # instructions; math + reading-writing keep the existing SAT prompt below.

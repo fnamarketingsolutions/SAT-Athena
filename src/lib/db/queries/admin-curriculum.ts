@@ -1,11 +1,13 @@
 import { supabase } from "@/lib/supabase/client";
+import { EXAM_PROBLEM_SOURCES } from "@/lib/exam-config";
 import type { Json } from "@/types/supabase";
 
-export type CurriculumSubject =
-  | "math"
-  | "reading-writing"
-  | "science"
-  | "social-studies";
+import {
+  MBE_SUBJECTS,
+  type CurriculumSubject,
+} from "@/lib/exam-config";
+
+export type { CurriculumSubject };
 
 export type AdminTopic = {
   id: string;
@@ -44,12 +46,12 @@ function slugify(name: string): string {
 
 function topicDefaults(name: string, subject: string) {
   return {
-    overview: `${name} — ${subject} curriculum topic.`,
+    overview: `${name} — ${subject.replace(/-/g, " ")} curriculum topic.`,
     learning_objectives: [] as string[],
     sat_relevance: {
       questionCount: 0,
       percentageOfTest: 0,
-      description: "",
+      description: "Part of the bar exam curriculum.",
     },
     difficulty_distribution: { easy: 33, medium: 34, hard: 33 },
     estimated_total_minutes: 120,
@@ -106,7 +108,7 @@ export async function listCurriculum(
       .from("problems")
       .select("subtopic_id")
       .in("subtopic_id", subtopicIds)
-      .eq("source", "sat");
+      .in("source", [...EXAM_PROBLEM_SOURCES]);
     for (const p of problems ?? []) {
       if (p.subtopic_id) {
         problemCounts.set(

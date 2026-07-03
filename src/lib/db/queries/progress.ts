@@ -1,5 +1,10 @@
 import { supabase } from "@/lib/supabase/client";
 import {
+  EXAM_PROBLEM_SOURCES,
+  isMbeSubject,
+  MBE_SUBJECTS,
+} from "@/lib/exam-config";
+import {
   isRwSubject,
   scalePracticeMathScore,
   scalePracticeRwScore,
@@ -18,7 +23,7 @@ export async function getProgressData(userId: string) {
       .from("quiz_sessions")
       .select("id, subtopic_id, score, total_questions, time_elapsed_seconds, created_at")
       .eq("user_id", userId)
-      .eq("source", "sat")
+      .in("source", [...EXAM_PROBLEM_SOURCES])
       .order("created_at", { ascending: true }),
     supabase
       .from("daily_quests")
@@ -126,22 +131,30 @@ export async function getProgressData(userId: string) {
     topicMap[t.id] = { name: t.name, slug: t.slug, subject: t.subject, order_index: t.order_index };
   }
 
-  // 1. Score history: cumulative score by date
-  const dailyScores: Record<string, number> = {};
-  for (const s of sessions) {
-    const date = s.created_at.split("T")[0];
-    dailyScores[date] = (dailyScores[date] ?? 0) + s.score;
+  // 1. Accuracy history: cumulative accuracy % by date
+  const dailyActivity: Record<string, { correct: number; total: number }> = {};
+  for (const ans of activityAnswers) {
+    const session = sessionMap[ans.session_id];
+    if (!session) continue;
+    const date = session.created_at.split("T")[0];
+    if (!dailyActivity[date]) dailyActivity[date] = { correct: 0, total: 0 };
+    dailyActivity[date].total++;
+    if (ans.is_correct) dailyActivity[date].correct++;
   }
-  for (const q of dailyQuests) {
-    const date = q.quest_date ?? q.created_at.split("T")[0];
-    dailyScores[date] = (dailyScores[date] ?? 0) + q.score;
-  }
-  let cumulative = 0;
-  const cumulativeScoreHistory = Object.entries(dailyScores)
+  let cumulativeCorrect = 0;
+  let cumulativeTotal = 0;
+  const cumulativeScoreHistory = Object.entries(dailyActivity)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, dailyScore]) => {
-      cumulative += dailyScore;
-      return { date, score: cumulative };
+    .map(([date, day]) => {
+      cumulativeCorrect += day.correct;
+      cumulativeTotal += day.total;
+      return {
+        date,
+        score:
+          cumulativeTotal > 0
+            ? Math.round((cumulativeCorrect / cumulativeTotal) * 100)
+            : 0,
+      };
     });
 
   // 2. Accuracy by difficulty
@@ -178,7 +191,9 @@ export async function getProgressData(userId: string) {
     if (topic) topicPerfMap[topic.slug] = stats;
   }
 
-  const allTopicPerformance = topics.map((t) => {
+  const mbeTopics = topics.filter((t) => isMbeSubject(t.subject));
+
+  const allTopicPerformance = mbeTopics.map((t) => {
     const perf = topicPerfMap[t.slug];
     return {
       name: t.name,
@@ -271,11 +286,26 @@ export async function getProgressData(userId: string) {
     scaledScore: 0,
   };
 
+  const subjectScores = MBE_SUBJECTS.map(({ key, label, shortLabel }) => {
+    const stats = sectionStats[key] ?? { total: 0, correct: 0 };
+    return {
+      subject: key,
+      label,
+      shortLabel,
+      total: stats.total,
+      correct: stats.correct,
+      accuracy:
+        stats.total > 0
+          ? Math.round((stats.correct / stats.total) * 100)
+          : 0,
+    };
+  });
+
   // Topic mastery
   const MASTERY_THRESHOLD = 0.7;
   const MIN_QUESTIONS = 5;
 
-  const topicMasteryList = topics.map((t) => {
+  const topicMasteryList = mbeTopics.map((t) => {
     const perf = topicPerfMap[t.slug];
     const total = perf?.total ?? 0;
     const correct = perf?.correct ?? 0;
@@ -306,6 +336,7 @@ export async function getProgressData(userId: string) {
       readingWriting: rwSection,
       math: mathSection,
     },
+    subjectScores,
     topicMastery: {
       items: topicMasteryList,
       masteredCount,

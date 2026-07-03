@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Target } from "lucide-react";
 import { getTopicIcon } from "@/lib/topic-icons";
 import { cn } from "@/lib/utils";
+import { MBE_SUBJECTS } from "@/lib/exam-config";
 
 type Topic = {
   id: string;
@@ -20,15 +21,10 @@ type Topic = {
   subject: string;
 };
 
-const SUBJECTS = [
-  { key: "math", label: "Math" },
-  { key: "reading-writing", label: "Reading & Writing" },
-  { key: "science", label: "Science" },
-  { key: "social-studies", label: "Social Studies" },
-] as const;
+const SUBJECTS = MBE_SUBJECTS;
 
 export default function LearningPage() {
-  const [activeSubject, setActiveSubject] = useState<string>("math");
+  const [activeSubject, setActiveSubject] = useState<string>("civil-procedure");
 
   const {
     data,

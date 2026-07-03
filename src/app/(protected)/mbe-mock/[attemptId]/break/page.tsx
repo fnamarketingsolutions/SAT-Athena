@@ -23,7 +23,7 @@ export default function FullSatBreakPage() {
 
   const handleContinue = () => {
     // Navigate to first math question (question 55)
-    router.push(`/full-sat/${params.attemptId}/55`);
+    router.push(`/mbe-mock/${params.attemptId}/55`);
   };
 
   return (

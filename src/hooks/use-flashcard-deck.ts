@@ -25,27 +25,21 @@ export function useFlashcardDeck({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isRegenerating, setIsRegenerating] = useState<Record<string, boolean>>({});
 
-  const startedRef = useRef(false);
   const cardsRef = useRef<Flashcard[]>([]);
   cardsRef.current = cards;
   const abortRef = useRef<AbortController | null>(null);
 
-  const start = useCallback(async () => {
-    if (startedRef.current) return;
-    startedRef.current = true;
+  const start = useCallback(async (signal?: AbortSignal) => {
     setPhase("streaming");
     setCards([]);
     setErrorMessage(null);
-
-    const controller = new AbortController();
-    abortRef.current = controller;
 
     try {
       const res = await fetch("/api/agent/flashcards/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ topicSlug, subtopicSlug, count }),
-        signal: controller.signal,
+        signal,
       });
 
       if (!res.ok || !res.body) {
@@ -97,11 +91,15 @@ export function useFlashcardDeck({
   }, [topicSlug, subtopicSlug, count]);
 
   useEffect(() => {
-    if (!manualStart) {
-      start();
-    }
+    if (manualStart) return;
+    // Fresh controller per mount so React 18 StrictMode's mount→unmount→remount
+    // cycle (which aborts the first run) still leaves an active stream on the
+    // second mount, instead of getting stuck on an aborted first fetch.
+    const controller = new AbortController();
+    abortRef.current = controller;
+    void start(controller.signal);
     return () => {
-      abortRef.current?.abort();
+      controller.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
