@@ -112,5 +112,8 @@ export function getSubjectLabelsMap(): Record<string, string> {
 /** Problem sources used for MBE / bar exam content in the DB. */
 export const EXAM_PROBLEM_SOURCES = ["practice", "sat"] as const;
 
+/** Quiz session sources counted for MBE / bar exam progress. */
+export const EXAM_SESSION_SOURCES = ["sat", "custom"] as const;
+
 /** Subjects supported in quiz / personalized practice flows. */
 export type QuizSubject = MbeSubject | "math" | "reading-writing";

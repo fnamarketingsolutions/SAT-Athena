@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
+import type { QuizSubject } from "@/lib/exam-config";
 import type { Problem } from "@/components/quiz/types";
 import { stemTokens, tooSimilar } from "@/lib/stem-similarity";
 
@@ -11,7 +12,7 @@ export type PriorAnswer = { isCorrect: boolean; difficulty?: string };
 type UseStreamingProblemsOptions = {
   topic: string;
   subtopic: string;
-  subject?: "math" | "reading-writing" | "general";
+  subject?: QuizSubject | "general";
   /** Defaults to /api/agent/practice-problems/stream. */
   streamUrl?: string;
   /** Pool linkage — picks which seeded problems are served and where
@@ -44,7 +45,7 @@ type RequestArgs = {
 export function useStreamingProblems({
   topic,
   subtopic,
-  subject = "math",
+  subject = "civil-procedure",
   streamUrl,
   subtopicId,
   customTopicId,

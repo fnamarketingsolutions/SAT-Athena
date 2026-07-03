@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase/client";
 import {
-  EXAM_PROBLEM_SOURCES,
+  EXAM_SESSION_SOURCES,
   isMbeSubject,
   MBE_SUBJECTS,
 } from "@/lib/exam-config";
@@ -23,7 +23,7 @@ export async function getProgressData(userId: string) {
       .from("quiz_sessions")
       .select("id, subtopic_id, score, total_questions, time_elapsed_seconds, created_at")
       .eq("user_id", userId)
-      .in("source", [...EXAM_PROBLEM_SOURCES])
+      .in("source", [...EXAM_SESSION_SOURCES])
       .order("created_at", { ascending: true }),
     supabase
       .from("daily_quests")

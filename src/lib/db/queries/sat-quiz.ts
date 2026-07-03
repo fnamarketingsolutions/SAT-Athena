@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
-import { EXAM_PROBLEM_SOURCES } from "@/lib/exam-config";
+import { EXAM_SESSION_SOURCES } from "@/lib/exam-config";
 
 export async function saveSatQuizSession(data: {
   userId: string;
@@ -71,7 +71,7 @@ export async function getUserBestScores(userId: string) {
     .from("quiz_sessions")
     .select("subtopic_id, score, total_questions")
     .eq("user_id", userId)
-    .in("source", [...EXAM_PROBLEM_SOURCES]);
+    .in("source", [...EXAM_SESSION_SOURCES]);
 
   const grouped: Record<
     string,
@@ -107,7 +107,7 @@ export async function getUserSubtopicSessions(
     .from("quiz_sessions")
     .select("*")
     .eq("user_id", userId)
-    .in("source", [...EXAM_PROBLEM_SOURCES])
+    .in("source", [...EXAM_SESSION_SOURCES])
     .eq("subtopic_id", subtopicId)
     .order("created_at", { ascending: false });
 

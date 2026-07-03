@@ -320,7 +320,7 @@ export default function CurriculumAdminPage() {
         <TopicModal
           mode={topicModal.mode}
           topic={topicModal.mode === "edit" ? topicModal.topic : undefined}
-          defaultSubject={subject === "all" ? "math" : subject}
+          defaultSubject={subject === "all" ? "civil-procedure" : subject}
           onClose={() => setTopicModal(null)}
           onSaved={() => {
             setTopicModal(null);

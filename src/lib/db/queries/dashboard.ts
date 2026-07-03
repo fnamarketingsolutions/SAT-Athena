@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
-import { EXAM_PROBLEM_SOURCES } from "@/lib/exam-config";
+import { EXAM_SESSION_SOURCES } from "@/lib/exam-config";
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const DAY_ABBREVS = ["S", "M", "T", "W", "T", "F", "S"];
@@ -119,12 +119,12 @@ export async function getDashboardData(userId: string) {
       .from("quiz_sessions")
       .select("score")
       .eq("user_id", userId)
-      .in("source", [...EXAM_PROBLEM_SOURCES]),
+      .in("source", [...EXAM_SESSION_SOURCES]),
     supabase
       .from("quiz_sessions")
       .select("score")
       .eq("user_id", userId)
-      .in("source", [...EXAM_PROBLEM_SOURCES])
+      .in("source", [...EXAM_SESSION_SOURCES])
       .gte("created_at", sevenDaysAgo.toISOString()),
   ]);
 
@@ -188,7 +188,7 @@ export async function getDashboardData(userId: string) {
     .from("quiz_sessions")
     .select("id, subtopic_id")
     .eq("user_id", userId)
-    .in("source", [...EXAM_PROBLEM_SOURCES]);
+    .in("source", [...EXAM_SESSION_SOURCES]);
 
   const SAT_SECTION_MAP: Record<string, string> = {
     "reading-and-writing": "Reading & Writing",
@@ -300,12 +300,12 @@ export async function getDashboardData(userId: string) {
         .from("quiz_sessions")
         .select("user_id, score")
         .in("user_id", friendIds)
-        .in("source", [...EXAM_PROBLEM_SOURCES]),
+        .in("source", [...EXAM_SESSION_SOURCES]),
       supabase
         .from("quiz_sessions")
         .select("user_id, score")
         .in("user_id", friendIds)
-        .in("source", [...EXAM_PROBLEM_SOURCES])
+        .in("source", [...EXAM_SESSION_SOURCES])
         .gte("created_at", sevenDaysAgo.toISOString()),
     ]);
 

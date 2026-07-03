@@ -8,11 +8,12 @@ import { Sparkles, CheckCircle, XCircle, ChevronRight } from "lucide-react";
 import { PracticeWhiteboard } from "@/components/learning/practice/practice-whiteboard";
 import { LessonCongratsScreen } from "@/components/learning/lesson-congrats-screen";
 import type { Problem } from "@/components/quiz/types";
+import type { QuizSubject } from "@/lib/exam-config";
 
 type PostLessonPracticeProps = {
   topic: string;
   subtopic: string;
-  subject?: "math" | "reading-writing";
+  subject?: QuizSubject;
   /** Pool linkage for streamed problems — enables seeded-serving + write-through
    *  + no-repeat. Without it the loop still streams fresh problems, just
    *  ephemerally (not persisted/tracked). */
@@ -37,7 +38,7 @@ type PostLessonPracticeProps = {
 export function PostLessonPractice({
   topic,
   subtopic,
-  subject = "math",
+  subject = "civil-procedure",
   subtopicId,
   customTopicId,
   topicSlug,
