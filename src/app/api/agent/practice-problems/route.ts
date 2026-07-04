@@ -1,7 +1,11 @@
 import { getAuthIdentity } from "@/lib/auth/current-user";
+import {
+  getAgentServiceUrl,
+  resolvePracticeSubject,
+} from "@/lib/agent/practice-problems-config";
 import { NextResponse } from "next/server";
 
-const AGENT_URL = process.env.AGENT_SERVICE_URL || "http://localhost:8080";
+const AGENT_URL = getAgentServiceUrl();
 
 export async function POST(req: Request) {
   const { userId } = await getAuthIdentity();
@@ -27,7 +31,11 @@ export async function POST(req: Request) {
     const res = await fetch(`${AGENT_URL}/practice-problems`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ topic, subtopic, subject: subject ?? "math" }),
+      body: JSON.stringify({
+        topic,
+        subtopic,
+        subject: resolvePracticeSubject(subject),
+      }),
     });
 
     if (!res.ok) {

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef, useMemo, useCallback, forwardRef, useImperativeHandle } from "react";
+import type { QuizSubject } from "@/lib/exam-config";
+import { DEFAULT_PRACTICE_SUBJECT } from "@/lib/agent/practice-problems-config";
 import type {
   WhiteboardStep,
   CheckInAction,
@@ -123,7 +125,7 @@ type MicroLessonProps = {
   existingLesson?: { lessonContent: string; whiteboardSteps: WhiteboardStep[] } | null;
   subtopicApiPath?: string;
   practiceMode?: {
-    subject?: "math" | "reading-writing";
+    subject?: QuizSubject;
     quizStreamUrl?: string;
   };
   tracking?: {
@@ -748,13 +750,6 @@ const FillBlankCard = forwardRef<InteractionCardHandle, {
       if (isRevealed) return;
       setInput(text);
       const instantMatch = isEquivalentAnswer(text, fillBlank.acceptedAnswers);
-      if (typeof window !== "undefined") {
-        console.debug("[fill-blank] voice setText", {
-          text,
-          accepted: fillBlank.acceptedAnswers,
-          instantMatch,
-        });
-      }
       if (instantMatch) {
         // Defer one frame so React commits the input state before
         // we trigger the check (also gives the input its focus tick
@@ -1246,7 +1241,7 @@ export function MicroLesson({
         body: JSON.stringify({
           topic,
           subtopic,
-          subject: practiceMode?.subject ?? "math",
+          subject: practiceMode?.subject ?? DEFAULT_PRACTICE_SUBJECT,
         }),
       });
       if (!res.ok) throw new Error("Failed to load practice problems");
@@ -1836,9 +1831,6 @@ export function MicroLesson({
       }
       if (didPause) {
         narrationPausedByAmbientRef.current = true;
-        if (typeof window !== "undefined") {
-          console.debug("[narration] paused for voice activity");
-        }
       }
     };
     resumeLatestNarrationRef.current = () => {
@@ -1860,9 +1852,6 @@ export function MicroLesson({
         } catch {
           // Same — graceful fallback to no-op.
         }
-      }
-      if (typeof window !== "undefined") {
-        console.debug("[narration] resumed after dropped ambient", { resumed });
       }
       return resumed;
     };
@@ -2742,7 +2731,6 @@ export function MicroLesson({
       // Drop ambient-sound annotations the STT model occasionally
       // emits — "(upbeat music)", "[Music]", "(coughs)", etc.
       if (isAmbientNoiseTranscript(rawTranscript)) {
-        console.debug("[voice→chat] dropped ambient transcript:", rawTranscript);
         resumeNarrationIfDropped();
         return;
       }
@@ -2756,7 +2744,6 @@ export function MicroLesson({
         // The strip removed everything that was left (e.g. a transcript
         // that's nothing but markers slipped past the ambient check
         // somehow). Treat as ambient.
-        console.debug("[voice→chat] empty after marker strip:", rawTranscript);
         resumeNarrationIfDropped();
         return;
       }

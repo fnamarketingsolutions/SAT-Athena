@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Trophy, BookOpen, Calculator, Clock, ArrowRight } from "lucide-react";
+import { MOCK_EXAM_LABEL } from "@/lib/exam-config";
 import type { FullSatSubmitResponse } from "@/types/full-sat";
 
 export default function FullSatResultsPage() {
@@ -56,7 +57,7 @@ export default function FullSatResultsPage() {
           onClick={() => router.push("/mbe-mock")}
           className="text-sm font-medium text-primary hover:underline"
         >
-          Back to Full SAT
+          Back to {MOCK_EXAM_LABEL}
         </button>
       </div>
     );
@@ -84,7 +85,7 @@ export default function FullSatResultsPage() {
             </div>
           </div>
           <h1 className="text-2xl font-bold tracking-tight">
-            SAT Practice Test Complete
+            {MOCK_EXAM_LABEL} Complete
           </h1>
         </motion.div>
 
@@ -203,7 +204,7 @@ export default function FullSatResultsPage() {
             onClick={() => router.push("/mbe-mock")}
             className="flex-1 rounded-md border px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
           >
-            Back to Full SAT
+            Back to {MOCK_EXAM_LABEL}
           </button>
           <button
             onClick={() => router.push("/dashboard")}

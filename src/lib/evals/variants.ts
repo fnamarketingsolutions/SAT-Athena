@@ -34,7 +34,7 @@ export async function listVariants(): Promise<string[]> {
   const dir = join(root, "agents", "prompts", "micro_lesson");
   const entries = await fs.readdir(dir);
   return entries
-    .filter((f) => f.endsWith(".md"))
+    .filter((f) => f.endsWith(".md") && !f.includes("_NOTES"))
     .map((f) => f.slice(0, -3))
     .sort();
 }

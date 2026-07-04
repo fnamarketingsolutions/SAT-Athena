@@ -223,7 +223,7 @@ export function AdminUserDetailPage({ userId }: { userId: string }) {
         <dl className="grid grid-cols-3 gap-4 text-sm">
           <Stat label="Quests done" value={u.questsCompleted} />
           <Stat label="Quiz sessions" value={u.quizSessions} />
-          <Stat label="Full SATs" value={u.fullSatsCompleted} />
+          <Stat label="Mock exams" value={u.fullSatsCompleted} />
         </dl>
       </section>
 

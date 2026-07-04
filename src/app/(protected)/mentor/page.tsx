@@ -23,6 +23,7 @@ import { ImageAttachLauncher } from "@/components/image-attach/image-attach-laun
 import { BoardDrawOverlay } from "@/components/image-attach/board-draw-overlay";
 import { Paperclip, PenLine, X as XIcon } from "lucide-react";
 import { MathContent } from "@/components/quiz/math-content";
+import { hasDebugFlag, parseDebugFlags } from "@/lib/debug/search-params";
 
 /**
  * Mentor surface — same agent-takeover UX as the SAT-quiz tutor and the
@@ -77,7 +78,7 @@ export default function MentorPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   // ?debug=orb — roaming "living" orb (Clicky-style). Off = fixed corner orb.
-  const debugOrb = (searchParams.get("debug") ?? "").split(",").map((s) => s.trim()).includes("orb");
+  const debugOrb = hasDebugFlag(parseDebugFlags(searchParams.get("debug")), "orb");
   // Current step location, so the resting orb can hover beside the latest step.
   const stepFocusRef = useRef<StepFocus | null>(null);
   const handleStepFocus = useCallback((f: StepFocus | null) => {
@@ -172,7 +173,6 @@ export default function MentorPage() {
       // Drop ambient-sound annotations the STT model emits on near
       // silence — "(upbeat music)", "[Music]", "(coughs)", etc.
       if (isAmbientNoiseTranscript(trimmed)) {
-        console.debug("[voice→chat] dropped ambient transcript:", trimmed);
         return;
       }
       // Include the pending image attachment (if any) and clear it

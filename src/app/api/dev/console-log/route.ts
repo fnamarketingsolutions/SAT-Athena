@@ -5,6 +5,9 @@ import path from "node:path";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const ENABLE_DEV_CONSOLE_BRIDGE =
+  process.env.NEXT_PUBLIC_ENABLE_DEV_CONSOLE_BRIDGE === "1";
+
 /** Dev-only sink: browser-side `console.*` lines from the
  *  DevConsoleBridge component land here and get appended as NDJSON to
  *  `.claude/dev-console.log` inside the repo. A watching Claude session
@@ -14,7 +17,7 @@ export const dynamic = "force-dynamic";
  *  Returns 404 in production so this surface doesn't ship to users.
  */
 export async function POST(req: NextRequest) {
-  if (process.env.NODE_ENV === "production") {
+  if (!ENABLE_DEV_CONSOLE_BRIDGE || process.env.NODE_ENV === "production") {
     return new NextResponse("Not Found", { status: 404 });
   }
   let payload: unknown;

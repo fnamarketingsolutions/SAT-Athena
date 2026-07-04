@@ -14,12 +14,9 @@
     "test:watch": "vitest",
     "agents:dev": "node scripts/start-agents.mjs",
     "dev:agent": "npm run agents:dev",
-    "seed:taxonomy": "tsx --env-file=.env scripts/seed-taxonomy.ts",
     "seed:mbe-taxonomy": "tsx --env-file=.env scripts/seed-mbe-taxonomy.ts",
     "seed:mbe-problems": "tsx --env-file=.env scripts/seed-mbe-problems.ts",
     "seed:mbe-generate": "tsx --env-file=.env scripts/seed-mbe-generate.ts",
-    "seed:content:math": "node scripts/seed-content.mjs math",
-    "seed:content:all": "node scripts/seed-content.mjs all",
     "db:content-tables": "node scripts/apply-content-tables.mjs"
   },
   "dependencies": {

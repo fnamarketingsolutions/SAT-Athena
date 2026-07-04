@@ -2,6 +2,9 @@
 
 import { useEffect } from "react";
 
+const ENABLE_DEV_CONSOLE_BRIDGE =
+  process.env.NEXT_PUBLIC_ENABLE_DEV_CONSOLE_BRIDGE === "1";
+
 /** Browser → server console bridge for development.
  *
  *  Patches `console.debug` / `console.log` / `console.warn` /
@@ -63,6 +66,7 @@ function safeSerialize(value: unknown): unknown {
 
 export function DevConsoleBridge() {
   useEffect(() => {
+    if (!ENABLE_DEV_CONSOLE_BRIDGE) return;
     if (process.env.NODE_ENV === "production") return;
     if (typeof window === "undefined") return;
     const w = window as Window & { __devConsolePatched?: boolean };

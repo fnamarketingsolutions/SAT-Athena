@@ -38,9 +38,9 @@ async def generate_practice_problems(
     they are derived from the topic/subtopic display names.
     """
     if topic_slug is None or subtopic_slug is None:
-        from app.pre_generation.content_workflow import _make_slug
-        topic_slug = topic_slug or _make_slug(topic)
-        subtopic_slug = subtopic_slug or _make_slug(subtopic)
+        from app.utils.slug import make_slug
+        topic_slug = topic_slug or make_slug(topic)
+        subtopic_slug = subtopic_slug or make_slug(subtopic)
 
     # ── Split count into equal difficulty buckets ──────────────────────────
     per_difficulty = count // 3

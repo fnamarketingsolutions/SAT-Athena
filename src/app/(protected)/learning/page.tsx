@@ -115,7 +115,7 @@ export default function LearningPage() {
                     {topic.satRelevance.percentageOfTest > 0 && (
                       <span className="flex items-center gap-1">
                         <Target className="h-3 w-3" />
-                        {topic.satRelevance.percentageOfTest}% of SAT
+                        {topic.satRelevance.percentageOfTest}% of bar exam
                       </span>
                     )}
                   </div>

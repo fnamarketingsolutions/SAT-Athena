@@ -57,6 +57,7 @@ import { cleanTranscript, isAmbientNoiseTranscript } from "@/lib/voice/transcrip
 import { isCloseIntent } from "@/lib/voice/close-intent";
 import { Button } from "@/components/ui/button";
 import type { Problem } from "@/components/quiz/types";
+import { hasDebugFlag, parseDebugFlags } from "@/lib/debug/search-params";
 
 /**
  * SAT quiz per-problem page, restyled to match the micro-lesson practice
@@ -211,7 +212,7 @@ export function QuizProblemPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   // ?debug=orb — roaming "living" orb. Off = fixed corner orb.
-  const debugOrb = (searchParams.get("debug") ?? "").split(",").map((s) => s.trim()).includes("orb");
+  const debugOrb = hasDebugFlag(parseDebugFlags(searchParams.get("debug")), "orb");
   // Preserve the current query string (e.g. ?debug=orb) across problem-to-
   // problem navigation so the flag survives the [problemNumber] remount.
   const queryString = searchParams.toString();
@@ -710,7 +711,6 @@ export function QuizProblemPageContent() {
       if (!rawTranscript) return;
       // Drop STT ambient-noise hallucinations ("[Music]", "(coughs)"…).
       if (isAmbientNoiseTranscript(rawTranscript)) {
-        console.debug("[quiz voice] dropped ambient transcript:", rawTranscript);
         return;
       }
       // Strip embedded markers ("B (music plays)") while keeping math
@@ -769,7 +769,6 @@ export function QuizProblemPageContent() {
       }
       // No option matched. The solving view has no chat to field a free
       // question, so drop it silently — the student can retry or tap.
-      console.debug("[quiz voice] no option match:", trimmed);
     } catch (err) {
       console.error("[quiz voice] STT failed:", err);
       toast.error("Couldn't hear that — try again.");

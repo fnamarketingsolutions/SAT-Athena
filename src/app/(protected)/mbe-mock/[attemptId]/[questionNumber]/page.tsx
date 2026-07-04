@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
+import { MOCK_EXAM_LABEL } from "@/lib/exam-config";
 import { useFullSatContext } from "@/components/full-sat/full-sat-context";
 import { Toolbar } from "@/components/quiz/toolbar";
 import { SegmentProgressBar } from "@/components/quiz/segment-progress-bar";
@@ -88,7 +89,7 @@ export default function FullSatQuestionPage() {
         hasAnswers={ctx.answeredCount > 0}
         subtopicName={`${ctx.sectionLabel} - ${ctx.moduleLabel}`}
         showCalc={isMathSection}
-        title="Full SAT Practice Test"
+        title={MOCK_EXAM_LABEL}
       />
 
       <SegmentProgressBar

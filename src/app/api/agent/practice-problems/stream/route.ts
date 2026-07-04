@@ -10,10 +10,14 @@ import {
   type ProblemLinkage,
 } from "@/lib/db/queries/problem-stream";
 import { buildRequestMetadata } from "@/lib/agent/request-metadata";
+import {
+  getAgentServiceUrl,
+  resolvePracticeSubject,
+} from "@/lib/agent/practice-problems-config";
 import { stemTokens, tooSimilar } from "@/lib/stem-similarity";
 import type { Problem, SolutionStep } from "@/components/quiz/types";
 
-const AGENT_URL = process.env.AGENT_SERVICE_URL || "http://localhost:8765";
+const AGENT_URL = getAgentServiceUrl("http://localhost:8765");
 
 /** Max seeded (DB) problems served before AI generation kicks in. */
 const MAX_SEEDED_FIRST = 3;
@@ -154,7 +158,7 @@ export async function POST(req: Request) {
             body: JSON.stringify({
               topic,
               subtopic,
-              subject: subject ?? "math",
+              subject: resolvePracticeSubject(subject),
               count: deficit,
               prior_answers: priorAnswers ?? [],
               request_metadata: buildRequestMetadata({

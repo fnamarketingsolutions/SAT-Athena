@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
+import { isMbeSubject } from "@/lib/exam-config";
 import {
   ChevronLeft,
   Clock,
@@ -111,7 +112,7 @@ export default function SubtopicPage() {
   const { topic, subtopic, problems } = data;
   // SAT-specific framing only shows for the SAT subjects; general academic
   // subjects (science, social-studies) drop it.
-  const isSat = topic.subject === "math" || topic.subject === "reading-writing";
+  const isMbeTopic = isMbeSubject(topic.subject);
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-8">
@@ -183,7 +184,7 @@ export default function SubtopicPage() {
                 <ClipboardList className="h-5 w-5 text-primary" />
               </div>
               <p className="font-bold text-sm uppercase tracking-wide mb-1">Take Quiz</p>
-              <p className="text-xs text-muted-foreground mb-4">{problems.length} questions — {isSat ? "SAT-style practice" : "practice problems"}</p>
+              <p className="text-xs text-muted-foreground mb-4">{problems.length} questions — {isMbeTopic ? "bar exam-style practice" : "practice problems"}</p>
               <div className="flex items-center gap-1 text-xs font-semibold text-primary">
                 Enter <ArrowRight className="h-3 w-3" />
               </div>
@@ -244,7 +245,7 @@ export default function SubtopicPage() {
               <p className="text-sm text-muted-foreground">{subtopic.conceptualOverview.realWorldExample}</p>
             </div>
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1.5">{isSat ? "On the SAT" : "Why It Matters"}</h4>
+              <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1.5">{isMbeTopic ? "On the bar exam" : "Why It Matters"}</h4>
               <p className="text-sm text-muted-foreground">{subtopic.conceptualOverview.satContext}</p>
             </div>
           </div>

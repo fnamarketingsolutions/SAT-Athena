@@ -8,19 +8,19 @@ import { MicroLesson } from "@/components/learning/micro-lesson";
 import { getWrapUp } from "@/lib/wrap-ups";
 import { WhiteboardSkeleton } from "@/components/whiteboard/whiteboard-skeleton";
 import { GenerationProgress } from "@/components/lessons/generation-progress";
+import { parseDebugFlags, hasDebugFlag } from "@/lib/debug/search-params";
 
 function MicroLessonPageInner() {
   const params = useParams<{ topicSlug: string; subtopicSlug: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
-  // debug flags can be comma-combined, e.g. ?debug=ops,freeze
-  const debugFlags = new Set((searchParams.get("debug") ?? "").split(",").map((s) => s.trim()).filter(Boolean));
-  const debugOps = debugFlags.has("ops");
-  const freezeCanvas = debugFlags.has("freeze");
-  const debugScrub = debugFlags.has("scrub");
-  const noirCanvas = debugFlags.has("v2");
-  const corkboardCanvas = debugFlags.has("v3");
-  const debugOrb = debugFlags.has("orb");
+  const debugFlags = parseDebugFlags(searchParams.get("debug"));
+  const debugOps = hasDebugFlag(debugFlags, "ops");
+  const freezeCanvas = hasDebugFlag(debugFlags, "freeze");
+  const debugScrub = hasDebugFlag(debugFlags, "scrub");
+  const noirCanvas = hasDebugFlag(debugFlags, "v2");
+  const corkboardCanvas = hasDebugFlag(debugFlags, "v3");
+  const debugOrb = hasDebugFlag(debugFlags, "orb");
   const { topicSlug, subtopicSlug } = params;
 
   // Once we start generating locally, stop polling so the refetch
