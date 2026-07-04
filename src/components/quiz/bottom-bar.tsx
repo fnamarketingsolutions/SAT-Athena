@@ -63,38 +63,49 @@ export function BottomBar({
 
   return (
     <>
-      <div className="flex h-14 shrink-0 items-center justify-between border-t bg-card px-4">
-        <div />
+      <div className="flex h-14 shrink-0 items-center gap-2 border-t bg-card px-2 sm:px-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onBack}
+          disabled={sequential || currentIndex === 0}
+          className="shrink-0 px-2 sm:px-3"
+        >
+          <ChevronLeft className="h-4 w-4 sm:mr-1" />
+          <span className="hidden sm:inline">Back</span>
+        </Button>
         {!sequential ? (
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setNavOpen(true)}
-            className="font-medium"
+            className="min-w-0 flex-1 truncate px-2 font-medium sm:flex-none sm:px-3"
           >
-            Question {currentIndex + 1} of {total}
-            <ChevronDown className="ml-1 h-4 w-4" />
+            <span className="sm:hidden">
+              {currentIndex + 1}/{total}
+            </span>
+            <span className="hidden sm:inline">
+              Question {currentIndex + 1} of {total}
+            </span>
+            <ChevronDown className="ml-1 h-4 w-4 shrink-0" />
           </Button>
         ) : (
-          <span className="text-sm font-medium text-muted-foreground">
-            Question {currentIndex + 1} of {total}
+          <span className="min-w-0 flex-1 truncate text-center text-sm font-medium text-muted-foreground">
+            <span className="sm:hidden">
+              {currentIndex + 1}/{total}
+            </span>
+            <span className="hidden sm:inline">
+              Question {currentIndex + 1} of {total}
+            </span>
           </span>
         )}
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onBack}
-            disabled={sequential || currentIndex === 0}
-          >
-            <ChevronLeft className="mr-1 h-4 w-4" />
-            Back
-          </Button>
+        <div className="flex shrink-0 items-center">
           {isLast ? (
             <Button
               size="sm"
               onClick={handleSubmitClick}
               disabled={nextDisabled}
+              className="px-2 sm:px-3"
             >
               {onFinish ? "Finish" : "Submit"}
             </Button>
@@ -103,9 +114,10 @@ export function BottomBar({
               size="sm"
               onClick={onNext}
               disabled={nextDisabled}
+              className="px-2 sm:px-3"
             >
-              Next
-              <ChevronRight className="ml-1 h-4 w-4" />
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight className="h-4 w-4 sm:ml-1" />
             </Button>
           )}
         </div>

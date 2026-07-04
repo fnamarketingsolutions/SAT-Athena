@@ -93,7 +93,7 @@ function OptionsGrid({
   onSelect,
 }: OptionsGridProps) {
   return (
-    <div className="grid grid-cols-2 gap-1.5">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-1.5">
       {problem.options.map((option, i) => {
         const isRight = i === problem.correctOption;
         const isWrong = wrongIndices.has(i);
@@ -138,7 +138,7 @@ function OptionsGrid({
                 String.fromCharCode(65 + i)
               )}
             </span>
-            <span className="flex-1 leading-relaxed">
+            <span className="min-w-0 flex-1 leading-relaxed">
               <MathContent content={option} />
             </span>
           </button>
@@ -1200,7 +1200,7 @@ export function QuizProblemPageContent() {
         {/* Top-right progress strip — bar + count only. Prev/next moved to
             the centered control bar at the bottom (solving) / transport row
             (takeover). */}
-        <div className="pointer-events-none absolute right-8 top-3 z-20 flex items-center gap-2 w-[min(320px,44vw)]">
+        <div className="pointer-events-none absolute right-3 top-3 z-20 flex w-[min(160px,42vw)] items-center gap-2 sm:right-8 sm:w-[min(320px,44vw)]">
           <div className="flex-1 h-1 bg-[var(--obs-border)]/40 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full bg-[var(--obs-accent)] transition-[width] duration-300"
@@ -1231,7 +1231,7 @@ export function QuizProblemPageContent() {
               stepFocusRef={stepFocusRef}
             />
           ) : (
-          <div className="absolute top-3 left-3 z-20 flex flex-col items-center gap-2 pointer-events-none w-[220px]">
+          <div className="absolute top-3 left-3 z-20 hidden w-[220px] flex-col items-center gap-2 pointer-events-none sm:flex">
             <ObservationOrb
               state={displayOrbState}
               amplitude={isTakeoverActive ? chat.amplitude : 0}
@@ -1265,7 +1265,7 @@ export function QuizProblemPageContent() {
               common SAT case) the question is centered as a flashcard inside
               the canvas region below instead. */}
           {pinQuestionTop && (
-            <div className="shrink-0 px-8 pt-3 pb-4">
+            <div className="shrink-0 px-4 pb-4 pt-3 sm:px-8">
               <div className="mx-auto w-full max-w-[720px] space-y-3">
                 {questionAndOptions}
               </div>
@@ -1365,7 +1365,7 @@ export function QuizProblemPageContent() {
                   ) : centerFlashcard ? (
                     <motion.div
                       key={`flashcard-${currentProblem.id}`}
-                      className="flex h-full w-full items-center justify-center px-8 pb-8"
+                      className="flex h-full w-full items-start justify-center overflow-y-auto px-4 pb-4 pt-14 sm:items-center sm:px-8 sm:pb-8 sm:pt-4"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
@@ -1374,7 +1374,7 @@ export function QuizProblemPageContent() {
                       {/* Flashcard: question + answer grid centered on the
                           iso-contour field instead of pinned to the top with
                           a blank canvas below it. */}
-                      <div className="w-full max-w-[760px] space-y-5">
+                      <div className="w-full min-w-0 max-w-[760px] space-y-5">
                         {questionAndOptions}
                       </div>
                     </motion.div>
@@ -1408,7 +1408,7 @@ export function QuizProblemPageContent() {
               small top-right prev/next chevrons. Hidden during the takeover,
               which has its own transport row below. */}
           {!isTakeoverActive && (
-            <div className="shrink-0 px-8 py-4">
+            <div className="shrink-0 px-4 py-3 sm:px-8 sm:py-4">
               <div className="mx-auto flex w-full max-w-[720px] items-center justify-center gap-2">
                 <button
                   type="button"
@@ -1459,7 +1459,7 @@ export function QuizProblemPageContent() {
               active takeover. Holds the "I don't get it" / "Got it"
               action row plus a free-text follow-up input. */}
           {isTakeoverActive && (
-            <div className="shrink-0 bg-[var(--obs-surface)] px-8 py-4">
+            <div className="shrink-0 bg-[var(--obs-surface)] px-4 py-4 sm:px-8">
               <div className="mx-auto w-full max-w-[720px] flex flex-col items-stretch gap-3">
                 <div className="flex items-center justify-center gap-3 py-1">
                   <Button

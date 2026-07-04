@@ -70,7 +70,7 @@ export function ObservationFrame({
           and subtitle labels were redundant with the orb caption and
           have been dropped. */}
       {onBack && (
-        <div className="relative z-20 px-8 pt-3">
+        <div className="relative z-20 px-4 pt-3 sm:px-8">
           <button
             onClick={onBack}
             className="flex w-fit items-center gap-1.5 font-mono text-xs uppercase tracking-[0.22em] text-[var(--obs-muted)] transition-colors hover:text-[var(--obs-fg)]"

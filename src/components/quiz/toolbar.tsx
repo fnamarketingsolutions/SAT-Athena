@@ -64,27 +64,29 @@ export function Toolbar({
 
   return (
     <>
-      <div className="flex h-14 shrink-0 items-center justify-between border-b bg-card px-4">
-        <div className="flex items-center gap-3">
+      <div className="grid h-14 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-1 border-b bg-card px-2 sm:px-4">
+        <div className="flex min-w-0 items-center gap-1 justify-self-start sm:gap-3">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowDirections((d) => !d)}
+            className="shrink-0 px-2 sm:px-3"
+            aria-label="Directions"
           >
-            <BookOpen className="mr-1 h-4 w-4" />
-            Directions
+            <BookOpen className="h-4 w-4" />
+            <span className="ml-1 hidden sm:inline">Directions</span>
           </Button>
-          <span className="text-sm text-muted-foreground hidden sm:inline">
+          <span className="truncate text-xs text-muted-foreground sm:text-sm">
             {title ?? subtopicName}
           </span>
         </div>
 
         {showTimer && (
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1 justify-self-center sm:gap-2">
             {!timerHidden && (
               <span
                 className={cn(
-                  "font-mono text-lg font-semibold tabular-nums",
+                  "font-mono text-sm font-semibold tabular-nums sm:text-lg",
                   isLow && "text-destructive animate-pulse"
                 )}
               >
@@ -101,7 +103,7 @@ export function Toolbar({
           </div>
         )}
 
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1 justify-self-end">
           {onSkip && (
             <Button variant="outline" size="sm" onClick={onSkip} className="mr-1 text-xs">
               {skipLabel}

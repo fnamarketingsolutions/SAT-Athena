@@ -106,21 +106,21 @@ export function QuestProblemPageContent() {
       />
 
       {/* Subtopic badge */}
-      <div className="flex items-center gap-2 px-4 py-1.5 border-b border-border/50">
-        <span className="text-xs font-medium text-muted-foreground">
+      <div className="flex min-w-0 items-center gap-2 border-b border-border/50 px-4 py-1.5">
+        <span className="truncate text-xs font-medium text-muted-foreground">
           {currentProblem.topicName}
         </span>
-        <span className="text-xs text-muted-foreground/50">/</span>
-        <span className="text-xs font-medium text-primary">
+        <span className="shrink-0 text-xs text-muted-foreground/50">/</span>
+        <span className="truncate text-xs font-medium text-primary">
           {currentProblem.subtopicName}
         </span>
-        <span className="ml-auto text-xs text-muted-foreground">
+        <span className="ml-auto shrink-0 text-xs text-muted-foreground">
           Lv.{currentProblem.difficultyLevel}
         </span>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex w-full flex-col md:flex-row md:divide-x">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        <div className="flex min-h-0 w-full flex-col overflow-y-auto md:flex-row md:overflow-hidden md:divide-x">
           <QuestionPanel
             problem={asProblem}
             questionNumber={ctx.currentIndex + 1}

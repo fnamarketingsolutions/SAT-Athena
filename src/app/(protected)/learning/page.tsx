@@ -50,7 +50,7 @@ export default function LearningPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-4xl p-6">
+      <div className="mx-auto min-w-0 max-w-4xl px-4 py-4 sm:p-6">
         <div className="mb-6">
           <div className="h-8 w-48 bg-muted rounded animate-pulse" />
         </div>
@@ -64,26 +64,33 @@ export default function LearningPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl p-6">
-      <div className="mb-6">
+    <div className="mx-auto min-w-0 max-w-4xl px-4 py-4 sm:p-6">
+      <div className="mb-4 sm:mb-6">
         <h1 className="text-lg font-bold">Learning</h1>
       </div>
 
-      <div className="mb-6 flex gap-2">
-        {SUBJECTS.map((s) => (
-          <button
-            key={s.key}
-            onClick={() => setActiveSubject(s.key)}
-            className={cn(
-              "rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
-              activeSubject === s.key
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            )}
-          >
-            {s.label}
-          </button>
-        ))}
+      <div
+        className="mb-4 -mx-1 overflow-x-auto pb-1 sm:mb-6"
+        style={{ scrollbarWidth: "none" }}
+      >
+        <div className="flex w-max min-w-full gap-2 px-1">
+          {SUBJECTS.map((s) => (
+            <button
+              key={s.key}
+              onClick={() => setActiveSubject(s.key)}
+              title={s.label}
+              className={cn(
+                "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors sm:px-4 sm:text-sm",
+                activeSubject === s.key
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              )}
+            >
+              <span className="sm:hidden">{s.shortLabel}</span>
+              <span className="hidden sm:inline">{s.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -93,21 +100,21 @@ export default function LearningPage() {
             <Link key={topic.id} href={`/learning/${topic.slug}`}>
               <Card className="transition-colors hover:bg-accent/30">
                 <CardContent className="p-4 space-y-3">
-                  <div className="flex items-center gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
                       <Icon className="h-5 w-5 text-foreground" />
                     </div>
-                    <div>
-                      <h2 className="text-sm font-semibold">{topic.name}</h2>
+                    <div className="min-w-0">
+                      <h2 className="truncate text-sm font-semibold">{topic.name}</h2>
                       <p className="text-xs text-muted-foreground">
                         {topic.subtopics.length} subtopic{topic.subtopics.length !== 1 ? "s" : ""}
                       </p>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2">
+                  <p className="break-words text-xs text-muted-foreground line-clamp-2">
                     {topic.overview}
                   </p>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
                       {topic.estimatedTotalMinutes} min

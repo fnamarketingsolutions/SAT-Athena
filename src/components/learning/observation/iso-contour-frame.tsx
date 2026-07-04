@@ -28,7 +28,7 @@ export function IsoContourFrame({
   children,
 }: Props) {
   return (
-    <div className="relative flex h-full w-full flex-col px-6 py-3">
+    <div className="relative flex h-full w-full min-w-0 flex-col px-2 py-2 sm:px-6 sm:py-3">
       {/* Corner + markers */}
       <Plus className="left-2 top-1" />
       <Plus className="right-2 top-1" />

@@ -21,13 +21,13 @@ export function TopicHeader({ topic }: { topic: TopicHeaderProps }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
           <Icon className="h-5 w-5 text-foreground" />
         </div>
-        <h1 className="text-2xl font-bold">{topic.name}</h1>
+        <h1 className="min-w-0 text-xl font-bold sm:text-2xl">{topic.name}</h1>
       </div>
-      <p className="text-sm text-muted-foreground leading-relaxed">
+      <p className="break-words text-sm leading-relaxed text-muted-foreground">
         {topic.overview}
       </p>
       <div className="flex flex-wrap items-center gap-4 text-sm">

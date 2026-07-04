@@ -220,7 +220,7 @@ export default function PlayPage() {
 
       {/* Back affordance — only when a mode has been picked. */}
       {mode && (
-        <div className="relative z-20 px-8 pt-6">
+        <div className="relative z-20 px-4 pt-4 sm:px-8 sm:pt-6">
           <button
             onClick={() => {
               setMode(null);
@@ -235,7 +235,7 @@ export default function PlayPage() {
         </div>
       )}
 
-      <div className="relative z-[2] mx-auto grid min-h-full w-[min(1080px,94vw)] place-items-center px-6 py-10 text-center">
+      <div className="relative z-[2] mx-auto grid min-h-full w-full max-w-[1080px] place-items-center px-4 py-8 sm:px-6 sm:py-10 text-center">
         <AnimatePresence mode="wait">
           {mode === null ? (
             <ModePicker
@@ -437,8 +437,8 @@ function ModeCard({
       onClick={() => !disabled && onPick(mode.key)}
       disabled={disabled}
       className={cn(
-        "play-card group relative flex min-h-[320px] cursor-pointer flex-col items-center overflow-hidden text-center",
-        "px-[26px] pb-[22px] pt-[28px]",
+        "play-card group relative flex min-h-[260px] cursor-pointer flex-col items-center overflow-hidden text-center sm:min-h-[320px]",
+        "px-4 pb-5 pt-6 sm:px-[26px] sm:pb-[22px] sm:pt-[28px]",
         disabled && "cursor-not-allowed"
       )}
       style={{
@@ -505,7 +505,7 @@ function ModeCard({
 
       {/* Title */}
       <h3
-        className="m-0 text-[30px] leading-[1.05] tracking-[-0.01em]"
+        className="m-0 text-[24px] leading-[1.05] tracking-[-0.01em] sm:text-[30px]"
         style={{
           fontFamily: "var(--font-instrument-serif)",
           fontWeight: 400,
@@ -600,7 +600,7 @@ function TopicPicker({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.3 }}
-      className="flex w-full max-w-3xl flex-col items-center gap-6"
+      className="flex w-full min-w-0 max-w-3xl flex-col items-center gap-6"
     >
       <div className="flex flex-col items-center gap-2">
         <div
@@ -806,11 +806,11 @@ function TopicPicker({
                     return (
                       <div
                         key={`${st.id}-${st.slug}-${idx}`}
-                        className="group flex items-stretch transition-colors hover:bg-[color:var(--p-surface-hover)]"
+                        className="group flex flex-col transition-colors hover:bg-[color:var(--p-surface-hover)] sm:flex-row sm:items-stretch"
                       >
                         <button
                           onClick={() => onPick(topic.slug, st.slug)}
-                          className="flex min-w-0 flex-1 items-center justify-between gap-3 px-5 py-2.5 text-left"
+                          className="flex min-w-0 flex-1 items-center justify-between gap-3 px-4 py-2.5 text-left sm:px-5"
                         >
                           <div className="flex min-w-0 flex-col gap-0.5">
                             <div
@@ -824,7 +824,7 @@ function TopicPicker({
                               {st.name}
                             </div>
                             <div
-                              className="flex items-center gap-3 text-[10px] uppercase tracking-[0.18em]"
+                              className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] uppercase tracking-[0.18em]"
                               style={{
                                 color: "var(--p-fg-mute)",
                                 fontFamily: "var(--font-jetbrains-mono)",
@@ -868,6 +868,10 @@ function TopicPicker({
                             style={{ color: "var(--p-fg-mute)" }}
                           />
                         </button>
+                        <div
+                          className="flex shrink-0 border-t sm:border-t-0 sm:border-l"
+                          style={{ borderColor: "var(--p-rule)" }}
+                        >
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -875,7 +879,7 @@ function TopicPicker({
                           }}
                           aria-label={`Listen to a podcast about ${st.name}`}
                           title="Listen to podcast"
-                          className="flex shrink-0 items-center gap-1.5 border-l px-4 text-[10px] uppercase tracking-[0.22em] transition-colors hover:text-[color:var(--p-accent)]"
+                          className="flex flex-1 items-center justify-center gap-1.5 px-3 py-2 text-[10px] uppercase tracking-[0.22em] transition-colors hover:text-[color:var(--p-accent)] sm:flex-none sm:px-4 sm:py-0"
                           style={{
                             borderColor: "var(--p-rule)",
                             color: "var(--p-fg-mute)",
@@ -892,7 +896,7 @@ function TopicPicker({
                           }}
                           aria-label={`See an infographic about ${st.name}`}
                           title="See infographic"
-                          className="flex shrink-0 items-center gap-1.5 border-l px-4 text-[10px] uppercase tracking-[0.22em] transition-colors hover:text-[color:var(--p-accent)]"
+                          className="flex flex-1 items-center justify-center gap-1.5 border-l px-3 py-2 text-[10px] uppercase tracking-[0.22em] transition-colors hover:text-[color:var(--p-accent)] sm:flex-none sm:px-4 sm:py-0"
                           style={{
                             borderColor: "var(--p-rule)",
                             color: "var(--p-fg-mute)",
@@ -909,7 +913,7 @@ function TopicPicker({
                           }}
                           aria-label={`Build a flashcard deck about ${st.name}`}
                           title="Build a flashcard deck"
-                          className="flex shrink-0 items-center gap-1.5 border-l px-4 text-[10px] uppercase tracking-[0.22em] transition-colors hover:text-[color:var(--p-accent)]"
+                          className="flex flex-1 items-center justify-center gap-1.5 border-l px-3 py-2 text-[10px] uppercase tracking-[0.22em] transition-colors hover:text-[color:var(--p-accent)] sm:flex-none sm:px-4 sm:py-0"
                           style={{
                             borderColor: "var(--p-rule)",
                             color: "var(--p-fg-mute)",
@@ -919,6 +923,7 @@ function TopicPicker({
                           <Layers className="h-3 w-3" />
                           <span className="hidden sm:inline">Cards</span>
                         </button>
+                        </div>
                       </div>
                     );
                   })}

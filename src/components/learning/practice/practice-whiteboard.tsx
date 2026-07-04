@@ -250,7 +250,7 @@ function OptionsGrid({
   onSelect,
 }: OptionsGridProps) {
   return (
-    <div className="grid grid-cols-2 gap-1.5">
+    <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
       {problem.options.map((option, i) => {
         const isThis = selected === i;
         const isRight = i === problem.correctOption;
@@ -297,7 +297,7 @@ function OptionsGrid({
                 String.fromCharCode(65 + i)
               )}
             </span>
-            <span className="flex-1 leading-relaxed">
+            <span className="min-w-0 flex-1 leading-relaxed">
               <MathContent content={option} />
             </span>
           </button>
@@ -516,7 +516,7 @@ export function PracticePane({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2">
+      <div className="flex min-w-0 items-center gap-2">
         {showNavButtons && onPrev ? (
           <button
             type="button"
@@ -533,12 +533,12 @@ export function PracticePane({
             <ChevronLeft className="h-4 w-4" />
           </button>
         ) : null}
-        <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-[var(--obs-muted)]">
+        <span className="shrink-0 text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--obs-muted)] sm:tracking-[0.22em]">
           Practice {questionNumber}
-          {totalProblems ? ` of ${totalProblems}` : ""}
+          {totalProblems ? `/${totalProblems}` : ""}
         </span>
         {totalProblems ? (
-          <div className="flex-1 h-1 bg-[var(--obs-border)]/40 rounded-full overflow-hidden">
+          <div className="min-w-0 flex-1 h-1 bg-[var(--obs-border)]/40 rounded-full overflow-hidden">
             {/* Plain <div> + CSS width transition. Was a motion.div with
                 animate-width but no initial — framer-motion had to infer
                 the mount-time width, which briefly read as the
@@ -855,7 +855,7 @@ export function PracticeWhiteboardContent({
           the problem prop changes, so we don't need a full remount.
           Keeping the pane mounted also avoids the slide-up + flash that
           stacked badly with the canvas cross-fade. */}
-      <div className="shrink-0 bg-[var(--obs-surface)] px-8 py-4">
+      <div className="shrink-0 bg-[var(--obs-surface)] px-4 py-4 sm:px-8 max-h-[min(52vh,480px)] overflow-y-auto md:max-h-none md:overflow-visible">
         <div className="mx-auto w-full max-w-[720px]">
           <PracticePane
             problem={problem}

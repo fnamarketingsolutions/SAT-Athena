@@ -97,7 +97,7 @@ export default function SubtopicPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-3xl space-y-4 p-6">
+      <div className="mx-auto max-w-3xl space-y-4 px-4 py-4 sm:p-6">
         <div className="h-5 w-28 bg-muted animate-pulse" />
         <div className="h-9 w-72 bg-muted animate-pulse" />
         <div className="h-24 bg-muted animate-pulse" />
@@ -115,15 +115,15 @@ export default function SubtopicPage() {
   const isMbeTopic = isMbeSubject(topic.subject);
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-8">
+    <div className="mx-auto min-w-0 max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
 
       {/* Back */}
       <Link
         href={`/learning/${params.topicSlug}`}
-        className="inline-flex items-center gap-1.5 text-sm font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors mb-6"
+        className="mb-4 inline-flex max-w-full items-center gap-1.5 text-sm font-medium uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground sm:mb-6"
       >
-        <ChevronLeft className="h-5 w-5" />
-        {topic.name}
+        <ChevronLeft className="h-5 w-5 shrink-0" />
+        <span className="truncate">{topic.name}</span>
       </Link>
 
       {/* Header */}
@@ -137,8 +137,8 @@ export default function SubtopicPage() {
           <BookOpen className="h-2.5 w-2.5" />
           Study Topic
         </div>
-        <h1 className="text-3xl font-bold tracking-tight mb-3">{subtopic.name}</h1>
-        <p className="text-muted-foreground leading-relaxed mb-2">
+        <h1 className="mb-3 text-2xl font-bold tracking-tight sm:text-3xl">{subtopic.name}</h1>
+        <p className="mb-2 break-words leading-relaxed text-muted-foreground">
           {subtopic.description}
         </p>
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -152,13 +152,13 @@ export default function SubtopicPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.08 }}
-        className="grid gap-3 mb-10 grid-cols-2"
+        className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:mb-10"
       >
         <Link href={`/learning/${params.topicSlug}/${subtopic.slug}/micro-lesson`} className="block">
           <motion.div
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="group relative h-full border-2 border-athena-amber/40 bg-gradient-to-b from-athena-amber/10 to-transparent p-5 cursor-pointer transition-colors hover:border-athena-amber"
+            className="group relative h-full cursor-pointer border-2 border-athena-amber/40 bg-gradient-to-b from-athena-amber/10 to-transparent p-4 transition-colors hover:border-athena-amber sm:p-5"
           >
             <Sparkles className="absolute right-4 top-4 h-3.5 w-3.5 text-athena-amber/30 group-hover:text-athena-amber/60 transition-colors" />
             <div className="mb-4 flex h-10 w-10 items-center justify-center bg-athena-amber/15">
@@ -177,7 +177,7 @@ export default function SubtopicPage() {
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="group relative h-full border-2 border-primary/40 bg-gradient-to-b from-primary/10 to-transparent p-5 cursor-pointer transition-colors hover:border-primary"
+              className="group relative h-full cursor-pointer border-2 border-primary/40 bg-gradient-to-b from-primary/10 to-transparent p-4 transition-colors hover:border-primary sm:p-5"
             >
               <ClipboardList className="absolute right-4 top-4 h-3.5 w-3.5 text-primary/30 group-hover:text-primary/60 transition-colors" />
               <div className="mb-4 flex h-10 w-10 items-center justify-center bg-primary/15">
@@ -191,7 +191,7 @@ export default function SubtopicPage() {
             </motion.div>
           </button>
         ) : (
-          <div className="h-full border-2 border-dashed border-muted-foreground/20 p-5 flex items-center justify-center">
+          <div className="h-full border-2 border-dashed border-muted-foreground/20 p-4 flex items-center justify-center sm:p-5">
             <p className="text-xs text-muted-foreground text-center">Quiz loading…</p>
           </div>
         )}
@@ -207,16 +207,16 @@ export default function SubtopicPage() {
         {/* Learning Objectives */}
         {subtopic.learningObjectives.length > 0 && (
           <motion.div variants={fadeUp} className="border bg-card">
-            <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
+            <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-3 sm:px-5">
               <div className="flex h-6 w-6 items-center justify-center bg-green-500/10">
                 <Target className="h-3.5 w-3.5 text-green-500" />
               </div>
               <h2 className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Objectives</h2>
               <span className="ml-auto text-xs font-bold text-green-500">{subtopic.learningObjectives.length}</span>
             </div>
-            <ul className="p-5 space-y-3">
+            <ul className="space-y-3 p-4 sm:p-5">
               {subtopic.learningObjectives.map((obj, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
+                <li key={i} className="flex items-start gap-3 break-words text-sm text-muted-foreground">
                   <span className="shrink-0 mt-0.5 flex h-5 w-5 items-center justify-center bg-green-500/10 text-[10px] font-bold text-green-500">
                     {i + 1}
                   </span>
@@ -229,24 +229,24 @@ export default function SubtopicPage() {
 
         {/* Conceptual Overview */}
         <motion.div variants={fadeUp} className="border bg-card">
-          <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
+          <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-3 sm:px-5">
             <div className="flex h-6 w-6 items-center justify-center bg-blue-500/10">
               <BookText className="h-3.5 w-3.5 text-blue-500" />
             </div>
             <h2 className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Conceptual Overview</h2>
           </div>
-          <div className="p-5 space-y-4">
+          <div className="space-y-4 p-4 sm:p-5">
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1.5">Definition</h4>
-              <p className="text-sm text-muted-foreground">{subtopic.conceptualOverview.definition}</p>
+              <h4 className="mb-1.5 text-xs font-bold uppercase tracking-widest text-muted-foreground">Definition</h4>
+              <p className="break-words text-sm text-muted-foreground">{subtopic.conceptualOverview.definition}</p>
             </div>
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1.5">Real-World Example</h4>
-              <p className="text-sm text-muted-foreground">{subtopic.conceptualOverview.realWorldExample}</p>
+              <h4 className="mb-1.5 text-xs font-bold uppercase tracking-widest text-muted-foreground">Real-World Example</h4>
+              <p className="break-words text-sm text-muted-foreground">{subtopic.conceptualOverview.realWorldExample}</p>
             </div>
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1.5">{isMbeTopic ? "On the bar exam" : "Why It Matters"}</h4>
-              <p className="text-sm text-muted-foreground">{subtopic.conceptualOverview.satContext}</p>
+              <h4 className="mb-1.5 text-xs font-bold uppercase tracking-widest text-muted-foreground">{isMbeTopic ? "On the bar exam" : "Why It Matters"}</h4>
+              <p className="break-words text-sm text-muted-foreground">{subtopic.conceptualOverview.satContext}</p>
             </div>
           </div>
         </motion.div>
@@ -254,16 +254,16 @@ export default function SubtopicPage() {
         {/* Key Formulas */}
         {subtopic.keyFormulas.length > 0 && (
           <motion.div variants={fadeUp} className="border bg-card">
-            <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
+            <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-3 sm:px-5">
               <div className="flex h-6 w-6 items-center justify-center bg-purple-500/10">
                 <FlaskConical className="h-3.5 w-3.5 text-purple-500" />
               </div>
               <h2 className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Key Formulas</h2>
               <span className="ml-auto text-xs font-bold text-purple-500">{subtopic.keyFormulas.length}</span>
             </div>
-            <div className="p-5 space-y-3">
+            <div className="space-y-3 p-4 sm:p-5">
               {subtopic.keyFormulas.map((f, i) => (
-                <div key={i} className="bg-purple-500/5 px-4 py-3">
+                <div key={i} className="break-words bg-purple-500/5 px-4 py-3">
                   <code className="text-sm font-mono text-purple-600 dark:text-purple-400">{f.latex}</code>
                   <p className="mt-1 text-xs text-muted-foreground">{f.description}</p>
                 </div>
@@ -275,16 +275,16 @@ export default function SubtopicPage() {
         {/* Tips & Tricks */}
         {subtopic.tipsAndTricks.length > 0 && (
           <motion.div variants={fadeUp} className="border bg-card">
-            <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
+            <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-3 sm:px-5">
               <div className="flex h-6 w-6 items-center justify-center bg-athena-amber/10">
                 <Lightbulb className="h-3.5 w-3.5 text-athena-amber" />
               </div>
               <h2 className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Power-Ups</h2>
               <span className="ml-auto text-xs font-bold text-athena-amber">{subtopic.tipsAndTricks.length}</span>
             </div>
-            <ul className="p-5 space-y-3">
+            <ul className="space-y-3 p-4 sm:p-5">
               {subtopic.tipsAndTricks.map((tip, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
+                <li key={i} className="flex items-start gap-3 break-words text-sm text-muted-foreground">
                   <span className="mt-2 h-1.5 w-1.5 shrink-0 bg-athena-amber" />
                   {tip}
                 </li>
@@ -296,16 +296,16 @@ export default function SubtopicPage() {
         {/* Common Mistakes */}
         {subtopic.commonMistakes.length > 0 && (
           <motion.div variants={fadeUp} className="border bg-card">
-            <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-destructive/5">
+            <div className="flex items-center gap-2 border-b border-border bg-destructive/5 px-4 py-3 sm:px-5">
               <div className="flex h-6 w-6 items-center justify-center bg-destructive/10">
                 <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
               </div>
               <h2 className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Danger Zones</h2>
               <span className="ml-auto text-xs font-bold text-destructive">{subtopic.commonMistakes.length}</span>
             </div>
-            <div className="p-5 space-y-3">
+            <div className="space-y-3 p-4 sm:p-5">
               {subtopic.commonMistakes.map((m, i) => (
-                <div key={i} className="bg-destructive/5 px-4 py-3 space-y-1.5">
+                <div key={i} className="space-y-1.5 break-words bg-destructive/5 px-4 py-3">
                   <p className="text-sm font-semibold text-destructive">{m.mistake}</p>
                   <p className="text-sm text-muted-foreground">
                     <span className="font-semibold text-green-600 dark:text-green-400">Fix: </span>

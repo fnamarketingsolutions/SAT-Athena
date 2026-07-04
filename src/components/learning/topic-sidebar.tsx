@@ -44,14 +44,14 @@ export function TopicSidebar({
                     key={topic.slug}
                     href={`/learning/${topic.slug}`}
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                      "flex w-full min-w-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                       isActive
                         ? "bg-sidebar-accent text-sidebar-accent-foreground"
                         : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
                     )}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
-                    {topic.name}
+                    <span className="truncate">{topic.name}</span>
                   </Link>
                 );
               })}

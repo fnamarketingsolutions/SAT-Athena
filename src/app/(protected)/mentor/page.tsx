@@ -370,7 +370,7 @@ export default function MentorPage() {
               stepFocusRef={stepFocusRef}
             />
           ) : (
-          <div className="absolute top-3 left-3 z-20 flex w-[220px] flex-col items-center gap-2 pointer-events-none">
+          <div className="absolute top-3 left-3 z-20 hidden w-[min(220px,calc(100vw-2rem))] flex-col items-center gap-2 pointer-events-none sm:flex">
             <div className="pointer-events-auto">
               <ObservationOrb state={orbState} amplitude={chat.amplitude} size={100} />
             </div>
@@ -382,7 +382,7 @@ export default function MentorPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.25 }}
-                  className="obs-serif max-w-[640px] rounded-xl border border-white/5 px-4 py-2 text-center text-base leading-snug text-[var(--obs-fg)] shadow-lg shadow-black/10 backdrop-blur-md"
+                  className="obs-serif max-w-[min(640px,calc(100vw-2rem))] rounded-xl border border-white/5 px-4 py-2 text-center text-base leading-snug text-[var(--obs-fg)] shadow-lg shadow-black/10 backdrop-blur-md"
                   style={{
                     background:
                       "color-mix(in oklch, var(--obs-surface) 70%, transparent)",
@@ -449,13 +449,13 @@ export default function MentorPage() {
         {/* Bottom input pane — same pattern as the SAT-quiz takeover and
             micro-lesson chat. Text or voice; Enter sends. The mic-status
             chip above the form shows whether always-listening is hot. */}
-        <div className="shrink-0 border-t border-[var(--obs-border)] bg-[var(--obs-surface)]/30 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="shrink-0 border-t border-[var(--obs-border)] bg-[var(--obs-surface)]/30 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-4">
           <div className="mx-auto mb-2 flex w-full max-w-[640px] items-center justify-end">
             <button
               type="button"
               onClick={voice.muted ? voice.unmute : voice.mute}
               className={cn(
-                "inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors",
+                "inline-flex max-w-full items-center gap-2 rounded-full border px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors sm:px-3",
                 voice.state === "denied" || voice.state === "error"
                   ? "border-red-500/50 text-red-400"
                   : voice.muted
@@ -481,17 +481,32 @@ export default function MentorPage() {
                           : "bg-[var(--obs-dim)]",
                 )}
               />
-              {voice.state === "denied"
-                ? "Mic blocked"
-                : voice.state === "error"
-                  ? "Mic error"
-                  : voice.muted
-                    ? "Mic off"
-                    : voice.state === "hearing"
-                      ? "Hearing you"
-                      : voice.state === "listening"
-                        ? "Mic On"
-                        : "Mic starting…"}
+              <span className="sm:hidden">
+                {voice.state === "denied"
+                  ? "Blocked"
+                  : voice.state === "error"
+                    ? "Error"
+                    : voice.muted
+                      ? "Off"
+                      : voice.state === "hearing"
+                        ? "Hearing"
+                        : voice.state === "listening"
+                          ? "On"
+                          : "…"}
+              </span>
+              <span className="hidden sm:inline">
+                {voice.state === "denied"
+                  ? "Mic blocked"
+                  : voice.state === "error"
+                    ? "Mic error"
+                    : voice.muted
+                      ? "Mic off"
+                      : voice.state === "hearing"
+                        ? "Hearing you"
+                        : voice.state === "listening"
+                          ? "Mic On"
+                          : "Mic starting…"}
+              </span>
             </button>
           </div>
           {/* Pending image attachment strip. Mirror of the chat-bar
@@ -524,7 +539,7 @@ export default function MentorPage() {
               narration audio via useLessonChat. Shown once a response is
               on the board so there's something to play. */}
           {hasStarted && (
-            <div className="mx-auto mb-2 flex w-full max-w-[640px] items-center justify-center gap-2">
+            <div className="mx-auto mb-2 flex w-full max-w-[640px] flex-wrap items-center justify-center gap-1.5 sm:gap-2">
               <button
                 type="button"
                 onClick={chat.skipNarrationBack}
@@ -616,7 +631,7 @@ export default function MentorPage() {
           )}
           <form
             onSubmit={handleSubmit}
-            className="mx-auto flex w-full max-w-[640px] items-center gap-3"
+            className="mx-auto flex w-full max-w-[640px] min-w-0 items-center gap-2 sm:gap-3"
           >
             {SHOW_VOICE_INPUT_MODE && (
               <button
@@ -651,14 +666,14 @@ export default function MentorPage() {
               </button>
             ) : (
               <>
-                <div className="relative flex-1">
+                <div className="relative min-w-0 flex-1">
                   <textarea
                     ref={textareaRef}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Ask Athena anything…"
-                    className="w-full resize-none rounded-full border border-[var(--obs-border)] bg-[var(--obs-bg)]/30 px-5 py-2.5 text-sm text-[var(--obs-fg)] outline-none placeholder:text-[var(--obs-dim)] focus:border-[var(--obs-glow-mid)]"
+                    className="w-full min-w-0 resize-none rounded-full border border-[var(--obs-border)] bg-[var(--obs-bg)]/30 px-4 py-2.5 text-sm text-[var(--obs-fg)] outline-none placeholder:text-[var(--obs-dim)] focus:border-[var(--obs-glow-mid)] sm:px-5"
                     rows={1}
                     style={{ minHeight: 40, maxHeight: 120 }}
                     disabled={chat.isProcessing}

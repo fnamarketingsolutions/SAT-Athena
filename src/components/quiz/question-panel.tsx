@@ -12,9 +12,15 @@ type QuestionPanelProps = {
   questionNumber: number;
   /** When true, hint button appears and hint is auto-opened */
   hintRevealed?: boolean;
+  className?: string;
 };
 
-export function QuestionPanel({ problem, questionNumber, hintRevealed = false }: QuestionPanelProps) {
+export function QuestionPanel({
+  problem,
+  questionNumber,
+  hintRevealed = false,
+  className,
+}: QuestionPanelProps) {
   const [hintOpen, setHintOpen] = useState(false);
 
   useEffect(() => {
@@ -22,7 +28,12 @@ export function QuestionPanel({ problem, questionNumber, hintRevealed = false }:
   }, [hintRevealed]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
+    <div
+      className={cn(
+        "min-w-0 shrink-0 p-4 sm:p-6 md:flex-1 md:shrink md:overflow-y-auto",
+        className,
+      )}
+    >
       <div className="mb-4">
         <span className="text-sm font-medium text-muted-foreground">
           Question {questionNumber}

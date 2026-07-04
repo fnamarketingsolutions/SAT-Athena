@@ -26,6 +26,9 @@ type AnswerPanelProps = {
   disabled?: boolean;
   /** Hide "Mark for Review" button (default true) */
   showMark?: boolean;
+  /** Hide the top header row on small screens (question # + mark) */
+  hideHeaderOnMobile?: boolean;
+  className?: string;
   /** Extra content rendered below the options (e.g. explanation panel) */
   children?: React.ReactNode;
 };
@@ -41,11 +44,23 @@ export function AnswerPanel({
   feedbackState,
   disabled,
   showMark = true,
+  hideHeaderOnMobile = true,
+  className,
   children,
 }: AnswerPanelProps) {
   return (
-    <div className="flex-1 overflow-y-auto p-6">
-      <div className="mb-4 flex items-center justify-between">
+    <div
+      className={cn(
+        "min-w-0 flex-1 p-4 pt-0 sm:p-6 sm:pt-6 md:overflow-y-auto",
+        className,
+      )}
+    >
+      <div
+        className={cn(
+          "mb-4 flex items-center justify-between",
+          hideHeaderOnMobile && "hidden md:flex",
+        )}
+      >
         <span className="text-lg font-bold">{questionNumber}</span>
         {showMark && (
           <Button
@@ -115,7 +130,9 @@ export function AnswerPanel({
                 >
                   {letter}
                 </span>
-                <span className="pt-0.5"><MathContent content={option} /></span>
+                <span className="min-w-0 flex-1 pt-0.5">
+                  <MathContent content={option} />
+                </span>
               </motion.button>
             );
           })}

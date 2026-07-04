@@ -30,8 +30,8 @@ export function SubtopicCard({
     <Link href={`/learning/${topicSlug}/${subtopic.slug}/micro-lesson`}>
       <Card className="transition-colors hover:bg-accent/30">
         <CardContent className="p-4 space-y-2">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="text-sm font-semibold leading-tight">{subtopic.name}</h3>
+          <div className="flex min-w-0 items-start justify-between gap-2">
+            <h3 className="min-w-0 flex-1 text-sm font-semibold leading-tight">{subtopic.name}</h3>
             <span
               className={cn(
                 "shrink-0 rounded-full px-2 py-0.5 text-xs font-medium capitalize",
@@ -44,7 +44,7 @@ export function SubtopicCard({
           {/* line-clamp-3 (was -2) + text-sm (was text-xs) — feedback
               round was that subtopic descriptions clipped on real
               content and were too small to read. */}
-          <p className="text-sm text-muted-foreground line-clamp-3">
+          <p className="break-words text-sm text-muted-foreground line-clamp-3">
             {subtopic.description}
           </p>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">

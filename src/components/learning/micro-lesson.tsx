@@ -446,11 +446,11 @@ const CheckInCard = forwardRef<InteractionCardHandle, {
       {/* text-base for readability — feedback round 1 + 2 noted check_in
           question text was too small. MathContent inherits the size and
           scales the KaTeX with it. */}
-      <div className="text-lg font-medium text-foreground">
+      <div className="text-base font-medium text-foreground sm:text-lg">
         <MathContent content={checkIn.question} size="lg" />
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {checkIn.options.map((option, i) => {
           const isThis = selected === i;
           const isRight = i === checkIn.correctOption;
@@ -461,7 +461,7 @@ const CheckInCard = forwardRef<InteractionCardHandle, {
               onClick={() => handleSelect(i)}
               disabled={isRevealed || isWrong}
               className={cn(
-                "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left text-lg transition-colors",
+                "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left text-base transition-colors sm:text-lg",
                 !isRevealed && !isWrong && "hover:bg-muted cursor-pointer",
                 isRevealed && isRight && "border-green-500 bg-green-500/10",
                 isRevealed && isThis && !isRight && "border-red-500 bg-red-500/10",
@@ -483,7 +483,7 @@ const CheckInCard = forwardRef<InteractionCardHandle, {
                   String.fromCharCode(65 + i)
                 )}
               </span>
-              <span className="flex-1 text-left">
+              <span className="min-w-0 flex-1 text-left">
                 <MathContent content={option} />
               </span>
             </button>
@@ -621,11 +621,11 @@ const PredictCard = forwardRef<InteractionCardHandle, {
       transition={{ duration: 0.25 }}
       className="space-y-3 relative"
     >
-      <div className="text-lg font-medium text-foreground">
+      <div className="text-base font-medium text-foreground sm:text-lg">
         <MathContent content={predict.question} size="lg" />
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {predict.options.map((option, i) => {
           const isThis = selected === i;
           const isRight = i === predict.correctOption;
@@ -636,7 +636,7 @@ const PredictCard = forwardRef<InteractionCardHandle, {
               onClick={() => handleSelect(i)}
               disabled={revealed || isWrong}
               className={cn(
-                "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left text-lg transition-colors",
+                "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left text-base transition-colors sm:text-lg",
                 !revealed && !isWrong && "hover:bg-muted cursor-pointer",
                 revealed && isRight && "border-green-500 bg-green-500/10",
                 revealed && isThis && !isRight && "border-red-500 bg-red-500/10",
@@ -653,7 +653,7 @@ const PredictCard = forwardRef<InteractionCardHandle, {
                   String.fromCharCode(65 + i)
                 )}
               </span>
-              <span className="flex-1 text-left">
+              <span className="min-w-0 flex-1 text-left">
                 <MathContent content={option} />
               </span>
             </button>
@@ -874,7 +874,7 @@ const FillBlankCard = forwardRef<InteractionCardHandle, {
       transition={{ duration: 0.25 }}
       className="space-y-3"
     >
-      <div className="text-lg font-medium text-foreground">
+      <div className="text-base font-medium text-foreground sm:text-lg">
         {/* prompt is the wire-format field per FillBlankAction, but
             lessons generated before the c2-ir serializer remap landed
             only carry `question`. Read whichever is present so legacy
@@ -898,7 +898,7 @@ const FillBlankCard = forwardRef<InteractionCardHandle, {
             }}
             placeholder="Type your answer..."
             disabled={isChecking}
-            className="flex-1 bg-muted/50 rounded-lg text-lg outline-none placeholder:text-muted-foreground py-2.5 px-3 border focus:border-athena-amber/50 transition-colors disabled:opacity-60"
+            className="flex-1 rounded-lg border bg-muted/50 px-3 py-2.5 text-base outline-none placeholder:text-muted-foreground transition-colors focus:border-athena-amber/50 disabled:opacity-60 sm:text-lg"
           />
           <Button
             size="sm"
@@ -997,11 +997,11 @@ const PulseCheckCard = forwardRef<InteractionCardHandle, {
       transition={{ duration: 0.25 }}
       className="space-y-3 relative"
     >
-      <div className="text-lg font-medium text-foreground">
+      <div className="text-base font-medium text-foreground sm:text-lg">
         <MathContent content={pulseCheck.question} size="lg" />
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {pulseCheck.options.map((option, i) => {
           const isThis = selected === i;
           const isRight = i === pulseCheck.correctOption;
@@ -1011,7 +1011,7 @@ const PulseCheckCard = forwardRef<InteractionCardHandle, {
               onClick={() => handleSelect(i)}
               disabled={isRevealed}
               className={cn(
-                "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left text-lg transition-colors",
+                "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left text-base transition-colors sm:text-lg",
                 !isRevealed && "hover:bg-muted cursor-pointer",
                 // After reveal: the picked option gets a soft amber halo
                 // (not red/green). Both correct + trap surface their
@@ -1039,7 +1039,7 @@ const PulseCheckCard = forwardRef<InteractionCardHandle, {
                   String.fromCharCode(65 + i)
                 )}
               </span>
-              <span className="flex-1 text-left">
+              <span className="min-w-0 flex-1 text-left">
                 <MathContent content={option} />
               </span>
             </button>
@@ -3218,7 +3218,7 @@ export function MicroLesson({
   const lastUserMessage = chat.chatMessages.findLast((m) => m.role === "user" && !m.hidden)?.content;
 
   return (
-    <div className="fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden">
+    <div className="fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] min-w-0 flex-col overflow-hidden">
       <ObservationFrame className="h-full min-h-0" onBack={onClose}>
       {/* Ambient background-music element. Looping, low volume; playback
           is driven by the musicOn + lessonPhase effect above. Hidden. */}
@@ -3300,7 +3300,7 @@ export function MicroLesson({
                 );
               })()
             ) : (
-            <div className="absolute top-3 left-3 z-20 flex flex-col items-center gap-2 pointer-events-none w-[220px]">
+            <div className="absolute top-3 left-3 z-20 hidden w-[220px] flex-col items-center gap-2 pointer-events-none sm:flex">
               {/* Re-enable pointer events on the orb itself — the
                   surrounding container keeps `pointer-events-none` so
                   the caption below doesn't block lesson-canvas
@@ -3363,7 +3363,7 @@ export function MicroLesson({
                 keydown effect, and the chat takeover surface still
                 uses replayCurrent internally — only the visible button
                 is gone. */}
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden min-w-0">
             <IsoContourFrame bottomCenterLabel="" bottomRightLabel="">
               <div className="relative h-full w-full">
                 {/* Waiting symbol — centered over the canvas while a
@@ -3398,7 +3398,7 @@ export function MicroLesson({
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -8, scale: 0.95 }}
                       transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                      className="pointer-events-none absolute left-1/2 top-3 z-30 -translate-x-1/2 flex items-center gap-2 rounded-full border border-[var(--obs-border)] bg-[var(--obs-surface)]/90 px-4 py-2 text-sm font-medium text-[var(--obs-fg)] shadow-lg backdrop-blur-md"
+                      className="pointer-events-none absolute left-1/2 top-3 z-30 flex max-w-[min(92vw,420px)] -translate-x-1/2 items-center gap-2 rounded-full border border-[var(--obs-border)] bg-[var(--obs-surface)]/90 px-3 py-1.5 text-xs font-medium text-[var(--obs-fg)] shadow-lg backdrop-blur-md sm:px-4 sm:py-2 sm:text-sm"
                     >
                       <motion.span
                         className="inline-block h-2 w-2 rounded-full bg-[var(--obs-accent)]"
@@ -3409,7 +3409,7 @@ export function MicroLesson({
                           ease: "easeInOut",
                         }}
                       />
-                      <span>Athena will narrate this lesson</span>
+                      <span className="truncate">Athena will narrate this lesson</span>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -3423,7 +3423,7 @@ export function MicroLesson({
                 {!isGenerating &&
                   lessonPhase === "lesson" &&
                   totalSteps > 0 && (
-                    <div className="pointer-events-none absolute right-4 top-3 z-20 w-[min(347px,53%)]">
+                    <div className="pointer-events-none absolute right-3 top-12 z-20 hidden w-[min(140px,40vw)] sm:right-4 sm:top-3 sm:block sm:w-[min(347px,53%)]">
                       <DogProgress
                         state={dogState}
                         progress={dogProgress}
@@ -3698,7 +3698,7 @@ export function MicroLesson({
                   </span>
                 </button>
               ) : (
-                <div ref={chatPanelRef} className="absolute right-0 top-0 bottom-0 z-20 flex w-[40%] min-w-[340px] max-w-[560px] flex-col border-l border-[var(--obs-border)] bg-[var(--obs-bg)]">
+                <div ref={chatPanelRef} className="absolute right-0 top-0 bottom-0 z-20 flex w-full flex-col border-l border-[var(--obs-border)] bg-[var(--obs-bg)] md:w-[40%] md:min-w-[340px] md:max-w-[560px]">
                   {/* "Extra Help" title bar — a deliberate break marker
                       so the side-trip reads as a distinct moment, not an
                       AI-generated summary band. No border/fill chrome.
@@ -3706,7 +3706,7 @@ export function MicroLesson({
                       Resume-lesson button lives up here (free chat only —
                       takeover exits via "Got it" in the footer, same
                       gating as before). */}
-                  <div className="shrink-0 flex items-center gap-3 px-4 pt-3 pb-1">
+                  <div className="shrink-0 flex items-center gap-2 px-3 pt-3 pb-1 sm:gap-3 sm:px-4">
                     <button
                       type="button"
                       onClick={() => setChatCollapsed(true)}
@@ -3721,19 +3721,15 @@ export function MicroLesson({
                       <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[var(--obs-muted)] opacity-0 transition-opacity group-hover:opacity-100" />
                     </button>
                     <div className="flex-1" />
-                    {/* Resume-lesson pill — visible during free chat;
-                        suppressed during takeover (the only exit there
-                        is "Got it" in the footer). Click calls closeChat
-                        which clears chat state and replays the current
-                        lesson step. */}
                     {!interactionTakeover && (
                       <Button
                         type="button"
                         size="sm"
                         onClick={closeChat}
-                        className="shrink-0 gap-1"
+                        className="shrink-0 gap-1 px-2 sm:px-3"
                       >
-                        Resume lesson
+                        <span className="sm:hidden">Back</span>
+                        <span className="hidden sm:inline">Resume lesson</span>
                         <ChevronRight className="h-3.5 w-3.5" />
                       </Button>
                     )}
@@ -3789,7 +3785,7 @@ export function MicroLesson({
               {isCheckIn && currentCheckIn ? (
                 <motion.div
                   key={`bottom-check-in-${userStepIndex}`}
-                  className="shrink-0 bg-[var(--obs-surface)] px-8 py-6"
+                  className="shrink-0 bg-[var(--obs-surface)] px-4 py-4 sm:px-8 sm:py-6 max-h-[min(52vh,480px)] overflow-y-auto md:max-h-none md:overflow-visible"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
@@ -3812,7 +3808,7 @@ export function MicroLesson({
               ) : currentPrediction ? (
                 <motion.div
                   key={`bottom-predict-${userStepIndex}`}
-                  className="shrink-0 bg-[var(--obs-surface)] px-8 py-6"
+                  className="shrink-0 bg-[var(--obs-surface)] px-4 py-4 sm:px-8 sm:py-6 max-h-[min(52vh,480px)] overflow-y-auto md:max-h-none md:overflow-visible"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
@@ -3835,7 +3831,7 @@ export function MicroLesson({
               ) : currentFillBlank ? (
                 <motion.div
                   key={`bottom-fill-blank-${userStepIndex}`}
-                  className="shrink-0 bg-[var(--obs-surface)] px-8 py-6"
+                  className="shrink-0 bg-[var(--obs-surface)] px-4 py-4 sm:px-8 sm:py-6 max-h-[min(52vh,480px)] overflow-y-auto md:max-h-none md:overflow-visible"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
@@ -3857,7 +3853,7 @@ export function MicroLesson({
               ) : currentPulseCheck ? (
                 <motion.div
                   key={`bottom-pulse-check-${userStepIndex}`}
-                  className="shrink-0 bg-[var(--obs-surface)] px-8 py-6"
+                  className="shrink-0 bg-[var(--obs-surface)] px-4 py-4 sm:px-8 sm:py-6 max-h-[min(52vh,480px)] overflow-y-auto md:max-h-none md:overflow-visible"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
@@ -3877,7 +3873,7 @@ export function MicroLesson({
               ) : lessonPhase === "practice" ? (
                 <motion.div
                   key="bottom-practice"
-                  className="shrink-0 bg-[var(--obs-surface)] px-8 py-6"
+                  className="shrink-0 bg-[var(--obs-surface)] px-4 py-4 sm:px-8 sm:py-6 max-h-[min(52vh,480px)] overflow-y-auto md:max-h-none md:overflow-visible"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
@@ -3956,14 +3952,14 @@ export function MicroLesson({
               </p>
             )}
             {interactionTakeover && (
-              <div className="flex w-full max-w-[640px] items-center justify-center gap-3">
+              <div className="flex w-full max-w-[640px] flex-wrap items-center justify-center gap-2 sm:gap-3">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={handleExplainMore}
                   disabled={chat.isProcessing}
-                  className="min-w-[120px]"
+                  className="min-w-0 flex-1 sm:min-w-[120px] sm:flex-none"
                   aria-busy={chat.isProcessing}
                 >
                   {chat.isProcessing ? (
@@ -3980,14 +3976,15 @@ export function MicroLesson({
                   size="sm"
                   onClick={handleGotIt}
                   disabled={chat.isProcessing}
-                  className="min-w-[120px] gap-1"
+                  className="min-w-0 flex-1 gap-1 sm:min-w-[120px] sm:flex-none"
                 >
                   Got it
                   <ChevronRight className="h-3.5 w-3.5" />
                 </Button>
               </div>
             )}
-            <div className="flex w-full items-center justify-center gap-3">
+            <div className="flex w-full max-w-[640px] flex-col items-stretch gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
             {/* Ambient-music toggle. Available once the intro clears so
                 the student can silence the background track at any point
                 during the lesson or practice. Mirrors the icon-only
@@ -4067,14 +4064,14 @@ export function MicroLesson({
                 steps (see the keyboard-shortcut effect). Sound opens
                 a volume-slider popover. */}
             {lessonPhase === "lesson" && (
-              <div className="flex shrink-0 items-center gap-2">
+              <>
                 <button
                   type="button"
                   onClick={handlePlaybackBack}
                   disabled={userStepIndex <= 0}
                   aria-label="Previous step"
                   title="Previous step (←)"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--obs-border)] text-[var(--obs-muted)] transition-colors hover:border-[var(--obs-glow-mid)] hover:text-[var(--obs-fg)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[var(--obs-border)] disabled:hover:text-[var(--obs-muted)]"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--obs-border)] text-[var(--obs-muted)] transition-colors hover:border-[var(--obs-glow-mid)] hover:text-[var(--obs-fg)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-[var(--obs-border)] disabled:hover:text-[var(--obs-muted)] sm:h-10 sm:w-10"
                 >
                   <SkipBack className="h-4 w-4" />
                 </button>
@@ -4083,7 +4080,7 @@ export function MicroLesson({
                   onClick={handleTogglePaused}
                   aria-label={paused ? "Play" : "Pause"}
                   title={paused ? "Play (space)" : "Pause (space)"}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--obs-border)] text-[var(--obs-muted)] transition-colors hover:border-[var(--obs-glow-mid)] hover:text-[var(--obs-fg)]"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--obs-border)] text-[var(--obs-muted)] transition-colors hover:border-[var(--obs-glow-mid)] hover:text-[var(--obs-fg)] sm:h-10 sm:w-10"
                 >
                   {paused ? (
                     <Play className="h-4 w-4" />
@@ -4097,7 +4094,7 @@ export function MicroLesson({
                   disabled={userStepIndex >= whiteboardSteps.length - 1}
                   aria-label="Next step"
                   title="Next step (→)"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--obs-border)] text-[var(--obs-muted)] transition-colors hover:border-[var(--obs-glow-mid)] hover:text-[var(--obs-fg)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[var(--obs-border)] disabled:hover:text-[var(--obs-muted)]"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--obs-border)] text-[var(--obs-muted)] transition-colors hover:border-[var(--obs-glow-mid)] hover:text-[var(--obs-fg)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-[var(--obs-border)] disabled:hover:text-[var(--obs-muted)] sm:h-10 sm:w-10"
                 >
                   <SkipForward className="h-4 w-4" />
                 </button>
@@ -4110,7 +4107,7 @@ export function MicroLesson({
                     }
                     aria-expanded={volumePopoverOpen}
                     title="Volume"
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--obs-border)] text-[var(--obs-muted)] transition-colors hover:border-[var(--obs-glow-mid)] hover:text-[var(--obs-fg)]"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--obs-border)] text-[var(--obs-muted)] transition-colors hover:border-[var(--obs-glow-mid)] hover:text-[var(--obs-fg)] sm:h-10 sm:w-10"
                   >
                     {narrationMuted ? (
                       <VolumeX className="h-4 w-4" />
@@ -4122,7 +4119,7 @@ export function MicroLesson({
                     <div
                       role="dialog"
                       aria-label="Volume controls"
-                      className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 z-30 w-44 rounded-md border border-[var(--obs-border)] bg-[var(--obs-surface)] p-3 shadow-lg"
+                      className="absolute bottom-full left-1/2 z-30 mb-2 w-44 -translate-x-1/2 rounded-md border border-[var(--obs-border)] bg-[var(--obs-surface)] p-3 shadow-lg"
                     >
                       {/* Volume slider — native range input for
                           accessibility (keyboard + screen reader
@@ -4174,8 +4171,9 @@ export function MicroLesson({
                     </div>
                   )}
                 </div>
-              </div>
+              </>
             )}
+            </div>
             {!SHOW_VOICE_INPUT_MODE || chat.mode === "text" ? (
               <>
                 {/* Pending image attachment strip. Sits above the form
@@ -4183,14 +4181,14 @@ export function MicroLesson({
                     pattern as the mentor surface; image is included
                     in the next chat.sendChat call and cleared after. */}
                 {pendingImage && pendingPreviewUrl && (
-                  <div className="mb-2 flex w-full max-w-[640px] items-center gap-2">
+                  <div className="mb-2 flex w-full items-center gap-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={pendingPreviewUrl}
                       alt="Pending attachment"
-                      className="h-10 w-10 rounded border border-[var(--obs-border)] object-cover"
+                      className="h-10 w-10 shrink-0 rounded border border-[var(--obs-border)] object-cover"
                     />
-                    <span className="text-xs text-[var(--obs-muted)]">
+                    <span className="min-w-0 flex-1 truncate text-xs text-[var(--obs-muted)]">
                       Image will attach to your next message
                     </span>
                     <button
@@ -4206,7 +4204,7 @@ export function MicroLesson({
                 )}
               <form
                 onSubmit={handleChatSubmit}
-                className="flex w-full max-w-[640px] items-center gap-3"
+                className="flex w-full min-w-0 items-center gap-2 sm:gap-3"
               >
                 {SHOW_VOICE_INPUT_MODE && (
                   <button
@@ -4219,14 +4217,14 @@ export function MicroLesson({
                     <Mic className="h-4 w-4" />
                   </button>
                 )}
-                <div className="relative flex-1">
+                <div className="relative min-w-0 flex-1">
                   <textarea
                     ref={chatTextareaRef}
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
                     onKeyDown={handleChatKeyDown}
                     placeholder="Type or speak…"
-                    className="w-full resize-none rounded-full border border-[var(--obs-border)] bg-[var(--obs-surface)] px-5 py-2.5 text-sm text-[var(--obs-fg)] outline-none placeholder:text-[var(--obs-dim)] focus:border-[var(--obs-glow-mid)]"
+                    className="w-full min-w-0 resize-none rounded-full border border-[var(--obs-border)] bg-[var(--obs-surface)] px-4 py-2.5 text-sm text-[var(--obs-fg)] outline-none placeholder:text-[var(--obs-dim)] focus:border-[var(--obs-glow-mid)] sm:px-5"
                     rows={1}
                     style={{ minHeight: 40, maxHeight: 96 }}
                     disabled={isGenerating || chat.isProcessing}
@@ -4271,7 +4269,7 @@ export function MicroLesson({
               </form>
               </>
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="flex w-full flex-wrap items-center justify-center gap-2 sm:gap-3">
                 <div className="scale-[0.6] origin-center">
                   <VoiceOrb
                     state={voiceOrbState}
@@ -4284,7 +4282,7 @@ export function MicroLesson({
                     disabled={chat.isProcessing && !chat.isRecording}
                   />
                 </div>
-                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--obs-muted)]">
+                <span className="max-w-[min(220px,55vw)] text-center font-mono text-[9px] uppercase tracking-[0.18em] text-[var(--obs-muted)] sm:max-w-none sm:text-[10px] sm:tracking-[0.22em]">
                   {chat.isRecording
                     ? "LISTENING — TAP TO STOP"
                     : chat.isProcessing
