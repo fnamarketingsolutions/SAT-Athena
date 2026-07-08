@@ -12,8 +12,8 @@ import { fileURLToPath } from "url";
 import {
   evaluateAdherence,
   evaluateMath,
-  type WhiteboardStep,
 } from "..";
+import type { WhiteboardStep } from "../types";
 
 type Expectation = {
   file: string;
