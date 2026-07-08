@@ -1,5 +1,4 @@
 import { supabase } from "@/lib/supabase/client";
-import { EXAM_SESSION_SOURCES } from "@/lib/exam-config";
 
 export async function saveSatQuizSession(data: {
   userId: string;
@@ -64,60 +63,4 @@ export async function saveSatQuizSession(data: {
     timeElapsedSeconds: session.time_elapsed_seconds,
     createdAt: new Date(session.created_at),
   };
-}
-
-export async function getUserBestScores(userId: string) {
-  const { data } = await supabase
-    .from("quiz_sessions")
-    .select("subtopic_id, score, total_questions")
-    .eq("user_id", userId)
-    .in("source", [...EXAM_SESSION_SOURCES]);
-
-  const grouped: Record<
-    string,
-    { subtopicId: string; bestScore: number; totalQuestions: number; attemptCount: number }
-  > = {};
-
-  for (const row of data ?? []) {
-    if (!row.subtopic_id) continue;
-    if (!grouped[row.subtopic_id]) {
-      grouped[row.subtopic_id] = {
-        subtopicId: row.subtopic_id,
-        bestScore: 0,
-        totalQuestions: 0,
-        attemptCount: 0,
-      };
-    }
-    grouped[row.subtopic_id].bestScore = Math.max(grouped[row.subtopic_id].bestScore, row.score);
-    grouped[row.subtopic_id].totalQuestions = Math.max(
-      grouped[row.subtopic_id].totalQuestions,
-      row.total_questions
-    );
-    grouped[row.subtopic_id].attemptCount++;
-  }
-
-  return Object.values(grouped);
-}
-
-export async function getUserSubtopicSessions(
-  userId: string,
-  subtopicId: string
-) {
-  const { data } = await supabase
-    .from("quiz_sessions")
-    .select("*")
-    .eq("user_id", userId)
-    .in("source", [...EXAM_SESSION_SOURCES])
-    .eq("subtopic_id", subtopicId)
-    .order("created_at", { ascending: false });
-
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    userId: row.user_id,
-    subtopicId: row.subtopic_id,
-    score: row.score,
-    totalQuestions: row.total_questions,
-    timeElapsedSeconds: row.time_elapsed_seconds,
-    createdAt: new Date(row.created_at),
-  }));
 }

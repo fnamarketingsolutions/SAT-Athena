@@ -21,7 +21,3 @@ export function isBootstrapAdminEmail(email: string | null | undefined): boolean
 export function isAthenaAdmin(user: { role: AppRole }): boolean {
   return user.role === "admin";
 }
-
-export function isEducator(user: { role: AppRole }): boolean {
-  return user.role === "educator" || user.role === "admin";
-}

@@ -269,15 +269,6 @@
       "max_dead_frame_seconds": 1.0,
       "dead_frame_brightness_threshold": 10.0
     },
-    "_reference_notes": {
-      "source": "Reconstructed from Example 1.mp4 (uploaded) \u2014 Veo-generated, 32s, 1280x720, animation runs full length (no dead frames).",
-      "reconstruction_method": "Audio extracted, pocketsphinx-transcribed (noisy), corrected from visible bottom-overlay captions in the source video. Math values (y=1.75x, y=0.65x, m=0.65) read directly from source frames at t=18s and t=24s.",
-      "outstanding": [
-        "Re-run real Whisper on a machine that can reach HF/OpenAI CDN to confirm exact wording.",
-        "Beat boundaries are best-guess from caption appearance \u2014 refine after Whisper word-timings land.",
-        "topic_slug/subtopic_slug confirmed against agents/content_workflow.py _make_slug() derivation: 'Algebra' / 'Linear equations (one variable)' \u2192 'algebra' / 'linear-equations-one-variable'."
-      ]
-    },
     "render": {
       "audio_path_local": "ex1.mp3",
       "duration_s": 32.0

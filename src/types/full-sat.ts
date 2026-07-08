@@ -71,12 +71,6 @@ export const MODULE_TIME_LIMITS = {
   math: { 1: 35 * 60, 2: 35 * 60 },
 } as const;
 
-/** Total question counts */
-export const MODULE_QUESTION_COUNTS = {
-  reading_writing: { 1: 27, 2: 27 },
-  math: { 1: 22, 2: 22 },
-} as const;
-
 /** Maps global question number (1-98) to section/module */
 export function questionToSectionModule(questionNumber: number): {
   section: FullSatSection;
@@ -92,18 +86,6 @@ export function questionToSectionModule(questionNumber: number): {
   } else {
     return { section: "math", module: 2, orderIndex: questionNumber - 77 };
   }
-}
-
-/** Maps section/module/orderIndex to global question number (1-98) */
-export function sectionModuleToQuestion(
-  section: FullSatSection,
-  module: number,
-  orderIndex: number
-): number {
-  if (section === "reading_writing") {
-    return module === 1 ? orderIndex + 1 : orderIndex + 28;
-  }
-  return module === 1 ? orderIndex + 55 : orderIndex + 77;
 }
 
 /** Cooldown duration in milliseconds (14 days) */

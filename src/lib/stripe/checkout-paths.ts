@@ -10,10 +10,6 @@ export function signUpForCheckoutPath(interval: BillingInterval = "monthly"): st
   return `/sign-up?redirect_url=${encodeURIComponent(checkoutPath(interval))}`;
 }
 
-export function signInForCheckoutPath(interval: BillingInterval = "monthly"): string {
-  return `/sign-in?redirect_url=${encodeURIComponent(checkoutPath(interval))}`;
-}
-
 export function parseBillingInterval(value: string | null | undefined): BillingInterval {
   return value === "yearly" ? "yearly" : "monthly";
 }

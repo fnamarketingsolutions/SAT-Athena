@@ -9,8 +9,7 @@ import { ArrowRight } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { AnimatedSprite } from "@/components/pixel-art/animated-sprite";
 import { ProfileNameEditor } from "@/components/profile/profile-name-editor";
-import { ProfileStreak } from "@/components/profile/profile-streak";
-import { MbeMockScore } from "@/components/profile/mbe-mock-score";
+import { ProfileStreak } from "@/components/profile/profile-streak"; 
 import { ScheduleEditor } from "@/components/profile/schedule-editor";
 import { APP_BRANDING, MBE_PASS_PERCENT } from "@/lib/exam-config";
 
@@ -162,7 +161,6 @@ export default function ProfilePage() {
     tiers,
     subjectScores,
   } = data;
-  const bestStreak = Math.max(data.bestStreak, data.streak);
   const practicedSubjects = subjectScores.filter((s) => s.total > 0);
 
   return (
@@ -212,19 +210,13 @@ export default function ProfilePage() {
                 <div>
                   <p className="text-2xl font-bold">{questsDone}</p>
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Quests Done
+                    Sessions Completed
                   </p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{formatTime(totalTimeSeconds)}</p>
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Total Time
-                  </p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{bestStreak} days</p>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Best Streak
                   </p>
                 </div>
                 <div>
@@ -277,17 +269,12 @@ export default function ProfilePage() {
             <div className="my-8 border-b" />
 
             <motion.div variants={staggerItem}>
-              <ProfileStreak
-                streak={data.streak}
-                bestStreak={bestStreak}
-                weeklyStreakDays={data.weeklyStreakDays}
-              />
-            </motion.div>
-
-            <div className="my-8 border-b" />
-
-            <motion.div variants={staggerItem}>
-              <MbeMockScore latestAttempt={data.latestMockAttempt} />
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Weekly study
+              </h3>
+              <div className="mt-4">
+                <ProfileStreak weeklyStreakDays={data.weeklyStreakDays} />
+              </div>
             </motion.div>
 
             <div className="my-8 border-b" />

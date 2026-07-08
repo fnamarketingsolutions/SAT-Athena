@@ -22,27 +22,6 @@ function mapQueueItem(row: {
   };
 }
 
-export async function addToLearningQueue(data: {
-  userId: string;
-  lessonId: string;
-  addedDuring: "onboarding" | "practice";
-}) {
-  const { data: row } = await supabase
-    .from("learning_queue")
-    .upsert(
-      {
-        user_id: data.userId,
-        lesson_id: data.lessonId,
-        added_during: data.addedDuring,
-      },
-      { onConflict: "user_id,lesson_id", ignoreDuplicates: true }
-    )
-    .select()
-    .maybeSingle();
-
-  return row ? mapQueueItem(row) : null;
-}
-
 export async function getUserLearningQueue(userId: string) {
   const { data } = await supabase
     .from("learning_queue")

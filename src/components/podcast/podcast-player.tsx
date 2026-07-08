@@ -22,7 +22,6 @@ import {
   cancelWebSpeech,
   isWebSpeechAvailable,
   pauseWebSpeech,
-  resumeWebSpeech,
   speakWithWebSpeech,
   warmWebSpeechVoices,
 } from "@/lib/web-speech";

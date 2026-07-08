@@ -77,7 +77,7 @@ export default function FullSatQuestionPage() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+    <div className="fixed inset-0 z-50 flex flex-col bg-gradient-to-b from-slate-50 to-blue-50/40">
       <Toolbar
         displayTime={ctx.displayTime}
         isLow={isLow}
@@ -118,6 +118,7 @@ export default function FullSatQuestionPage() {
           <QuestionPanel
             problem={asProblem}
             questionNumber={sectionIndex + 1}
+            emphasize={ctx.answers.has(currentProblem.problemId)}
           />
           <AnswerPanel
             problem={asProblem}

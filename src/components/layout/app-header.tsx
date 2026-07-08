@@ -40,7 +40,7 @@ export function AppHeader({ minimal = false, className }: AppHeaderProps) {
       className={cn(
         "z-[60] border-b",
         immersiveChrome
-          ? "fixed inset-x-0 top-0 border-white/10 bg-black/40 backdrop-blur-md"
+          ? "fixed inset-x-0 top-0 border-border bg-background/95 backdrop-blur-md"
           : "sticky top-0 bg-background/95 backdrop-blur-md border-border",
         className
       )}
@@ -61,7 +61,7 @@ export function AppHeader({ minimal = false, className }: AppHeaderProps) {
             href="/dashboard"
             className={cn(
               "text-lg font-bold tracking-tight",
-              immersiveChrome ? "text-white" : "text-athena-navy dark:text-athena-amber"
+              immersiveChrome ? "text-white" : "text-athena-navy dark:text-athena-navy"
             )}
           >
             Athena

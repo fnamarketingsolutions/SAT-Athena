@@ -259,9 +259,8 @@ function CheckInConfetti() {
   const colors = [
     "hsl(var(--green))",
     "hsl(var(--blue))",
-    "hsl(var(--yellow))",
-    "hsl(var(--pink))",
-    "hsl(var(--orange))",
+    "hsl(var(--green))",
+    "hsl(var(--blue))",
   ];
   const particles = Array.from({ length: 14 }, (_, i) => ({
     id: i,
@@ -898,7 +897,7 @@ const FillBlankCard = forwardRef<InteractionCardHandle, {
             }}
             placeholder="Type your answer..."
             disabled={isChecking}
-            className="flex-1 rounded-lg border bg-muted/50 px-3 py-2.5 text-base outline-none placeholder:text-muted-foreground transition-colors focus:border-athena-amber/50 disabled:opacity-60 sm:text-lg"
+            className="flex-1 rounded-lg border bg-muted/50 px-3 py-2.5 text-base outline-none placeholder:text-muted-foreground transition-colors focus:border-primary/40 disabled:opacity-60 sm:text-lg"
           />
           <Button
             size="sm"
@@ -1017,7 +1016,7 @@ const PulseCheckCard = forwardRef<InteractionCardHandle, {
                 // (not red/green). Both correct + trap surface their
                 // explanation; the framing is reflective, not graded.
                 isRevealed && isThis && isRight && "border-green-500/60 bg-green-500/5",
-                isRevealed && isThis && !isRight && "border-athena-amber/60 bg-athena-amber/5",
+                isRevealed && isThis && !isRight && "border-primary/35 bg-primary/5",
                 isRevealed && !isThis && "opacity-50",
               )}
               style={
@@ -1034,7 +1033,7 @@ const PulseCheckCard = forwardRef<InteractionCardHandle, {
                 ) : isRevealed && isThis && !isRight ? (
                   // Trap pick: a sparkle, NOT an X. The visual tone
                   // matches "interesting moment" rather than "wrong".
-                  <Sparkles className="h-3 w-3 text-athena-amber" />
+                  <Sparkles className="h-3 w-3 text-primary" />
                 ) : (
                   String.fromCharCode(65 + i)
                 )}
@@ -3345,11 +3344,7 @@ export function MicroLesson({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -4 }}
                       transition={{ duration: 0.25 }}
-                      className="obs-serif text-center text-base leading-snug text-[var(--obs-fg)] rounded-xl px-4 py-2 backdrop-blur-md shadow-lg shadow-black/10 border border-white/5 max-w-[640px]"
-                      style={{
-                        background:
-                          "color-mix(in oklch, var(--obs-surface) 70%, transparent)",
-                      }}
+                      className="max-w-[640px] rounded-lg border border-border bg-card px-4 py-2 text-center text-base leading-snug text-foreground shadow-sm"
                     >
                       <MathContent content={text} size="base" />
                     </motion.div>
@@ -3398,7 +3393,7 @@ export function MicroLesson({
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -8, scale: 0.95 }}
                       transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                      className="pointer-events-none absolute left-1/2 top-3 z-30 flex max-w-[min(92vw,420px)] -translate-x-1/2 items-center gap-2 rounded-full border border-[var(--obs-border)] bg-[var(--obs-surface)]/90 px-3 py-1.5 text-xs font-medium text-[var(--obs-fg)] shadow-lg backdrop-blur-md sm:px-4 sm:py-2 sm:text-sm"
+                      className="pointer-events-none absolute left-1/2 top-3 z-30 flex max-w-[min(92vw,420px)] -translate-x-1/2 items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground shadow-sm sm:px-4 sm:py-2 sm:text-sm"
                     >
                       <motion.span
                         className="inline-block h-2 w-2 rounded-full bg-[var(--obs-accent)]"
@@ -3602,36 +3597,7 @@ export function MicroLesson({
                       exit={{ opacity: 0, y: -12 }}
                       transition={{ type: "spring", stiffness: 300, damping: 25 }}
                     >
-                      {/* Canvas-level "Correct!" pulse. Sits above the
-                          whiteboard canvas (where attention is) rather
-                          than inside the bottom interaction pane.
-                          Mirrors PracticeWhiteboardContent's pulse and
-                          tutor-practice-card.tsx's overlay. */}
-                      <AnimatePresence>
-                        {revealedCorrect ? (
-                          <motion.div
-                            key="practice-correct-pulse"
-                            className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            <CorrectConfetti />
-                            <motion.div
-                              initial={{ scale: 0.5, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                              className="relative z-20 flex items-center gap-2 rounded-full border border-green-500/40 bg-green-500/10 px-4 py-2 shadow-lg shadow-green-500/20 backdrop-blur-md"
-                            >
-                              <Check className="h-5 w-5 text-green-500" />
-                              <span className="text-base font-bold text-green-500">
-                                Correct!
-                              </span>
-                            </motion.div>
-                          </motion.div>
-                        ) : null}
-                      </AnimatePresence>
+                      {/* No global "Correct!" overlay: feedback stays integrated in the pane. */}
                       <Canvas
                         steps={practiceCanvasSteps}
                         visibleStepIds={practiceCanvasVisibleIds}
@@ -3886,7 +3852,7 @@ export function MicroLesson({
                           animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.15, 1] }}
                           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                         >
-                          <Sparkles className="h-6 w-6 text-athena-amber" />
+                          <Sparkles className="h-6 w-6 text-primary" />
                         </motion.div>
                         <p className="text-xs text-muted-foreground">Preparing practice…</p>
                       </div>

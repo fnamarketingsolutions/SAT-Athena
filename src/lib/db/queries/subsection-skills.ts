@@ -47,20 +47,6 @@ export async function getAllSubsectionSkills(
   return (data ?? []).map(mapSkill);
 }
 
-export async function getSubsectionSkillsBySection(
-  userId: string,
-  sectionCategory: SectionCategory
-): Promise<SubsectionSkill[]> {
-  const { data } = await (supabase as any)
-    .from("subsection_skills")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("section_category", sectionCategory)
-    .order("level", { ascending: true });
-
-  return (data ?? []).map(mapSkill);
-}
-
 export async function upsertSubsectionSkill(
   userId: string,
   subtopicId: string,

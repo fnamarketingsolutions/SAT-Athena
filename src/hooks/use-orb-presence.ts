@@ -431,10 +431,3 @@ export function useOrbPresence(args: UseOrbPresenceArgs): OrbPresence {
 
   return { x, y, vx, moving, captionAbove, movement, spotlightX, spotlightY, spotlightOn };
 }
-
-export const ORB_PRESENCE_CONSTANTS = {
-  READING_BUBBLE,
-  ATTRACT_RANGE,
-  REST_SPRING,
-  DRAW_SPRING,
-};

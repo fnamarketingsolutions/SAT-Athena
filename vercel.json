@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "src/app/api/reports/pdf/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/reports/flashcards/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}

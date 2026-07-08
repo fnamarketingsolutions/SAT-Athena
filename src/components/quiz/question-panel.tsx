@@ -12,6 +12,8 @@ type QuestionPanelProps = {
   questionNumber: number;
   /** When true, hint button appears and hint is auto-opened */
   hintRevealed?: boolean;
+  /** Subtle highlight to draw attention to the question card */
+  emphasize?: boolean;
   className?: string;
 };
 
@@ -19,6 +21,7 @@ export function QuestionPanel({
   problem,
   questionNumber,
   hintRevealed = false,
+  emphasize = false,
   className,
 }: QuestionPanelProps) {
   const [hintOpen, setHintOpen] = useState(false);
@@ -34,13 +37,21 @@ export function QuestionPanel({
         className,
       )}
     >
-      <div className="mb-4">
-        <span className="text-sm font-medium text-muted-foreground">
-          Question {questionNumber}
-        </span>
-      </div>
+      <div
+        className={cn(
+          "max-h-[calc(100dvh-220px)] rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6 overflow-hidden",
+          emphasize && "border-primary/30 bg-primary/5"
+        )}
+      >
+        <div className="mb-4">
+          <span className="text-sm font-semibold text-primary">
+            Question {questionNumber}
+          </span>
+        </div>
 
-      <MathContent content={problem.questionText} />
+        <div className="min-h-0 overflow-y-auto pr-1">
+          <MathContent content={problem.questionText} />
+        </div>
 
       {problem.hint && hintRevealed && (
         <div className="mt-6">
@@ -65,6 +76,7 @@ export function QuestionPanel({
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

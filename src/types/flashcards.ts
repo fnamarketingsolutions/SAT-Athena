@@ -1,17 +1,17 @@
-export type FlashcardOptionLetter = "A" | "B" | "C" | "D";
+type FlashcardOptionLetter = "A" | "B" | "C" | "D";
 
 export type FlashcardOption = {
   letter: FlashcardOptionLetter;
   text: string;
 };
 
-export type FlashcardFront = {
+type FlashcardFront = {
   questionText: string;
   questionPhonetic?: string;
   options: FlashcardOption[];
 };
 
-export type FlashcardBack = {
+type FlashcardBack = {
   correctLetter: FlashcardOptionLetter;
   explanation: string;
   solutionSteps: string[];
@@ -32,9 +32,3 @@ export type FlashcardDeckMeta = {
   subtopicName: string;
   requestedCount: number;
 };
-
-export type FlashcardStreamEvent =
-  | { meta: FlashcardDeckMeta }
-  | { card: Flashcard }
-  | { error: string }
-  | { done: true };

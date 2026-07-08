@@ -1,9 +1,6 @@
 import type { PostgrestError } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
 
-export const CONTENT_SETUP_HINT =
-  "Content tables are missing. Run `npm run db:content-tables`, or paste `scripts/apply-content-tables.sql` into the Supabase SQL Editor.";
-
 export const STALE_LOCK_MS = 5 * 60 * 1000;
 
 export function isMissingTableError(

@@ -134,7 +134,7 @@ export function SupabaseAuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   }
 
   return (
-    <div className="w-full max-w-sm space-y-4">
+    <div className="w-full max-w-sm space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
       <div className="text-center">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           {mode === "sign-up" ? "Create your account" : "Welcome back"}
@@ -236,7 +236,7 @@ export function SupabaseAuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
 }
 
 const Confirmation = ({ title, body }: { title: string; body: string }) => (
-  <div className="w-full max-w-sm text-center">
+  <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
     <CheckCircle2 size={28} className="mx-auto text-emerald-500" />
     <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
       {title}

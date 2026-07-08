@@ -350,15 +350,11 @@ async def chat_stream_endpoint(req: ChatRequest):
             "X-Accel-Buffering": "no",
         },
     )
-
-
 @app.post("/mentor-chat/stream")
 async def mentor_chat_stream_endpoint(req: MentorChatRequest):
     history = [m.model_dump() for m in req.history] if req.history else None
     md = _md_headers(req.request_metadata)
-    agent = build_mentor_agent(metadata=md)
-    # Lazily-used solve agent for the structured triplet path (only when
-    # MENTOR_TOOL_USE=1 and the intent gate routes the turn there).
+    agent = build_mentor_agent(metadata=md) 
     solve_agent = build_mentor_solve_agent(metadata=md)
 
     async def event_generator():
@@ -392,9 +388,7 @@ async def mentor_chat_stream_endpoint(req: MentorChatRequest):
 
 @app.post("/quiz-chat/stream")
 async def quiz_chat_stream_endpoint(req: QuizChatRequest):
-    history = [m.model_dump() for m in req.history] if req.history else None
-    # If the body doesn't carry topic/subtopic in request_metadata, fall back
-    # to the top-level fields the quiz endpoint has always required.
+    history = [m.model_dump() for m in req.history] if req.history else None 
     md = _md_headers(req.request_metadata)
     md.setdefault("Topic", req.topic)
     md.setdefault("Subtopic", req.subtopic)
@@ -766,10 +760,7 @@ async def podcast_script_endpoint(req: PodcastScriptRequest):
     md = _md_headers(req.request_metadata)
     md.setdefault("Topic", req.topic)
     md.setdefault("Subtopic", req.subtopic)
-    agent = build_podcast_agent(metadata=md)
-
-    # Drop SAT-specific context for general academic subjects so it does not
-    # leak into the spoken dialogue.
+    agent = build_podcast_agent(metadata=md)    
     subject = _resolve_subject(req.topic)
     conceptual_overview = (
         req.conceptual_overview.model_dump() if req.conceptual_overview else None
@@ -1468,19 +1459,12 @@ async def handwriting_ocr_endpoint(req: HandwritingOcrRequest):
         )
         import re
 
-        latex = message.content[0].text.strip()
-        # Defensive: strip stray delimiters / fences the model may add
-        # despite the instruction.
+        latex = message.content[0].text.strip() 
         if latex.startswith("```"):
             latex = latex.strip("`")
             if latex.lower().startswith("latex"):
                 latex = latex[5:]
         latex = latex.strip().strip("$").strip()
-        # Guard against prose "refusals" (e.g. "I can't read this image…")
-        # that a weaker model emits instead of an empty line. Strip LaTeX
-        # commands, then if what's left reads like an English sentence
-        # (several 3+-letter words), treat it as "couldn't read" → empty.
-        # Real transcriptions ("x + 3 = 7", "\frac{1}{2}") have ~none.
         wordy = re.findall(r"[a-zA-Z]{3,}", re.sub(r"\\[a-zA-Z]+", " ", latex))
         if len(wordy) >= 4:
             print(f"[handwriting-ocr] discarding prose-like output: {latex!r}")

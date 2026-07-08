@@ -1,6 +1,6 @@
 export type SectionCategory = "ReadingWriting" | "Math";
 export type QuestBucket = "weak" | "mid" | "stretch";
-export type QuestStatus = "pending" | "in_progress" | "completed";
+type QuestStatus = "pending" | "in_progress" | "completed";
 
 export type SubsectionSkill = {
   id: string;

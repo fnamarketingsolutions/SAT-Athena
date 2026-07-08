@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Trophy, BookOpen, Calculator, Clock, ArrowRight } from "lucide-react";
+import { Trophy, BookOpen, Calculator, ArrowRight } from "lucide-react";
 import { MOCK_EXAM_LABEL } from "@/lib/exam-config";
 import type { FullSatSubmitResponse } from "@/types/full-sat";
 
@@ -63,25 +63,25 @@ export default function FullSatResultsPage() {
     );
   }
 
-  const scoreColor =
+  const scoreTone =
     results.totalScore >= 1200
-      ? "text-green-500"
+      ? "text-primary"
       : results.totalScore >= 900
-        ? "text-amber-500"
-        : "text-red-500";
+        ? "text-accent"
+        : "text-foreground";
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background overflow-auto">
-      <div className="mx-auto max-w-2xl px-4 py-12 w-full">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-auto bg-gradient-to-b from-slate-50 via-white to-blue-50/40">
+      <div className="mx-auto w-full max-w-2xl px-4 py-12">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
+          className="rounded-2xl border border-border bg-card p-8 text-center shadow-sm"
         >
           <div className="mb-4 flex items-center justify-center">
-            <div className="rounded-full bg-primary/10 p-4">
-              <Trophy className="h-10 w-10 text-amber-500" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary">
+              <Trophy className="h-7 w-7 text-primary-foreground" />
             </div>
           </div>
           <h1 className="text-2xl font-bold tracking-tight">
@@ -94,15 +94,15 @@ export default function FullSatResultsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mt-8 text-center"
+          className="mt-6 rounded-2xl border border-border bg-card p-8 text-center shadow-sm"
         >
-          <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
+          <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
             Total Score
           </p>
-          <p className={`text-6xl font-bold tabular-nums mt-2 ${scoreColor}`}>
+          <p className={`mt-2 text-6xl font-bold tabular-nums ${scoreTone}`}>
             {results.totalScore}
           </p>
-          <p className="text-sm text-muted-foreground mt-1">out of 1600</p>
+          <p className="mt-1 text-sm text-muted-foreground">out of 1600</p>
         </motion.div>
 
         {/* Section breakdown */}
@@ -110,43 +110,43 @@ export default function FullSatResultsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="mt-10 grid grid-cols-2 gap-4"
+          className="mt-6 grid grid-cols-2 gap-4"
         >
           {/* R&W */}
-          <div className="rounded-lg border bg-card p-5 text-center">
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-3">
+          <div className="rounded-xl border border-border bg-card p-5 text-center shadow-sm">
+            <div className="mb-3 flex items-center justify-center gap-2 text-sm text-muted-foreground">
               <BookOpen className="h-4 w-4" />
               Reading &amp; Writing
             </div>
             <p className="text-3xl font-bold tabular-nums">
               {results.rwScaledScore}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="mt-1 text-xs text-muted-foreground">
               {results.rwRawScore}/54 correct
             </p>
-            <div className="mt-3 h-2 rounded-full bg-muted overflow-hidden">
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full rounded-full bg-blue-500 transition-all"
+                className="h-full rounded-full bg-primary transition-all"
                 style={{ width: `${(results.rwScaledScore / 800) * 100}%` }}
               />
             </div>
           </div>
 
           {/* Math */}
-          <div className="rounded-lg border bg-card p-5 text-center">
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-3">
+          <div className="rounded-xl border border-border bg-card p-5 text-center shadow-sm">
+            <div className="mb-3 flex items-center justify-center gap-2 text-sm text-muted-foreground">
               <Calculator className="h-4 w-4" />
               Math
             </div>
             <p className="text-3xl font-bold tabular-nums">
               {results.mathScaledScore}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="mt-1 text-xs text-muted-foreground">
               {results.mathRawScore}/44 correct
             </p>
-            <div className="mt-3 h-2 rounded-full bg-muted overflow-hidden">
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full rounded-full bg-purple-500 transition-all"
+                className="h-full rounded-full bg-accent transition-all"
                 style={{ width: `${(results.mathScaledScore / 800) * 100}%` }}
               />
             </div>
@@ -158,7 +158,7 @@ export default function FullSatResultsPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="mt-8 rounded-lg border bg-card p-5"
+          className="mt-6 rounded-2xl border border-border bg-card p-5 shadow-sm"
         >
           <h3 className="text-sm font-semibold mb-2">Score Breakdown</h3>
           <div className="space-y-2 text-sm text-muted-foreground">

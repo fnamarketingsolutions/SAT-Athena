@@ -20,8 +20,8 @@ type QuestionNavigatorProps = {
 
 const statusColors: Record<QuestionStatus, string> = {
   unanswered: "bg-muted text-muted-foreground",
-  answered: "bg-primary text-primary-foreground",
-  marked: "bg-athena-amber text-foreground",
+  answered: "bg-athena-success text-white",
+  marked: "bg-primary text-primary-foreground",
 };
 
 export function QuestionNavigator({
@@ -62,11 +62,11 @@ export function QuestionNavigator({
             Unanswered
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="h-3 w-3 rounded bg-primary" />
+            <div className="h-3 w-3 rounded bg-athena-success" />
             Answered
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="h-3 w-3 rounded bg-athena-amber" />
+            <div className="h-3 w-3 rounded bg-primary" />
             Marked
           </div>
         </div>

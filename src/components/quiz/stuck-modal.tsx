@@ -1,78 +1,71 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type StuckModalProps = {
-  onComplete: () => void;
+  onAccept: () => void;
+  onDecline: () => void;
   title?: string;
   description?: string;
-  autoProgress?: boolean;
-  duration?: number;
+  acceptLabel?: string;
+  declineLabel?: string;
 };
 
 export function StuckModal({
-  onComplete,
+  onAccept,
+  onDecline,
   title = "Looks like you're stuck",
-  description = "Athena will walk you through this",
-  autoProgress = true,
-  duration = 2800,
+  description = "Athena can walk you through this step by step.",
+  acceptLabel = "Walk me through it",
+  declineLabel = "Not now",
 }: StuckModalProps) {
-  const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
-
-  useEffect(() => {
-    if (!autoProgress) return;
-    const timer = setTimeout(() => onCompleteRef.current(), duration);
-    return () => clearTimeout(timer);
-  }, [autoProgress, duration]);
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-background/70 backdrop-blur-md"
-      onClick={onComplete}
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-background/70 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="stuck-modal-title"
+      aria-describedby="stuck-modal-description"
     >
       <motion.div
-        initial={{ scale: 0.88, opacity: 0, y: 12 }}
+        initial={{ scale: 0.96, opacity: 0, y: 8 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.92, opacity: 0, y: 8 }}
+        exit={{ scale: 0.98, opacity: 0, y: 4 }}
         transition={{ type: "spring", stiffness: 380, damping: 28 }}
-        className="relative mx-4 w-full max-w-xs overflow-hidden rounded-2xl border bg-card shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
+        className="mx-4 w-full max-w-sm overflow-hidden rounded-2xl border border-border bg-card shadow-xl"
       >
-        <div className="px-8 py-10 text-center">
-          {/* Icon */}
+        <div className="px-8 py-8 text-center">
           <div className="mb-5 flex justify-center">
-            <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-              <motion.span
-                className="absolute inset-0 rounded-full bg-primary/15"
-                animate={{ scale: [1, 1.25, 1], opacity: [0.6, 0, 0.6] }}
-                transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-              />
-              <Sparkles className="relative h-7 w-7 text-primary" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+              <Sparkles className="h-6 w-6 text-primary" />
             </div>
           </div>
 
-          <h2 className="mb-2 text-base font-semibold tracking-tight">{title}</h2>
-          <p className="text-sm text-muted-foreground">{description}</p>
-        </div>
+          <h2
+            id="stuck-modal-title"
+            className="mb-2 text-base font-semibold tracking-tight text-foreground"
+          >
+            {title}
+          </h2>
+          <p id="stuck-modal-description" className="text-sm text-muted-foreground">
+            {description}
+          </p>
 
-        {/* Auto-progress bar */}
-        {autoProgress && (
-          <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-muted">
-            <motion.div
-              className="h-full bg-primary"
-              initial={{ width: "0%" }}
-              animate={{ width: "100%" }}
-              transition={{ duration: duration / 1000, ease: "linear" }}
-            />
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <Button onClick={onAccept} className="w-full sm:w-auto">
+              {acceptLabel}
+            </Button>
+            <Button variant="outline" onClick={onDecline} className="w-full sm:w-auto">
+              {declineLabel}
+            </Button>
           </div>
-        )}
+        </div>
       </motion.div>
     </motion.div>
   );

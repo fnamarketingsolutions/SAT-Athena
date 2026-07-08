@@ -7,7 +7,7 @@ export function ReportFooter({ generatedAt }: { generatedAt: string }) {
   return (
     <footer className="mt-auto flex items-center justify-between border-t border-border/60 pt-4">
       <div className="flex items-center gap-2">
-        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-athena-navy text-[10px] font-bold text-athena-amber">
+        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-athena-navy text-[10px] font-bold text-white">
           A
         </span>
         <span className="text-[11px] font-semibold uppercase tracking-widest text-foreground">

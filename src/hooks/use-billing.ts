@@ -29,16 +29,3 @@ export function useStartCheckout() {
     },
   });
 }
-
-/** Open the Stripe Billing Portal (manage / cancel an existing subscription). */
-export function useBillingPortal() {
-  return useMutation({
-    mutationFn: () =>
-      fetch("/api/billing/portal", { method: "POST" }).then((r) =>
-        jsonOrThrow<{ url: string }>(r)
-      ),
-    onSuccess: ({ url }) => {
-      window.location.href = url;
-    },
-  });
-}

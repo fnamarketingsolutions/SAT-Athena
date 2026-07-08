@@ -1,20 +1,20 @@
-type Tone = "success" | "amber" | "destructive";
+type Tone = "success" | "mid" | "destructive";
 
 function toneFor(pct: number): Tone {
   if (pct >= 0.8) return "success";
-  if (pct >= 0.5) return "amber";
+  if (pct >= 0.5) return "mid";
   return "destructive";
 }
 
 const STROKE_BY_TONE: Record<Tone, string> = {
   success: "var(--athena-success)",
-  amber: "var(--athena-amber)",
+  mid: "var(--primary)",
   destructive: "var(--destructive)",
 };
 
 const TEXT_BY_TONE: Record<Tone, string> = {
   success: "text-athena-success",
-  amber: "text-athena-amber",
+  mid: "text-primary",
   destructive: "text-destructive",
 };
 

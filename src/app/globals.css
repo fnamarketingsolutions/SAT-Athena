@@ -61,35 +61,35 @@
 .light {
   --radius: 0.625rem;
 
-  /* Athena palette */
-  --athena-navy: oklch(0.25 0.05 260);
-  --athena-navy-light: oklch(0.35 0.06 260);
-  --athena-amber: oklch(0.75 0.16 75);
-  --athena-amber-light: oklch(0.85 0.12 80);
-  --athena-success: oklch(0.65 0.17 155);
-  --athena-success-light: oklch(0.80 0.12 155);
+  /* Athena palette — blue primary, green secondary */
+  --athena-navy: oklch(0.48 0.16 250);
+  --athena-navy-light: oklch(0.58 0.14 250);
+  --athena-amber: oklch(0.58 0.17 155);
+  --athena-amber-light: oklch(0.72 0.14 155);
+  --athena-success: oklch(0.58 0.17 155);
+  --athena-success-light: oklch(0.72 0.14 155);
 
-  /* Light theme — warm, approachable */
-  --background: oklch(0.985 0.002 90);
-  --foreground: oklch(0.18 0.04 260);
+  /* Light theme — clean, content-first */
+  --background: oklch(0.98 0.008 240);
+  --foreground: oklch(0.22 0.04 250);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.04 260);
+  --card-foreground: oklch(0.22 0.04 250);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.04 260);
-  --primary: oklch(0.25 0.05 260);
-  --primary-foreground: oklch(0.98 0.005 90);
-  --secondary: oklch(0.96 0.005 90);
-  --secondary-foreground: oklch(0.25 0.05 260);
-  --muted: oklch(0.96 0.005 90);
-  --muted-foreground: oklch(0.50 0.02 260);
-  --accent: oklch(0.75 0.16 75);
-  --accent-foreground: oklch(0.18 0.04 260);
+  --popover-foreground: oklch(0.22 0.04 250);
+  --primary: oklch(0.48 0.16 250);
+  --primary-foreground: oklch(0.99 0.005 240);
+  --secondary: oklch(0.96 0.02 240);
+  --secondary-foreground: oklch(0.28 0.06 250);
+  --muted: oklch(0.95 0.012 240);
+  --muted-foreground: oklch(0.48 0.03 250);
+  --accent: oklch(0.58 0.17 155);
+  --accent-foreground: oklch(0.18 0.04 155);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.91 0.005 90);
   --input: oklch(0.91 0.005 90);
-  --ring: oklch(0.25 0.05 260);
-  --chart-1: oklch(0.25 0.05 260);
-  --chart-2: oklch(0.75 0.16 75);
+  --ring: oklch(0.48 0.16 250);
+  --chart-1: oklch(0.48 0.16 250);
+  --chart-2: oklch(0.58 0.17 155);
   --chart-3: oklch(0.65 0.17 155);
   --chart-4: oklch(0.60 0.12 240);
   --chart-5: oklch(0.70 0.15 30);
@@ -105,7 +105,8 @@
   /* Tangent lesson accent colors (HSL values for hsl(var(--name)) usage) */
   --blue: 195 90% 50%;
   --green: 155 75% 50%;
-  --yellow: 45 95% 58%;
+  /* Avoid yellow accents site-wide: map "yellow" token to green. */
+  --yellow: var(--green);
   --pink: 340 80% 65%;
   --orange: 25 95% 55%;
   --correct: 155 70% 50%;
@@ -117,34 +118,34 @@
 }
 
 .dark {
-  /* Athena dark palette */
-  --athena-navy: oklch(0.55 0.08 260);
-  --athena-navy-light: oklch(0.65 0.08 260);
-  --athena-amber: oklch(0.80 0.14 75);
-  --athena-amber-light: oklch(0.90 0.10 80);
+  /* Athena dark palette — blue primary, green secondary */
+  --athena-navy: oklch(0.65 0.14 250);
+  --athena-navy-light: oklch(0.72 0.12 250);
+  --athena-amber: oklch(0.72 0.15 155);
+  --athena-amber-light: oklch(0.80 0.12 155);
   --athena-success: oklch(0.72 0.15 155);
-  --athena-success-light: oklch(0.82 0.10 155);
+  --athena-success-light: oklch(0.80 0.12 155);
 
-  --background: oklch(0.14 0.02 260);
-  --foreground: oklch(0.95 0.005 90);
-  --card: oklch(0.19 0.025 260);
-  --card-foreground: oklch(0.95 0.005 90);
-  --popover: oklch(0.19 0.025 260);
-  --popover-foreground: oklch(0.95 0.005 90);
-  --primary: oklch(0.80 0.14 75);
-  --primary-foreground: oklch(0.14 0.02 260);
-  --secondary: oklch(0.22 0.03 260);
-  --secondary-foreground: oklch(0.95 0.005 90);
-  --muted: oklch(0.22 0.03 260);
-  --muted-foreground: oklch(0.65 0.02 260);
-  --accent: oklch(0.80 0.14 75);
-  --accent-foreground: oklch(0.14 0.02 260);
+  --background: oklch(0.16 0.02 250);
+  --foreground: oklch(0.96 0.008 240);
+  --card: oklch(0.99 0.005 240);
+  --card-foreground: oklch(0.22 0.04 250);
+  --popover: oklch(0.20 0.025 250);
+  --popover-foreground: oklch(0.96 0.008 240);
+  --primary: oklch(0.58 0.16 250);
+  --primary-foreground: oklch(0.99 0.005 240);
+  --secondary: oklch(0.24 0.03 250);
+  --secondary-foreground: oklch(0.96 0.008 240);
+  --muted: oklch(0.24 0.03 250);
+  --muted-foreground: oklch(0.62 0.03 250);
+  --accent: oklch(0.65 0.16 155);
+  --accent-foreground: oklch(0.14 0.03 155);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(0.28 0.03 260);
   --input: oklch(0.28 0.03 260);
-  --ring: oklch(0.80 0.14 75);
-  --chart-1: oklch(0.55 0.08 260);
-  --chart-2: oklch(0.80 0.14 75);
+  --ring: oklch(0.58 0.16 250);
+  --chart-1: oklch(0.58 0.16 250);
+  --chart-2: oklch(0.65 0.16 155);
   --chart-3: oklch(0.72 0.15 155);
   --chart-4: oklch(0.65 0.12 240);
   --chart-5: oklch(0.70 0.15 30);
@@ -160,7 +161,8 @@
   /* Tangent lesson accent colors (HSL values for hsl(var(--name)) usage) */
   --blue: 195 90% 55%;
   --green: 155 75% 55%;
-  --yellow: 45 95% 62%;
+  /* Avoid yellow accents site-wide: map "yellow" token to green. */
+  --yellow: var(--green);
   --pink: 340 80% 68%;
   --orange: 25 95% 58%;
   --correct: 155 70% 55%;
@@ -270,15 +272,14 @@
   --obs-muted: var(--muted-foreground);
   --obs-dim: var(--muted-foreground);
   --obs-border: var(--border);
-  /* Orb palette — warm amber, matching the /play orb. */
-  --obs-glow-core: oklch(0.95 0.08 70);
-  --obs-glow-mid: oklch(0.78 0.16 55);
-  --obs-glow-halo: oklch(0.42 0.14 40);
-  --obs-accent: oklch(0.82 0.14 60);
-  --obs-accent-deep: oklch(0.60 0.14 50);
+  --obs-glow-core: oklch(0.92 0.04 250);
+  --obs-glow-mid: oklch(0.62 0.14 250);
+  --obs-glow-halo: oklch(0.45 0.12 250);
+  --obs-accent: oklch(0.58 0.17 155);
+  --obs-accent-deep: oklch(0.48 0.16 155);
 
-  /* Let the observation bg show through the whiteboard surface */
-  --wb-canvas: color-mix(in oklch, var(--card) 35%, transparent);
+  /* Solid whiteboard surface over a clean page background */
+  --wb-canvas: var(--card);
 
   background-color: var(--obs-bg);
   color: var(--obs-fg);
@@ -289,12 +290,15 @@
 
 .dark .observation-record {
   color-scheme: dark;
-  --wb-canvas: oklch(0.05 0.005 80 / 0.35);
+  --wb-canvas: var(--card);
 }
 
-/* Display heading inside an observation-record surface. Apply this
- * class (or set font-family inline) to opt into Instrument Serif for
- * h1/h2/h3 / hero text. Body text and eyebrows stay JetBrains Mono. */
+.observation-grid-bg {
+  background-image: none;
+  background-color: var(--background);
+}
+
+/* Display heading inside an observation-record surface. */
 .observation-record .obs-serif,
 .obs-serif {
   font-family: var(--font-instrument-serif), "Times New Roman", serif;
@@ -302,22 +306,11 @@
   letter-spacing: -0.01em;
 }
 
-.observation-grid-bg {
-  background-image:
-    linear-gradient(oklch(from var(--foreground) l c h / 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, oklch(from var(--foreground) l c h / 0.04) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
-
 .obs-vignette {
-  background:
-    radial-gradient(ellipse 60% 40% at 50% 38%, oklch(0.55 0.10 60 / 0.10), transparent 60%),
-    radial-gradient(ellipse at center, transparent 40%, var(--background) 88%);
+  background: none;
 }
 .dark .obs-vignette {
-  background:
-    radial-gradient(ellipse 60% 40% at 50% 38%, oklch(0.22 0.05 60 / 0.22), transparent 60%),
-    radial-gradient(ellipse at center, transparent 30%, #000 80%);
+  background: none;
 }
 
 .observation-dotted-rule {
@@ -373,7 +366,7 @@
 .op-new,
 .op-result,
 .op-cancel {
-  color: var(--athena-amber);
+  color: var(--primary);
   /* HMR rebuild trigger — see globals.css mtime touch on 2026-04-27 */
 }
 
@@ -543,7 +536,45 @@
   margin-bottom: 0;
 }
 
-/* ── /play onboarding surface ─────────────────────────────────────── */
+/* ── Dashboard — clean study hub (no play-stage gamification) ───── */
+.dashboard-surface {
+  --p-bg: var(--background);
+  --p-fg: var(--foreground);
+  --p-fg-dim: var(--muted-foreground);
+  --p-fg-mute: var(--muted-foreground);
+  --p-fg-faint: color-mix(in oklch, var(--muted-foreground) 55%, transparent);
+  --p-rule: var(--border);
+  --p-accent: var(--primary);
+  --p-accent-deep: var(--primary);
+  --p-surface: var(--card);
+  --p-surface-hover: var(--muted);
+  --p-card: var(--card);
+  background: linear-gradient(
+    to bottom,
+    oklch(0.98 0.008 240),
+    oklch(1 0 0),
+    oklch(0.97 0.02 250 / 0.45)
+  );
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ── Onboarding — light photo backdrop, solid white cards ─────────── */
+.onboarding-surface {
+  background-color: oklch(0.98 0.008 240);
+  background-image:
+    linear-gradient(
+      to bottom,
+      oklch(0.99 0.005 240 / 0.94),
+      oklch(0.96 0.02 250 / 0.9)
+    ),
+    url("/images/onboarding/study-bg.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* ── /play immersive surface ──────────────────────────────────────── */
 .play-stage {
   --p-bg: var(--background);
   --p-fg: var(--foreground);

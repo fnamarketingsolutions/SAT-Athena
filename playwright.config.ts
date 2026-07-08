@@ -1,24 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
-import { config as loadEnv } from "dotenv";
-
-// Load .env so Clerk keys are visible to the test runner. Map the
-// Next.js public key into the name @clerk/testing expects.
+import { config as loadEnv } from "dotenv"; 
 loadEnv();
 if (!process.env.CLERK_PUBLISHABLE_KEY && process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
   process.env.CLERK_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-}
-
-/**
- * Cross-browser visual harness for the micro-lesson whiteboard.
- *
- * Workflow:
- *   1. Start the Next.js dev server (`make dev`).
- *   2. Run `make visual-auth` ONCE — opens a browser, you log in
- *      manually, the storage state is saved.
- *   3. Run `make visual-test` to capture screenshots in chromium and
- *      webkit; outputs land in `.local/playwright/snapshots/`.
- *   4. Run `make visual-compare` to diff browsers + against baseline.
- */
+} 
 export default defineConfig({
   testDir: ".local/playwright/tests",
   outputDir: ".local/playwright/.results",

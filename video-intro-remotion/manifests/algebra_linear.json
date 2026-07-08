@@ -424,10 +424,6 @@
       "max_dead_frame_seconds": 1.0,
       "dead_frame_brightness_threshold": 10.0
     },
-    "_meta": {
-      "generated_by": "agents/video_intro/brief_generator.py",
-      "model": "claude-sonnet-4-20250514"
-    },
     "render": {
       "audio_path_local": "audio.mp3",
       "duration_s": 18.947

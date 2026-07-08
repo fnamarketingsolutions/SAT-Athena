@@ -125,10 +125,18 @@ export function QuizTutorPageContent() {
         {questionPhase === "practice" && showPracticeEntryModal && (
           <StuckModal
             title="You got this right!"
-            description="Let's practice a couple more just to be sure"
-            onComplete={() => {
+            description="Want to practice a couple more problems to lock it in?"
+            acceptLabel="Let's practice"
+            declineLabel="Skip for now"
+            onAccept={() => {
               markPracticeEntryModalShown(currentProblem.id);
               setShowPracticeEntryModal(false);
+            }}
+            onDecline={() => {
+              markPracticeEntryModalShown(currentProblem.id);
+              setShowPracticeEntryModal(false);
+              quiz.completePractice();
+              router.push(`${basePath}/quiz/${quiz.currentIndex + 2}`);
             }}
           />
         )}

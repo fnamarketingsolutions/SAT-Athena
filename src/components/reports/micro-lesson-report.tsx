@@ -115,7 +115,7 @@ function StatPill({
     tone === "success"
       ? "bg-athena-success/10 text-athena-success"
       : tone === "amber"
-        ? "bg-athena-amber/10 text-athena-amber"
+        ? "bg-primary/10 text-primary"
         : "bg-athena-navy/5 text-athena-navy";
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${bg}`}>

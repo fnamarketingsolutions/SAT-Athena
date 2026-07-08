@@ -28,8 +28,6 @@ BEGIN
 
   INSERT INTO onboarding_progress (user_id, current_step)
   VALUES (uid, 'plan');
-
-  RAISE NOTICE 'Onboarding reset for % (id: %)', user_email, uid;
 END;
 $$ LANGUAGE plpgsql;
 

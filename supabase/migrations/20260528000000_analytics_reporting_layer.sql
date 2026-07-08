@@ -135,9 +135,6 @@ begin
       '10 7 * * *',
       $cron$ select analytics.snapshot_subsection_skills(); $cron$
     );
-    raise notice 'pg_cron job ''analytics-daily-skill-snapshot'' scheduled.';
-  else
-    raise notice 'pg_cron NOT enabled: snapshot will not auto-run. Enable the extension and re-run this block, or schedule an external nightly job that calls analytics.snapshot_subsection_skills().';
   end if;
 end;
 $$;

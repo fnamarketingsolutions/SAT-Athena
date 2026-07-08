@@ -16,9 +16,8 @@ function CorrectConfetti() {
   const colors = [
     "hsl(var(--green))",
     "hsl(var(--blue))",
-    "hsl(var(--yellow))",
-    "hsl(var(--pink))",
-    "hsl(var(--orange))",
+    "hsl(var(--green))",
+    "hsl(var(--blue))",
   ];
   const particles = Array.from({ length: 14 }, (_, i) => ({
     id: i,
@@ -176,7 +175,7 @@ export function TutorPracticeCard({
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: "spring", stiffness: 400, damping: 15 }}
-              className="relative z-10 flex items-center gap-2 rounded-full border border-green-500/40 bg-green-500/15 px-5 py-2.5 shadow-lg shadow-green-500/25 backdrop-blur-md"
+              className="relative z-10 flex items-center gap-2 rounded-full border border-athena-success/30 bg-athena-success/10 px-5 py-2.5 shadow-sm"
             >
               <Check className="h-5 w-5 text-green-500" />
               <span className="text-base font-bold text-green-500">
@@ -200,14 +199,14 @@ export function TutorPracticeCard({
           shows the question text inline + the standard option grid +
           reveal feedback, all on the obs-surface palette so it reads
           as part of the same observation system. */}
-      <div className="observation-record w-[360px] rounded-xl border border-[var(--obs-border)] bg-[var(--obs-surface)] backdrop-blur-md shadow-lg overflow-hidden max-h-[calc(100vh-200px)] overflow-y-auto">
+      <div className="w-[360px] rounded-xl border border-border bg-card shadow-lg overflow-hidden max-h-[calc(100vh-200px)] overflow-y-auto">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center gap-3 p-8">
             <motion.div
               animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.15, 1] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             >
-              <Sparkles className="h-6 w-6 text-athena-amber" />
+              <Sparkles className="h-6 w-6 text-primary" />
             </motion.div>
             <p className="text-xs text-[var(--obs-muted)]">
               Preparing practice problems…

@@ -1,52 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowRight, BarChart3, CheckCircle2, Flame, Swords, Zap } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpen, CheckCircle2 } from "lucide-react";
 import type { AccountabilityStatus } from "@/hooks/use-accountability-status";
 
-type DailyQuestHeroProps = {
+type DailyPracticeCardProps = {
   status: AccountabilityStatus | undefined;
   isLoading?: boolean;
 };
 
-export function DailyQuestHero({ status, isLoading }: DailyQuestHeroProps) {
+/** Today's assigned practice — progress only, no XP/streak gamification. */
+export function DailyQuestHero({ status, isLoading }: DailyPracticeCardProps) {
   if (isLoading) {
     return (
-      <div
-        className="play-card mb-10 h-36 w-full max-w-xl animate-pulse rounded-2xl"
-        style={{ background: "var(--p-surface)", border: "1px solid var(--p-rule)" }}
-      />
+      <div className="mb-10 h-32 w-full max-w-xl animate-pulse rounded-2xl border border-border bg-card" />
     );
   }
 
-  const quest = status?.quest;
-  const streak = status?.streak ?? 0;
+  const session = status?.quest;
   const locked = Boolean(status?.enabled && status.locked);
-  const completed = quest?.status === "completed";
+  const completed = session?.status === "completed";
 
   if (!status?.enabled) return null;
 
-  if (!quest) {
+  if (!session) {
     return (
-      <Link href="/quest" className="play-card mb-10 block w-full max-w-xl">
-        <div
-          className="rounded-2xl px-6 py-6 text-left transition hover:border-[var(--p-accent)]/50"
-          style={{
-            background: "var(--p-surface)",
-            border: "1px solid var(--p-rule)",
-          }}
-        >
-          <div className="flex items-center gap-3">
-            <Swords className="h-6 w-6 text-[var(--p-accent)]" />
-            <div>
-              <p className="font-medium text-[var(--p-fg)]">Your daily quest is ready</p>
-              <p className="text-sm text-[var(--p-fg-mute)]">
-                Adaptive problems tuned to your weak areas
-              </p>
-            </div>
-            <ArrowRight className="ml-auto h-4 w-4 text-[var(--p-accent)]" />
+      <Link
+        href="/quest"
+        className="mb-10 block w-full max-w-xl rounded-2xl border border-border bg-card p-6 shadow-sm transition hover:border-primary/40"
+      >
+        <div className="flex items-center gap-3 text-left">
+          <BookOpen className="h-6 w-6 shrink-0 text-primary" />
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-foreground">Today&apos;s practice</p>
+            <p className="text-sm text-muted-foreground">
+              Adaptive problems focused on your weak areas
+            </p>
           </div>
+          <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
         </div>
       </Link>
     );
@@ -54,105 +45,73 @@ export function DailyQuestHero({ status, isLoading }: DailyQuestHeroProps) {
 
   if (completed) {
     const accuracy =
-      quest.totalQuestions > 0
-        ? Math.round((quest.correctCount / quest.totalQuestions) * 100)
+      session.totalQuestions > 0
+        ? Math.round((session.correctCount / session.totalQuestions) * 100)
         : 0;
 
     return (
       <div className="mb-10 w-full max-w-xl space-y-3">
-        <div
-          className="play-card rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-6 py-5 text-left"
-        >
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="h-6 w-6 text-emerald-600 dark:text-green-400" />
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <div className="flex items-start gap-3 text-left">
+            <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-accent" />
             <div className="flex-1">
-              <p className="font-medium text-[var(--p-fg)]">Daily quest complete</p>
-              <p className="text-sm text-[var(--p-fg-mute)]">
-                {quest.correctCount}/{quest.totalQuestions} correct ({accuracy}%)
+              <p className="font-medium text-foreground">Today&apos;s practice complete</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {session.correctCount}/{session.totalQuestions} correct ({accuracy}%)
               </p>
-            </div>
-            {streak > 0 && (
-              <div className="flex items-center gap-1 text-[var(--p-accent)]">
-                <Flame className="h-4 w-4" />
-                <span className="text-sm font-semibold">{streak}d</span>
-              </div>
-            )}
-            <div className="flex items-center gap-1 text-[var(--p-accent)]">
-              <Zap className="h-4 w-4" />
-              <span className="text-sm font-semibold">+{quest.xpEarned}</span>
             </div>
           </div>
         </div>
         <Link
           href="/analytics"
-          className="play-card flex items-center justify-between rounded-2xl px-5 py-4 text-left transition hover:border-[var(--p-accent)]/50"
-          style={{
-            background: "var(--p-surface)",
-            border: "1px solid var(--p-rule)",
-          }}
+          className="flex items-center justify-between rounded-2xl border border-border bg-card px-5 py-4 text-left shadow-sm transition hover:border-primary/40"
         >
           <div className="flex items-center gap-3">
-            <BarChart3 className="h-5 w-5 text-[var(--p-accent)]" />
+            <BarChart3 className="h-5 w-5 text-primary" />
             <div>
-              <p className="text-sm font-medium text-[var(--p-fg)]">Review your progress</p>
-              <p className="text-xs text-[var(--p-fg-mute)]">Scores, weak areas, and streaks</p>
+              <p className="text-sm font-medium text-foreground">Review your progress</p>
+              <p className="text-xs text-muted-foreground">Scores, subjects, and focus areas</p>
             </div>
           </div>
-          <ArrowRight className="h-4 w-4 text-[var(--p-accent)]" />
+          <ArrowRight className="h-4 w-4 text-muted-foreground" />
         </Link>
       </div>
     );
   }
 
   const progress =
-    quest.totalQuestions > 0
-      ? Math.round((quest.answeredCount / quest.totalQuestions) * 100)
+    session.totalQuestions > 0
+      ? Math.round((session.answeredCount / session.totalQuestions) * 100)
       : 0;
 
   return (
-    <Link href="/quest" className="play-card mb-10 block w-full max-w-xl">
-      <motion.div
-        whileHover={{ scale: 1.01 }}
-        whileTap={{ scale: 0.99 }}
-        className="rounded-2xl px-6 py-6 text-left"
-        style={{
-          background: locked
-            ? "linear-gradient(180deg, oklch(0.12 0.06 55 / 0.45), oklch(0.05 0.01 60 / 0.55))"
-            : "var(--p-surface)",
-          border: locked
-            ? "1px solid oklch(0.65 0.14 60 / 0.45)"
-            : "1px solid var(--p-rule)",
-        }}
-      >
-        <div className="flex items-start gap-3">
-          <Swords className="mt-0.5 h-6 w-6 shrink-0 text-[var(--p-accent)]" />
-          <div className="flex-1">
-            <p className="font-medium text-[var(--p-fg)]">
-              {locked ? "Complete today's quest to unlock" : "Daily Quest"}
-            </p>
-            <p className="mt-1 text-sm text-[var(--p-fg-mute)]">
-              {quest.answeredCount > 0
-                ? `${quest.answeredCount}/${quest.totalQuestions} answered · ${progress}% done`
-                : `${quest.totalQuestions} adaptive questions tailored to you`}
-            </p>
-            {quest.answeredCount > 0 && (
-              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[var(--p-rule)]">
-                <div
-                  className="h-full rounded-full bg-[var(--p-accent)] transition-all"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            )}
-            {streak > 0 && (
-              <div className="mt-3 flex items-center gap-1 text-xs text-[var(--p-fg-dim)]">
-                <Flame className="h-3.5 w-3.5 text-[var(--p-accent)]" />
-                {streak}-day streak — keep it going
-              </div>
-            )}
+    <Link
+      href="/quest"
+      className="mb-10 block w-full max-w-xl rounded-2xl border border-border bg-card p-6 shadow-sm transition hover:border-primary/40"
+    >
+      <div className="flex items-start gap-3 text-left">
+        <BookOpen className="mt-0.5 h-6 w-6 shrink-0 text-primary" />
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-foreground">
+            {locked ? "Finish today's practice first" : "Today's practice"}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {session.answeredCount > 0
+              ? `${session.answeredCount} of ${session.totalQuestions} complete`
+              : `${session.totalQuestions} problems tailored to your plan`}
+          </p>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${Math.max(progress, session.answeredCount > 0 ? 4 : 0)}%` }}
+            />
           </div>
-          <ArrowRight className="h-4 w-4 shrink-0 text-[var(--p-accent)]" />
+          {session.answeredCount > 0 && (
+            <p className="mt-2 text-xs text-muted-foreground">{progress}% complete</p>
+          )}
         </div>
-      </motion.div>
+        <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+      </div>
     </Link>
   );
 }

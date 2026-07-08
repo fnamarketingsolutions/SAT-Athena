@@ -295,26 +295,23 @@ export function OnboardingWizard() {
 
   if (isLoading) {
     return (
-      <div className="play-stage flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-white/20 border-t-[var(--p-accent)]" />
+      <div className="onboarding-surface flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
       </div>
     );
   }
 
   return (
-    <div className="play-stage relative min-h-screen overflow-hidden">
-      <div className="play-vignette pointer-events-none absolute inset-0" />
-      <div className="play-grain pointer-events-none absolute inset-0" />
-
+    <div className="onboarding-surface relative min-h-screen">
       <div className="relative z-10 mx-auto flex min-h-screen max-w-2xl flex-col px-6 py-10">
         <div className="mb-8">
-          <div className="mb-2 flex items-center justify-between text-xs uppercase tracking-widest text-[var(--p-fg-mute)]">
+          <div className="mb-2 flex items-center justify-between text-xs font-medium uppercase tracking-widest text-muted-foreground">
             <span>Setup</span>
             <span>{progressPct}%</span>
           </div>
-          <div className="h-1 overflow-hidden rounded-full bg-[var(--p-rule)]">
+          <div className="h-1.5 overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full bg-[var(--p-accent)] transition-all duration-500"
+              className="h-full rounded-full bg-primary transition-all duration-500"
               style={{ width: `${progressPct}%` }}
             />
           </div>
@@ -322,109 +319,107 @@ export function OnboardingWizard() {
 
         {step === "welcome" && (
           <div className="flex flex-1 flex-col justify-center">
-            <div className="play-anim-orb mx-auto mb-8">
-              <div className="play-orb" />
+            <div className="mx-auto w-full max-w-lg rounded-2xl border border-border bg-card p-8 shadow-sm md:p-10">
+              <h1 className="text-center font-[family-name:var(--font-instrument-serif)] text-4xl italic text-foreground md:text-5xl">
+                {welcome ? "You're in." : "Welcome to Athena"}
+              </h1>
+              <p className="mx-auto mt-4 max-w-md text-center text-sm leading-relaxed text-muted-foreground">
+                A quick setup helps us calibrate your starting point, set a target score,
+                and build a study schedule around your week.
+              </p>
+              <button
+                onClick={() => goToStep("baseline")}
+                className="mx-auto mt-10 flex items-center gap-2 rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
+              >
+                Get started
+                <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
-            <h1
-              className="play-anim-h1 text-center font-[family-name:var(--font-instrument-serif)] text-4xl italic text-[var(--p-fg)] md:text-5xl"
-              style={{ transform: "translateY(12px)" }}
-            >
-              {welcome ? "You're in." : "Welcome to Athena"}
-            </h1>
-            <p
-              className="play-anim-sub mx-auto mt-4 max-w-md text-center text-sm leading-relaxed text-[var(--p-fg-dim)]"
-              style={{ transform: "translateY(12px)" }}
-            >
-              A quick setup helps us calibrate your starting point, set a target score,
-              and build a study schedule around your week.
-            </p>
-            <button
-              onClick={() => goToStep("baseline")}
-              className="play-card mx-auto mt-10 flex items-center gap-2 rounded-full border border-[var(--p-accent)]/40 bg-[var(--p-accent)]/10 px-8 py-3 text-sm font-medium text-[var(--p-accent)] transition hover:bg-[var(--p-accent)]/20"
-            >
-              Get started
-              <ArrowRight className="h-4 w-4" />
-            </button>
           </div>
         )}
 
         {step === "baseline" && (
           <div className="flex flex-1 flex-col justify-center">
-            <h2 className="text-center font-[family-name:var(--font-instrument-serif)] text-3xl italic text-[var(--p-fg)]">
-              Where are you starting?
-            </h2>
-            <p className="mt-3 text-center text-sm text-[var(--p-fg-dim)]">
-              Take a short diagnostic or enter scores you already know.
-            </p>
-            <div className="mt-10 grid gap-4 md:grid-cols-2">
-              <button
-                onClick={() => {
-                  loadDiagnostic.mutate();
-                }}
-                disabled={loadDiagnostic.isPending}
-                className="play-card rounded-2xl border border-[var(--p-rule)] p-6 text-left transition hover:border-[var(--p-accent)]/50"
-              >
-                <Sparkles className="mb-3 h-5 w-5 text-[var(--p-accent)]" />
-                <div className="text-base font-medium text-[var(--p-fg)]">
-                  {loadDiagnostic.isPending ? "Loading…" : "12-question diagnostic"}
-                </div>
-                <p className="mt-2 text-xs leading-relaxed text-[var(--p-fg-mute)]">
-                  ~10 minutes. We estimate your Reading & Writing and Math baselines.
-                </p>
-              </button>
-              <button
-                onClick={() => {
-                  goToStep("self_report");
-                }}
-                className="play-card rounded-2xl border border-[var(--p-rule)] p-6 text-left transition hover:border-[var(--p-accent)]/50"
-              >
-                <Target className="mb-3 h-5 w-5 text-[var(--p-accent)]" />
-                <div className="text-base font-medium text-[var(--p-fg)]">
-                  I know my scores
-                </div>
-                <p className="mt-2 text-xs leading-relaxed text-[var(--p-fg-mute)]">
-                  Enter your latest R&amp;W and Math section scores (200–800 each).
-                </p>
-              </button>
+            <div className="rounded-2xl border border-border bg-card p-8 shadow-sm md:p-10">
+              <h2 className="text-center font-[family-name:var(--font-instrument-serif)] text-3xl italic text-foreground">
+                Where are you starting?
+              </h2>
+              <p className="mt-3 text-center text-sm text-muted-foreground">
+                Take a short diagnostic or enter scores you already know.
+              </p>
+              <div className="mt-10 grid gap-4 md:grid-cols-2">
+                <button
+                  onClick={() => {
+                    loadDiagnostic.mutate();
+                  }}
+                  disabled={loadDiagnostic.isPending}
+                  className="rounded-2xl border border-border bg-background p-6 text-left transition hover:border-primary/40 hover:shadow-sm"
+                >
+                  <Sparkles className="mb-3 h-5 w-5 text-primary" />
+                  <div className="text-base font-medium text-foreground">
+                    {loadDiagnostic.isPending ? "Loading…" : "12-question diagnostic"}
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    ~10 minutes. We estimate your Reading & Writing and Math baselines.
+                  </p>
+                </button>
+                <button
+                  onClick={() => {
+                    goToStep("self_report");
+                  }}
+                  className="rounded-2xl border border-border bg-background p-6 text-left transition hover:border-primary/40 hover:shadow-sm"
+                >
+                  <Target className="mb-3 h-5 w-5 text-primary" />
+                  <div className="text-base font-medium text-foreground">
+                    I know my scores
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    Enter your latest R&amp;W and Math section scores (200–800 each).
+                  </p>
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {step === "self_report" && (
           <div className="flex flex-1 flex-col justify-center">
-            <h2 className="text-center font-[family-name:var(--font-instrument-serif)] text-3xl italic text-[var(--p-fg)]">
-              Your current scores
-            </h2>
-            <div className="mt-10 space-y-8">
-              <ScoreSlider
-                label="Reading & Writing"
-                value={rwScore}
-                onChange={setRwScore}
-              />
-              <ScoreSlider label="Math" value={mathScore} onChange={setMathScore} />
-              <p className="text-center text-sm text-[var(--p-fg-dim)]">
-                Composite estimate: <span className="text-[var(--p-accent)]">{rwScore + mathScore}</span>
-              </p>
+            <div className="rounded-2xl border border-border bg-card p-8 shadow-sm md:p-10">
+              <h2 className="text-center font-[family-name:var(--font-instrument-serif)] text-3xl italic text-foreground">
+                Your current scores
+              </h2>
+              <div className="mt-10 space-y-8">
+                <ScoreSlider
+                  label="Reading & Writing"
+                  value={rwScore}
+                  onChange={setRwScore}
+                />
+                <ScoreSlider label="Math" value={mathScore} onChange={setMathScore} />
+                <p className="text-center text-sm text-muted-foreground">
+                  Composite estimate:{" "}
+                  <span className="font-medium text-primary">{rwScore + mathScore}</span>
+                </p>
+              </div>
+              <button
+                onClick={() => submitBaseline.mutate()}
+                disabled={submitBaseline.isPending}
+                className="mx-auto mt-10 flex items-center gap-2 rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
+              >
+                {submitBaseline.isPending ? "Saving…" : "Continue"}
+                <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
-            <button
-              onClick={() => submitBaseline.mutate()}
-              disabled={submitBaseline.isPending}
-              className="mx-auto mt-10 flex items-center gap-2 rounded-full border border-[var(--p-accent)]/40 bg-[var(--p-accent)]/10 px-8 py-3 text-sm font-medium text-[var(--p-accent)]"
-            >
-              {submitBaseline.isPending ? "Saving…" : "Continue"}
-              <ArrowRight className="h-4 w-4" />
-            </button>
           </div>
         )}
 
         {step === "diagnostic" && currentProblem && (
           <div className="flex flex-1 flex-col">
-            <h2 className="mb-6 text-center text-sm uppercase tracking-widest text-[var(--p-fg-mute)]">
+            <h2 className="mb-6 text-center text-sm font-medium uppercase tracking-widest text-muted-foreground">
               Diagnostic · Question {questionIndex + 1} of {diagnosticProblems.length}
             </h2>
-            <div className="flex-1 overflow-y-auto rounded-2xl border border-[var(--p-rule)] bg-black/40 p-6">
-              <div className="mb-4 text-xs text-[var(--p-fg-mute)]">{currentProblem.category}</div>
-              <div className="text-[var(--p-fg)]">
+            <div className="flex-1 overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-sm">
+              <div className="mb-4 text-xs text-muted-foreground">{currentProblem.category}</div>
+              <div className="text-foreground">
                 <MathContent content={currentProblem.questionText} />
               </div>
               <div className="mt-6 space-y-2">
@@ -435,11 +430,11 @@ export function OnboardingWizard() {
                     className={cn(
                       "flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-left text-sm transition",
                       selectedOption === i
-                        ? "border-[var(--p-accent)] bg-[var(--p-accent)]/10 text-[var(--p-fg)]"
-                        : "border-[var(--p-rule)] text-[var(--p-fg-dim)] hover:border-[var(--p-accent)]/40"
+                        ? "border-primary bg-primary/5 text-foreground"
+                        : "border-border text-muted-foreground hover:border-primary/30 hover:bg-muted/40"
                     )}
                   >
-                    <span className="font-mono text-[var(--p-fg-mute)]">
+                    <span className="font-mono text-muted-foreground">
                       {String.fromCharCode(65 + i)}
                     </span>
                     <MathContent content={option} />
@@ -473,104 +468,108 @@ export function OnboardingWizard() {
 
         {step === "goals" && (
           <div className="flex flex-1 flex-col justify-center">
-            <h2 className="text-center font-[family-name:var(--font-instrument-serif)] text-3xl italic text-[var(--p-fg)]">
-              Set your target score
-            </h2>
-            {resultScores && (
-              <p className="mt-3 text-center text-sm text-[var(--p-fg-dim)]">
-                Starting at {resultScores.composite} · R&amp;W {resultScores.rwScaled} · Math{" "}
-                {resultScores.mathScaled}
-              </p>
-            )}
-            <div className="mt-10">
-              <ScoreSlider
-                label="Target composite"
-                value={targetScore}
-                min={minTarget}
-                max={1600}
-                step={10}
-                onChange={setTargetScore}
-              />
+            <div className="rounded-2xl border border-border bg-card p-8 shadow-sm md:p-10">
+              <h2 className="text-center font-[family-name:var(--font-instrument-serif)] text-3xl italic text-foreground">
+                Set your target score
+              </h2>
+              {resultScores && (
+                <p className="mt-3 text-center text-sm text-muted-foreground">
+                  Starting at {resultScores.composite} · R&amp;W {resultScores.rwScaled} · Math{" "}
+                  {resultScores.mathScaled}
+                </p>
+              )}
+              <div className="mt-10">
+                <ScoreSlider
+                  label="Target composite"
+                  value={targetScore}
+                  min={minTarget}
+                  max={1600}
+                  step={10}
+                  onChange={setTargetScore}
+                />
+              </div>
+              <button
+                onClick={() => goToStep("schedule")}
+                className="mx-auto mt-10 flex items-center gap-2 rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
+              >
+                Continue
+                <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
-            <button
-              onClick={() => goToStep("schedule")}
-              className="mx-auto mt-10 flex items-center gap-2 rounded-full border border-[var(--p-accent)]/40 bg-[var(--p-accent)]/10 px-8 py-3 text-sm font-medium text-[var(--p-accent)]"
-            >
-              Continue
-              <ArrowRight className="h-4 w-4" />
-            </button>
           </div>
         )}
 
         {step === "schedule" && (
           <div className="flex flex-1 flex-col justify-center">
-            <h2 className="text-center font-[family-name:var(--font-instrument-serif)] text-3xl italic text-[var(--p-fg)]">
-              When do you study?
-            </h2>
-            <p className="mt-3 text-center text-sm text-[var(--p-fg-dim)]">
-              Pick the days and time for your weekly sessions. You can change this later.
-            </p>
+            <div className="rounded-2xl border border-border bg-card p-8 shadow-sm md:p-10">
+              <h2 className="text-center font-[family-name:var(--font-instrument-serif)] text-3xl italic text-foreground">
+                When do you study?
+              </h2>
+              <p className="mt-3 text-center text-sm text-muted-foreground">
+                Pick the days and time for your weekly sessions. You can change this later.
+              </p>
 
-            <div className="mt-8 flex justify-center gap-2">
-              {DAY_LETTERS.map((day) => {
-                const isActive = activeDays.has(day.key);
-                return (
-                  <button
-                    key={day.key}
-                    onClick={() => {
-                      setActiveDays((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(day.key)) next.delete(day.key);
-                        else next.add(day.key);
-                        return next;
-                      });
-                    }}
-                    className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-semibold transition",
-                      isActive
-                        ? "border-[var(--p-accent)] bg-[var(--p-accent)] text-black"
-                        : "border-[var(--p-rule)] text-[var(--p-fg-mute)]"
-                    )}
-                  >
-                    {day.letter}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="mt-6 max-h-48 overflow-y-auto rounded-2xl border border-[var(--p-rule)] p-3">
-              <div className="grid grid-cols-3 gap-2">
-                {TIME_OPTIONS.filter((_, i) => i % 4 === 0).map((time) => (
-                  <button
-                    key={time.value}
-                    onClick={() => setSelectedTime(time.value)}
-                    className={cn(
-                      "rounded-xl border px-2 py-2 text-xs transition",
-                      selectedTime === time.value
-                        ? "border-[var(--p-accent)] bg-[var(--p-accent)]/10 text-[var(--p-accent)]"
-                        : "border-[var(--p-rule)] text-[var(--p-fg-dim)]"
-                    )}
-                  >
-                    {time.label}
-                  </button>
-                ))}
+              <div className="mt-8 flex justify-center gap-2">
+                {DAY_LETTERS.map((day) => {
+                  const isActive = activeDays.has(day.key);
+                  return (
+                    <button
+                      key={day.key}
+                      onClick={() => {
+                        setActiveDays((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(day.key)) next.delete(day.key);
+                          else next.add(day.key);
+                          return next;
+                        });
+                      }}
+                      className={cn(
+                        "flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-semibold transition",
+                        isActive
+                          ? "border-accent bg-accent text-accent-foreground"
+                          : "border-border text-muted-foreground hover:border-primary/30"
+                      )}
+                    >
+                      {day.letter}
+                    </button>
+                  );
+                })}
               </div>
-            </div>
 
-            <button
-              onClick={() => {
-                if (activeDays.size === 0) {
-                  toast.error("Select at least one study day");
-                  return;
-                }
-                completeOnboarding.mutate();
-              }}
-              disabled={completeOnboarding.isPending}
-              className="mx-auto mt-10 flex items-center gap-2 rounded-full border border-[var(--p-accent)] bg-[var(--p-accent)] px-8 py-3 text-sm font-semibold text-black"
-            >
-              {completeOnboarding.isPending ? "Finishing…" : "Finish setup"}
-              <Calendar className="h-4 w-4" />
-            </button>
+              <div className="mt-6 max-h-48 overflow-y-auto rounded-2xl border border-border bg-background p-3">
+                <div className="grid grid-cols-3 gap-2">
+                  {TIME_OPTIONS.filter((_, i) => i % 4 === 0).map((time) => (
+                    <button
+                      key={time.value}
+                      onClick={() => setSelectedTime(time.value)}
+                      className={cn(
+                        "rounded-xl border px-2 py-2 text-xs transition",
+                        selectedTime === time.value
+                          ? "border-primary bg-primary/10 font-medium text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/30"
+                      )}
+                    >
+                      {time.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  if (activeDays.size === 0) {
+                    toast.error("Select at least one study day");
+                    return;
+                  }
+                  completeOnboarding.mutate();
+                }}
+                disabled={completeOnboarding.isPending}
+                className="mx-auto mt-10 flex items-center gap-2 rounded-full bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
+              >
+                {completeOnboarding.isPending ? "Finishing…" : "Finish setup"}
+                <Calendar className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -596,8 +595,8 @@ function ScoreSlider({
   return (
     <div>
       <div className="mb-2 flex items-center justify-between text-sm">
-        <span className="text-[var(--p-fg-dim)]">{label}</span>
-        <span className="font-mono text-[var(--p-accent)]">{value}</span>
+        <span className="text-muted-foreground">{label}</span>
+        <span className="font-mono font-medium text-primary">{value}</span>
       </div>
       <input
         type="range"
@@ -606,9 +605,9 @@ function ScoreSlider({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-[var(--p-accent)]"
+        className="w-full accent-primary"
       />
-      <div className="mt-1 flex justify-between text-xs text-[var(--p-fg-faint)]">
+      <div className="mt-1 flex justify-between text-xs text-muted-foreground/70">
         <span>{min}</span>
         <span>{max}</span>
       </div>

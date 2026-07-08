@@ -41,7 +41,7 @@ function phaseLabel(phase: string): { text: string; color: string } {
     case "teaching":
       return { text: "In Progress", color: "text-primary" };
     case "generating":
-      return { text: "Generating", color: "text-yellow-400" };
+      return { text: "Generating", color: "text-athena-success" };
     default:
       return { text: phase, color: "text-muted-foreground" };
   }

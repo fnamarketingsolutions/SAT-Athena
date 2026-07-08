@@ -12,8 +12,8 @@ type SegmentProgressBarProps = {
 
 const statusColors: Record<QuestionStatus, string> = {
   unanswered: "bg-muted",
-  answered: "bg-primary",
-  marked: "bg-athena-amber",
+  answered: "bg-athena-success",
+  marked: "bg-primary",
 };
 
 export function SegmentProgressBar({

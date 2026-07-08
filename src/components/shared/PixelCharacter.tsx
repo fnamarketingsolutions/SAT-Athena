@@ -6,8 +6,8 @@ type Emotion = "neutral" | "happy" | "thinking" | "excited" | "encouraging";
 // 16x16 pixel grid professor
 const SKIN = "hsl(30, 60%, 70%)";
 const HAT = "hsl(220, 30%, 20%)";
-const HAT_BAND = "hsl(var(--yellow))";
-const TASSEL = "hsl(var(--yellow))";
+const HAT_BAND = "hsl(var(--green))";
+const TASSEL = "hsl(var(--green))";
 const ROBE = "hsl(var(--blue))";
 const ROBE_DARK = "hsl(190, 72%, 40%)";
 const BG = "transparent";
@@ -135,7 +135,7 @@ export default function PixelCharacter({ emotion, isTalking, size = 64 }: Props)
           animate={{ scale: [1, 1.3, 1], rotate: [0, 15, 0] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         >
-          <Sparkles className="w-4 h-4" style={{ color: "hsl(var(--yellow))" }} />
+          <Sparkles className="w-4 h-4" style={{ color: "hsl(var(--green))" }} />
         </motion.div>
       )}
     </motion.div>

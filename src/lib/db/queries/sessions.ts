@@ -40,40 +40,6 @@ export async function createSessions(
   return (data ?? []).map(mapSession);
 }
 
-export async function getUserSessions(userId: string) {
-  const { data } = await supabase
-    .from("sessions")
-    .select("*")
-    .eq("user_id", userId)
-    .order("scheduled_date", { ascending: true });
-
-  return (data ?? []).map(mapSession);
-}
-
-export async function getUpcomingSessions(userId: string, limit: number = 5) {
-  const today = new Date().toISOString().split("T")[0];
-  const { data } = await supabase
-    .from("sessions")
-    .select("*")
-    .eq("user_id", userId)
-    .gte("scheduled_date", today)
-    .order("scheduled_date", { ascending: true })
-    .limit(limit);
-
-  return (data ?? []).map(mapSession);
-}
-
-export async function getRecentSessions(userId: string, limit: number = 10) {
-  const { data } = await supabase
-    .from("sessions")
-    .select("*")
-    .eq("user_id", userId)
-    .order("scheduled_date", { ascending: false })
-    .limit(limit);
-
-  return (data ?? []).map(mapSession);
-}
-
 export async function deleteFuturePendingSessions(userId: string) {
   const today = new Date().toISOString().split("T")[0];
   await supabase

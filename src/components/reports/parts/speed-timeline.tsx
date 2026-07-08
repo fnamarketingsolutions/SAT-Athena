@@ -145,7 +145,7 @@ export function MicroLessonAttemptsChart({
           />
           <Bar dataKey="wrong" radius={[6, 6, 0, 0]} isAnimationActive={false}>
             {data.map((d, i) => (
-              <Cell key={i} fill={d.wrong > 0 ? "var(--athena-amber)" : "oklch(0.92 0.005 90)"} />
+              <Cell key={i} fill={d.wrong > 0 ? "var(--primary)" : "oklch(0.92 0.005 90)"} />
             ))}
           </Bar>
         </BarChart>

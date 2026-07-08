@@ -228,12 +228,6 @@
       "max_dead_frame_seconds": 1.0,
       "dead_frame_brightness_threshold": 10.0
     },
-    "_meta": {
-      "generated_by": "hand-authored: agents/video_intro/briefs/linear_eq_two_var_wrapup.json",
-      "role": "wrap-up",
-      "purpose": "Wrap-up animation for the 'linear equations, two variables' subtopic. Uses a single sustained hill+basketball analogy to lock slope-intercept form into memory after the lesson. The `linear_hill_story` primitive is hand-authored (not AI-authored) \u2014 the bathroom-sign figure + 6-phase rendering is too compositionally specific for the auto-author loop to reliably converge on.",
-      "note": "Run with `python -m video_intro generate --brief-file agents/video_intro/briefs/linear_eq_two_var_wrapup.json --out out/linear_eq_wrapup --remotion-root ../video-intro-remotion --skip-primitive-author`. The primitive lives at video-intro-remotion/src/primitives/LinearHillStory.tsx and is already registered in IntroVideo.tsx / types/manifest.ts / brief_generator.py KNOWN_PRIMITIVES."
-    },
     "render": {
       "duration_s": 44.0
     }

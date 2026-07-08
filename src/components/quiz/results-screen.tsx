@@ -62,10 +62,10 @@ export function ResultsScreen({
           className={cn(
             "text-6xl font-bold",
             pct >= 80
-              ? "text-athena-success"
+              ? "text-primary"
               : pct >= 50
-                ? "text-athena-amber"
-                : "text-destructive"
+                ? "text-accent"
+                : "text-foreground"
           )}
         >
           {score}/{total}
@@ -118,7 +118,7 @@ export function ResultsScreen({
           className="mx-auto max-w-lg px-6 py-4 text-center"
         >
           <p className="text-sm text-muted-foreground">{aiSummary.summary}</p>
-          <p className="mt-2 text-xs font-medium text-athena-amber">
+          <p className="mt-2 text-xs font-medium text-muted-foreground">
             {aiSummary.encouragement}
           </p>
         </motion.div>

@@ -11,8 +11,8 @@ calling this script.
 
 Usage:
     python3 scripts/brief_to_manifest.py \
-        --brief /Users/craig/athena/video-intro/reference/ex1/brief/brief.json \
-        --audio /Users/craig/athena/video-intro/reference/ex1/audio/ex1.wav \
+        --brief ../video-intro/reference/ex1/brief/brief.json \
+        --audio ../video-intro/reference/ex1/audio/ex1.mp3 \
         --out   manifests/ex1-stub.json
 """
 

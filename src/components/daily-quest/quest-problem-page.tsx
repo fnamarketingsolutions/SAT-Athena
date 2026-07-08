@@ -48,11 +48,16 @@ export function QuestProblemPageContent() {
     }
   }, [questionPhase, currentProblem, ctx.stuckModalShownIds]);
 
-  const handleStuckModalComplete = useCallback(() => {
+  const handleStuckModalAccept = useCallback(() => {
     if (currentProblem) ctx.markStuckModalShown(currentProblem.id);
     setShowStuckModal(false);
     router.push(`/quest/${ctx.currentIndex + 1}/tutor`);
   }, [router, ctx, currentProblem]);
+
+  const handleStuckModalDecline = useCallback(() => {
+    if (currentProblem) ctx.markStuckModalShown(currentProblem.id);
+    setShowStuckModal(false);
+  }, [ctx, currentProblem]);
 
   if (!currentProblem) return null;
 
@@ -79,14 +84,14 @@ export function QuestProblemPageContent() {
 
   if (ctx.phase === "completed") {
     return (
-      <div className="fixed inset-x-0 bottom-0 top-14 z-40 flex flex-col overflow-y-auto bg-background">
+      <div className="fixed inset-x-0 bottom-0 top-14 z-40 flex flex-col overflow-y-auto bg-gradient-to-b from-slate-50 via-white to-blue-50/40">
         <QuestResultsScreen />
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 top-14 z-40 flex flex-col bg-background">
+    <div className="fixed inset-x-0 bottom-0 top-14 z-40 flex flex-col bg-gradient-to-b from-slate-50 to-blue-50/40">
       <Toolbar
         displayTime={ctx.displayTime}
         isLow={ctx.isTimerLow}
@@ -124,6 +129,7 @@ export function QuestProblemPageContent() {
           <QuestionPanel
             problem={asProblem}
             questionNumber={ctx.currentIndex + 1}
+            emphasize={ctx.answers.has(currentProblem.id)}
           />
           <AnswerPanel
             problem={asProblem}
@@ -144,9 +150,9 @@ export function QuestProblemPageContent() {
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-4 rounded-lg border border-athena-amber/40 bg-athena-amber/10 px-4 py-3"
+                className="mt-4 rounded-lg border border-athena-success/30 bg-athena-success/10 px-4 py-3"
               >
-                <p className="text-xs font-bold uppercase tracking-widest text-athena-amber mb-1">
+                <p className="text-xs font-bold uppercase tracking-widest text-athena-success mb-1">
                   Hint
                 </p>
                 <div className="text-sm text-muted-foreground">
@@ -160,9 +166,9 @@ export function QuestProblemPageContent() {
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-3 rounded-lg border border-athena-amber/60 bg-athena-amber/15 px-4 py-3"
+                className="mt-3 rounded-lg border border-primary/25 bg-primary/5 px-4 py-3"
               >
-                <p className="text-xs font-bold uppercase tracking-widest text-athena-amber mb-1">
+                <p className="text-xs font-bold uppercase tracking-widest text-primary mb-1">
                   Try This Approach
                 </p>
                 <div className="text-sm text-muted-foreground">
@@ -201,7 +207,10 @@ export function QuestProblemPageContent() {
 
       <AnimatePresence>
         {showStuckModal && (
-          <StuckModal onComplete={handleStuckModalComplete} />
+          <StuckModal
+            onAccept={handleStuckModalAccept}
+            onDecline={handleStuckModalDecline}
+          />
         )}
       </AnimatePresence>
     </div>

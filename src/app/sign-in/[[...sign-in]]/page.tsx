@@ -24,7 +24,7 @@ function ClerkSignIn() {
 
 export default function SignInPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center px-6">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-50 via-white to-blue-50/40 px-6">
       {isSupabaseAuth() ? (
         <Suspense fallback={null}>
           <SupabaseAuthForm mode="sign-in" />

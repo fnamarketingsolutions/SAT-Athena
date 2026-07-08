@@ -10,8 +10,8 @@ const VARIANT_STYLES: Record<
   { accent: string; eyebrow: string; defaultLabel: string }
 > = {
   hint: {
-    accent: "var(--athena-amber)",
-    eyebrow: "var(--athena-amber)",
+    accent: "var(--athena-success)",
+    eyebrow: "var(--athena-success)",
     defaultLabel: "HINT",
   },
   "detailed-hint": {

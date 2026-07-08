@@ -1,15 +1,19 @@
 .PHONY: help install setup dev build lint db-migrate db-reset db-types db-seed \
-       agents-setup agents-dev agents-docker agents-docker-down \
-       generate-content generate-practice-problems \
-       cli-health cli-generate-lesson cli-seed-practice-problems \
+       agents-setup agents-dev \
+       cli-health cli-seed-practice-problems \
        setup-all dev-all tunnel dev-share dev-share-all \
        eval-test eval-matrix \
        visual-auth visual-test visual-compare \
        sync clean \
        studio-dev studio-seed studio-test \
        studio-setup studio-migrate studio-migrate-remote \
-       studio-seed-remote studio-deploy-check studio-build \
-       studio-up studio-down studio-logs studio-full-deploy
+       studio-seed-remote studio-deploy-check
+
+STUDIO_MIGRATIONS := \
+	supabase/migrations/20260420000000_studio_agent_registry.sql \
+	supabase/migrations/20260420010000_studio_student_pov.sql \
+	supabase/migrations/20260421000000_studio_archetypes.sql \
+	supabase/migrations/20260421010000_studio_skills.sql
 
 # —— Help ——
 
@@ -56,26 +60,11 @@ agents-setup: ## Set up the Python agent service (create venv + install deps)
 	@if [ ! -f agents/.env ]; then cp agents/.env.example agents/.env; echo "\n⚠️  Created agents/.env from .env.example — fill in your keys"; fi
 	@echo "\n✅ Agent setup complete."
 
-agents-dev: ## Run the agent service locally (no Docker)
+agents-dev: ## Run the agent service locally
 	cd agents && uv run uvicorn main:app --reload --port 8080
-
-agents-docker: ## Start the agent service via Docker Compose
-	docker compose up --build -d
-
-agents-docker-down: ## Stop the agent service
-	docker compose down
-
-generate-content: ## Run SAT content generation workflow (topics → subtopics → problems)
-	cd agents && uv run python -m cli.main generate-content
-
-generate-practice-problems: ## Run practice problems generation workflow (topics → subtopics → problems)
-	cd agents && uv run python seed_all_practice_problems.py
 
 cli-health: ## Check agent service status (local Python, no server needed)
 	cd agents && uv run python -m cli.main health
-
-cli-generate-lesson: ## Generate a lesson — pass args via ARGS="--question-text ... --correct-answer ... --category ... --explanation ..."
-	cd agents && uv run python -m cli.main generate-lesson $(ARGS)
 
 cli-seed-practice-problems: ## Seed practice problems — pass args via ARGS="--topic ... --subtopic ... [--subject math] [--count 60]"
 	cd agents && uv run python -m cli.main seed-practice-problems $(ARGS)
@@ -94,13 +83,6 @@ dev-all: ## Start both Next.js and the agent service concurrently
 	@cd agents && set -a && . ./.env && set +a && uv run uvicorn main:app --reload --port 8080 &
 	@echo "Starting Next.js..."
 	@pnpm dev
-
-# —— Share / ngrok tunnel ——
-#
-# One-time setup:
-#   brew install ngrok/ngrok/ngrok
-#   ngrok config add-authtoken <token from https://dashboard.ngrok.com>
-
 NGROK_DOMAIN ?= 899e-2600-1702-8660-e20-24e4-ebb-62b0-c845.ngrok-free.app
 
 tunnel: ## Expose Next.js (port 3000) publicly via the reserved ngrok domain
@@ -157,36 +139,18 @@ studio-test: ## Run Studio backend tests
 studio-setup: sync ## Full Studio setup: install deps, start local Supabase, migrate, seed
 	@echo "Starting local Supabase..."
 	supabase start || true
-	@echo "Applying Studio migrations..."
-	@for f in supabase/migrations/20260420_studio_agent_registry.sql \
-	          supabase/migrations/20260420_studio_student_pov.sql \
-	          supabase/migrations/20260421_studio_skills.sql \
-	          supabase/migrations/20260421_studio_archetypes.sql; do \
-		echo "  Applying $$f..."; \
-		docker cp $$f supabase_db_athena:/tmp/migration.sql && \
-		docker exec supabase_db_athena psql -U postgres -d postgres -f /tmp/migration.sql > /dev/null 2>&1 || true; \
-	done
+	@echo "Applying migrations..."
+	supabase db push
 	@echo "Seeding Studio agents..."
 	@cd agents && env $$(cat ../.env.studio.local | grep -v '^#' | xargs) uv run python scripts/seed_studio_agents.py
 	@echo "\n✅ Studio setup complete. Run: make studio-dev"
 
-studio-migrate: ## Apply Studio migrations to local Supabase
-	@for f in supabase/migrations/20260420_studio_agent_registry.sql \
-	          supabase/migrations/20260420_studio_student_pov.sql \
-	          supabase/migrations/20260421_studio_skills.sql \
-	          supabase/migrations/20260421_studio_archetypes.sql; do \
-		echo "Applying $$f..."; \
-		docker cp $$f supabase_db_athena:/tmp/migration.sql && \
-		docker exec supabase_db_athena psql -U postgres -d postgres -f /tmp/migration.sql > /dev/null 2>&1 || true; \
-	done
-	@echo "✅ Migrations applied"
+studio-migrate: ## Apply pending migrations to local Supabase
+	supabase db push
 
 studio-migrate-remote: ## Apply Studio migrations to remote Supabase (uses SUPABASE_DB_URL)
 	@if [ -z "$(SUPABASE_DB_URL)" ]; then echo "Set SUPABASE_DB_URL (postgres connection string)"; exit 1; fi
-	@for f in supabase/migrations/20260420_studio_agent_registry.sql \
-	          supabase/migrations/20260420_studio_student_pov.sql \
-	          supabase/migrations/20260421_studio_skills.sql \
-	          supabase/migrations/20260421_studio_archetypes.sql; do \
+	@for f in $(STUDIO_MIGRATIONS); do \
 		echo "Applying $$f to remote..."; \
 		psql "$(SUPABASE_DB_URL)" -f $$f > /dev/null 2>&1 || true; \
 	done
@@ -198,46 +162,12 @@ studio-seed-remote: ## Seed Studio agents on remote Supabase
 	cd agents && SUPABASE_URL=$(SUPABASE_URL) SUPABASE_SERVICE_ROLE_KEY=$(SUPABASE_SERVICE_ROLE_KEY) \
 		uv run python scripts/seed_studio_agents.py
 
-studio-deploy-check: ## Verify Studio is ready to deploy (tests + typecheck)
+studio-deploy-check: ## Verify Studio is ready (tests + typecheck)
 	@echo "Running backend tests..."
 	@cd agents && uv run pytest tests/ -q --tb=short
 	@echo "Running TypeScript check..."
 	@npx tsc --noEmit 2>&1 | grep -v "onboarding\|resend" || true
 	@echo "\n✅ Deploy checks passed"
-
-studio-build: studio-deploy-check ## Build Studio Docker images
-	@echo "Building frontend image..."
-	docker build -t athena-studio-web .
-	@echo "Building agents image..."
-	docker build -t athena-studio-agents ./agents
-	@echo "\n✅ Images built: athena-studio-web, athena-studio-agents"
-
-studio-up: ## Start Studio containers (uses .env.studio.local for local, or set env vars for remote)
-	@echo "Starting Studio containers..."
-	docker compose -f docker-compose.studio.yml up -d
-	@echo "\n✅ Studio running"
-
-studio-down: ## Stop Studio containers
-	docker compose -f docker-compose.studio.yml down
-
-studio-logs: ## Tail Studio container logs
-	docker compose -f docker-compose.studio.yml logs -f
-
-studio-full-deploy: ## Full remote deploy: migrate DB, seed, build, push images
-	@echo "=== Studio Full Deploy ==="
-	@echo "Step 1: Pre-flight checks..."
-	@$(MAKE) studio-deploy-check
-	@echo "Step 2: Apply migrations..."
-	@$(MAKE) studio-migrate-remote
-	@echo "Step 3: Seed agents..."
-	@$(MAKE) studio-seed-remote
-	@echo "Step 4: Build images..."
-	@$(MAKE) studio-build
-	@echo "\n🚀 Images built. Push to your registry and deploy."
-	@echo "   docker tag athena-studio-web <registry>/athena-studio-web"
-	@echo "   docker tag athena-studio-agents <registry>/athena-studio-agents"
-	@echo "   docker push <registry>/athena-studio-web"
-	@echo "   docker push <registry>/athena-studio-agents"
 
 clean: ## Remove build artifacts and generated files
 	rm -rf .next node_modules agents/.venv agents/__pycache__
@@ -263,4 +193,3 @@ secrets-list:
 
 secrets-sync:
 	npx @superset-signal/secrets sync
-# ─── End Secrets CLI ─────────────────────────────────────────────────────────

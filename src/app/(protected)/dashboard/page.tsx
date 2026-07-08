@@ -98,26 +98,6 @@ const MODES: ModeMeta[] = [
 
 const SUBJECTS = MBE_SUBJECTS;
 
-// Deterministic spark constellation rising from the orb. Hand-distributed
-// so each spark has its own travel path; values intentionally fixed so
-// SSR and client render the same DOM.
-const SPARKS: ReadonlyArray<{
-  id: number;
-  left: number;
-  top: number;
-  delay: number;
-  dx: number;
-}> = [
-  { id: 0, left: 34, top: 64, delay: 0.0, dx: -18 },
-  { id: 1, left: 42, top: 78, delay: 0.6, dx: 8 },
-  { id: 2, left: 50, top: 70, delay: 1.2, dx: -4 },
-  { id: 3, left: 58, top: 82, delay: 1.9, dx: 14 },
-  { id: 4, left: 64, top: 66, delay: 2.5, dx: -10 },
-  { id: 5, left: 38, top: 86, delay: 3.1, dx: 22 },
-  { id: 6, left: 54, top: 62, delay: 3.6, dx: -22 },
-  { id: 7, left: 46, top: 88, delay: 4.2, dx: 4 },
-];
-
 function routeFor(mode: Mode, topicSlug: string, subtopicSlug: string) {
   switch (mode) {
     case "lesson":
@@ -163,8 +143,8 @@ export default function PlayPage() {
 
   function handlePickMode(m: Mode) {
     if (questLocked) {
-      toast.message("Complete today's quest first", {
-        description: "Your daily quest unlocks lessons, practice, and mentor chat.",
+      toast.message("Complete today's practice first", {
+        description: "Finish your daily practice session to open lessons and mentor chat.",
       });
       router.push("/quest");
       return;
@@ -207,18 +187,7 @@ export default function PlayPage() {
   }, [subject, mode, data?.topics]);
 
   return (
-    <div className="play-stage fixed inset-0 z-50 overflow-x-hidden overflow-y-auto pt-14">
-      {/* Vignette + grain — fixed full-screen layers, behind content. */}
-      <div
-        aria-hidden
-        className="play-vignette pointer-events-none fixed inset-[-10%] z-0"
-      />
-      <div
-        aria-hidden
-        className="play-grain pointer-events-none fixed inset-0 z-[1]"
-      />
-
-      {/* Back affordance — only when a mode has been picked. */}
+    <div className="dashboard-surface fixed inset-0 z-50 overflow-x-hidden overflow-y-auto pt-14">
       {mode && (
         <div className="relative z-20 px-4 pt-4 sm:px-8 sm:pt-6">
           <button
@@ -226,11 +195,10 @@ export default function PlayPage() {
               setMode(null);
               setExpandedTopicId(null);
             }}
-            className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.28em] text-[var(--p-fg-mute)] transition-colors hover:text-[var(--p-fg)]"
-            style={{ fontFamily: "var(--font-jetbrains-mono)" }}
+            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <ChevronLeft className="h-4 w-4" />
-            BACK
+            Back
           </button>
         </div>
       )}
@@ -277,7 +245,7 @@ export default function PlayPage() {
   );
 }
 
-// ── Mode picker — the new onboarding-style hello + 3 cards ───────────
+// ── Mode picker ──────────────────────────────────────────────────────
 function ModePicker({
   onPick,
   firstName,
@@ -291,131 +259,35 @@ function ModePicker({
   accountability?: import("@/hooks/use-accountability-status").AccountabilityStatus;
   accountabilityLoading?: boolean;
 }) {
-  // Sparks render deterministic on SSR + first paint (so hydration
-  // matches), then re-randomize after mount so each visit feels organic.
-  // The CSS animation keeps running through the swap; the new positions
-  // just take effect on the next iteration of the keyframes.
-  const [sparks, setSparks] = useState<typeof SPARKS>(SPARKS);
-  useEffect(() => {
-    setSparks(
-      Array.from({ length: 8 }).map((_, i) => ({
-        id: i,
-        left: 30 + Math.random() * 40,
-        top: 60 + Math.random() * 30,
-        delay: Math.random() * 4.5,
-        dx: (Math.random() - 0.5) * 50,
-      })),
-    );
-  }, []);
-
   return (
     <div className="flex w-full flex-col items-center">
-      {/* Orb */}
-      <div className="play-anim-orb relative mx-auto mb-[22px] flex h-[180px] w-[180px] items-center justify-center">
-        <svg
-          className="play-orb-ring pointer-events-none absolute inset-0"
-          viewBox="0 0 180 180"
-        >
-          <circle
-            cx="90"
-            cy="90"
-            r="74"
-            fill="none"
-            stroke="oklch(0.55 0.04 60 / 0.45)"
-            strokeWidth="0.5"
-            strokeDasharray="1 5"
-          />
-          <circle
-            cx="90"
-            cy="90"
-            r="84"
-            fill="none"
-            stroke="oklch(0.55 0.04 60 / 0.45)"
-            strokeWidth="0.5"
-            strokeDasharray="0.6 8"
-          />
-          <circle cx="90" cy="10" r="1.4" fill="oklch(0.78 0.10 60 / 0.7)" />
-          <circle cx="170" cy="90" r="1.4" fill="oklch(0.78 0.10 60 / 0.7)" />
-          <circle cx="90" cy="170" r="1.4" fill="oklch(0.78 0.10 60 / 0.7)" />
-          <circle cx="10" cy="90" r="1.4" fill="oklch(0.78 0.10 60 / 0.7)" />
-        </svg>
-        <div className="play-orb" />
-        {sparks.map((s) => (
-          <span
-            key={s.id}
-            className="play-spark"
-            style={
-              {
-                left: `${s.left}%`,
-                top: `${s.top}%`,
-                animationDelay: `${s.delay}s`,
-                "--dx": `${s.dx}px`,
-              } as React.CSSProperties
-            }
-          />
-        ))}
-      </div>
-
-      {/* Headline */}
-      <h1
-        className="play-anim-h1 m-0 text-[clamp(44px,5.6vw,68px)] leading-[1.02] tracking-[-0.02em]"
-        style={{ fontFamily: "var(--font-instrument-serif)", fontWeight: 400 }}
-      >
-        <span className="italic" style={{ color: "var(--p-fg-dim)" }}>
-          hello,
-        </span>{" "}
-        <span className="relative" style={{ color: "var(--p-fg)" }}>
-          {firstName ?? "friend"}
-          <span className="play-anim-name-underline" />
-        </span>
-        <span style={{ color: "var(--p-accent)" }}>.</span>
-      </h1>
-
-      {/* Subtitle */}
-      <div
-        className="play-anim-sub mt-3 text-[clamp(20px,2.2vw,26px)] tracking-[-0.01em]"
-        style={{
-          fontFamily: "var(--font-instrument-serif)",
-          fontStyle: "italic",
-          color: "var(--p-fg-mute)",
-        }}
-      >
-        {questLocked ? "your quest awaits." : "ready to learn?"}
+      <div className="mb-8 max-w-xl text-center">
+        <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+          Welcome back
+        </p>
+        <h1 className="mt-2 font-[family-name:var(--font-instrument-serif)] text-4xl font-normal tracking-tight text-foreground md:text-5xl">
+          {firstName ? (
+            <>
+              <span className="italic text-muted-foreground">Hi, </span>
+              {firstName}
+            </>
+          ) : (
+            "Your study plan"
+          )}
+        </h1>
+        <p className="mt-3 text-base text-muted-foreground">
+          {questLocked
+            ? "Complete today's practice to continue with lessons and mentor chat."
+            : "Choose how you want to study next."}
+        </p>
       </div>
 
       <DailyQuestHero status={accountability} isLoading={accountabilityLoading} />
 
-      {/* mode card grid */}
-      <div
-        className={cn(
-          "relative mt-11 grid w-full grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-3",
-          questLocked && "pointer-events-none opacity-40"
-        )}
-      >
-        {questLocked && (
-          <div
-            className="pointer-events-none absolute inset-0 z-10 rounded-2xl"
-            style={{
-              background:
-                "linear-gradient(180deg, transparent 0%, color-mix(in oklch, var(--background) 65%, transparent) 100%)",
-            }}
-          />
-        )}
+      <div className="mt-10 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {MODES.map((m) => (
           <ModeCard key={m.key} mode={m} onPick={onPick} disabled={questLocked} />
         ))}
-      </div>
-
-      <div
-        className="mt-10 font-mono text-[10px] uppercase tracking-[0.28em]"
-        style={{
-          color: "var(--p-fg-faint)",
-          fontFamily: "var(--font-jetbrains-mono)",
-        }}
-      >
-        {questLocked
-          ? "finish today's quest to unlock · press below"
-          : "press 1 · 2 · 3 to choose"}
       </div>
     </div>
   );
@@ -437,134 +309,28 @@ function ModeCard({
       onClick={() => !disabled && onPick(mode.key)}
       disabled={disabled}
       className={cn(
-        "play-card group relative flex min-h-[260px] cursor-pointer flex-col items-center overflow-hidden text-center sm:min-h-[320px]",
-        "px-4 pb-5 pt-6 sm:px-[26px] sm:pb-[22px] sm:pt-[28px]",
-        disabled && "cursor-not-allowed"
+        "flex min-h-[220px] flex-col items-center rounded-2xl border border-border bg-card px-5 py-6 text-center shadow-sm transition",
+        "hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
+        disabled && "cursor-not-allowed opacity-50"
       )}
-      style={{
-        background: "var(--p-surface)",
-        border: "1px solid var(--p-rule)",
-        color: "var(--p-fg)",
-        fontFamily: "var(--font-jetbrains-mono)",
-        transition:
-          "border-color 320ms ease, background 320ms ease, transform 320ms ease",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = "oklch(0.55 0.10 60 / 0.7)";
-        e.currentTarget.style.background = "var(--p-surface-hover)";
-        e.currentTarget.style.transform = "translateY(-3px)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "var(--p-rule)";
-        e.currentTarget.style.background = "var(--p-surface)";
-        e.currentTarget.style.transform = "";
-      }}
-      onFocus={(e) => {
-        e.currentTarget.style.borderColor = "oklch(0.55 0.10 60 / 0.7)";
-        e.currentTarget.style.background = "var(--p-surface-hover)";
-        e.currentTarget.style.transform = "translateY(-3px)";
-        e.currentTarget.style.outline = "none";
-      }}
-      onBlur={(e) => {
-        e.currentTarget.style.borderColor = "var(--p-rule)";
-        e.currentTarget.style.background = "var(--p-surface)";
-        e.currentTarget.style.transform = "";
-      }}
     >
-      {/* Hover wash */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 60% at 50% 0%, oklch(0.30 0.10 55 / 0.25), transparent 60%)",
-        }}
-      />
-      {/* Sweep highlight */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -translate-x-full transition-transform duration-700 group-hover:translate-x-full group-focus-visible:translate-x-full"
-        style={{
-          background:
-            "linear-gradient(120deg, transparent 30%, oklch(0.85 0.10 60 / 0.07) 50%, transparent 70%)",
-        }}
-      />
-
-      {/* Corner brackets */}
-      <Corner pos="tl" />
-      <Corner pos="tr" />
-      <Corner pos="bl" />
-      <Corner pos="br" />
-
-      {/* Icon */}
-      <div className="mt-1.5 mb-[22px] flex h-[92px] w-full items-center justify-center">
-        <div className={`relative flex h-[72px] w-[72px] items-center justify-center play-ic-${mode.key}`}>
-          <Icon />
-        </div>
+      <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+        <Icon />
       </div>
-
-      {/* Title */}
-      <h3
-        className="m-0 text-[24px] leading-[1.05] tracking-[-0.01em] sm:text-[30px]"
-        style={{
-          fontFamily: "var(--font-instrument-serif)",
-          fontWeight: 400,
-          color: "var(--p-fg)",
-        }}
-      >
+      <h3 className="font-[family-name:var(--font-instrument-serif)] text-2xl text-foreground">
         {mode.title}
       </h3>
-
-      {/* Description */}
-      <p
-        className="mx-auto mt-2.5 max-w-[28ch] text-[12px] leading-[1.55]"
-        style={{
-          fontFamily: "var(--font-jetbrains-mono)",
-          color: "var(--p-fg-dim)",
-        }}
-      >
+      <p className="mx-auto mt-2 max-w-[28ch] text-sm leading-relaxed text-muted-foreground">
         {mode.desc}
       </p>
-
-      {/* CTA strip */}
-      <div
-        className="mt-auto flex w-full items-center justify-center gap-2.5 pt-4 text-[11px] uppercase tracking-[0.32em] transition-colors duration-300 group-hover:text-[color:var(--p-accent)] group-focus-visible:text-[color:var(--p-accent)] group-hover:tracking-[0.36em] group-focus-visible:tracking-[0.36em]"
-        style={{
-          marginTop: "22px",
-          paddingTop: "16px",
-          borderTop: "1px solid var(--p-rule)",
-          color: "var(--p-fg-dim)",
-        }}
-      >
-        <span>{mode.cta}</span>
-        <span className="inline-flex items-center transition-transform duration-300 group-hover:translate-x-1 group-focus-visible:translate-x-1">
-          <svg viewBox="0 0 22 8" className="h-2 w-[22px]">
-            <line x1="0" y1="4" x2="20" y2="4" stroke="currentColor" strokeWidth="1" fill="none" />
-            <path d="M16 1 L20 4 L16 7" stroke="currentColor" strokeWidth="1" fill="none" />
-          </svg>
-        </span>
-      </div>
+      <span className="mt-auto pt-5 text-xs font-semibold uppercase tracking-wide text-primary">
+        {mode.cta}
+      </span>
     </button>
   );
 }
 
-function Corner({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
-  const base = "pointer-events-none absolute h-2 w-2";
-  const positional = {
-    tl: "left-2 top-2 border-t border-l",
-    tr: "right-2 top-2 border-t border-r",
-    bl: "left-2 bottom-2 border-b border-l",
-    br: "right-2 bottom-2 border-b border-r",
-  }[pos];
-  return (
-    <span
-      className={cn(base, positional, "transition-colors duration-300 group-hover:border-[color:var(--p-accent)] group-focus-visible:border-[color:var(--p-accent)]")}
-      style={{ borderColor: "var(--p-fg-faint)" }}
-    />
-  );
-}
-
-// ── Topic picker — restyled to match the new aesthetic ───────────────
+// ── Topic picker ─────────────────────────────────────────────────────
 function TopicPicker({
   mode,
   subject,

@@ -10,7 +10,7 @@ function tileTone(q: QuizPerQuestion): {
     return { bg: "bg-destructive/10", text: "text-destructive", ring: "ring-destructive/20" };
   }
   if (q.hintUsed || q.tutorUsed) {
-    return { bg: "bg-athena-amber/15", text: "text-athena-amber", ring: "ring-athena-amber/20" };
+    return { bg: "bg-primary/10", text: "text-primary", ring: "ring-primary/20" };
   }
   return { bg: "bg-athena-success/15", text: "text-athena-success", ring: "ring-athena-success/20" };
 }
@@ -34,7 +34,7 @@ export function QuestionMosaic({ perQuestion }: { perQuestion: QuizPerQuestion[]
               Q{q.index + 1}
             </span>
             {q.hintUsed ? (
-              <Lightbulb className="absolute -right-1 -top-1 h-3.5 w-3.5 text-athena-amber drop-shadow-sm" strokeWidth={2.5} />
+              <Lightbulb className="absolute -right-1 -top-1 h-3.5 w-3.5 text-primary drop-shadow-sm" strokeWidth={2.5} />
             ) : null}
             {q.tutorUsed ? (
               <MessageCircleQuestion className="absolute -bottom-1 -right-1 h-3.5 w-3.5 text-athena-navy drop-shadow-sm" strokeWidth={2.5} />

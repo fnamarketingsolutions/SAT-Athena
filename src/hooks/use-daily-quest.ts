@@ -22,27 +22,6 @@ export function useTodaysQuest() {
   return { data, isLoading, isError, refetch };
 }
 
-export function useGenerateQuest() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () => {
-      const res = await fetch("/api/daily-quest/generate", { method: "POST" });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error ?? "Failed to generate quest");
-      }
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["daily-quest"] });
-    },
-    onError: (err: Error) => {
-      toast.error(err.message);
-    },
-  });
-}
-
 export function useAnswerQuestProblem() {
   const queryClient = useQueryClient();
 

@@ -44,8 +44,8 @@ export default async function OnboardingPage({ searchParams }: Props) {
       </Suspense>
       <Suspense
         fallback={
-          <div className="play-stage flex min-h-screen items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-white/20 border-t-[var(--p-accent)]" />
+          <div className="onboarding-surface flex min-h-screen items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
           </div>
         }
       >

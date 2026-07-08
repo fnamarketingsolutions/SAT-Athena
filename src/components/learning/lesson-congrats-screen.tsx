@@ -32,9 +32,8 @@ function Confetti() {
   const colors = [
     "hsl(var(--green))",
     "hsl(var(--blue))",
-    "hsl(var(--yellow))",
-    "hsl(var(--pink))",
-    "hsl(var(--orange))",
+    "hsl(var(--green))",
+    "hsl(var(--blue))",
   ];
   const particles = useMemo(
     () =>

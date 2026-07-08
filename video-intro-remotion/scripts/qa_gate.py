@@ -7,7 +7,8 @@ in ex2 (~13s gap) and ex3 (~20s gap); pipeline must never produce this.
 Usage:
     python3 scripts/qa_gate.py out/ex1.mp4
 
-Exits 0 on pass, 1 on fail. Prints a per-second analysis and verdict.
+Exits 0 on pass, 1 on fail. By default prints a one-line summary; pass
+`--verbose` for the per-second brightness table.
 """
 
 from __future__ import annotations
@@ -120,6 +121,11 @@ def main() -> int:
     ap.add_argument("--brightness-threshold", type=float, default=10.0)
     ap.add_argument("--max-dead-frame-seconds", type=float, default=1.0)
     ap.add_argument("--report", type=Path, help="Write a JSON report to this path")
+    ap.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Print per-second brightness/audio table (default: summary only)",
+    )
     args = ap.parse_args()
 
     if not args.mp4.exists():
@@ -127,20 +133,23 @@ def main() -> int:
         return 2
 
     duration = _ffprobe_duration(args.mp4)
-    print(f"file: {args.mp4} ({duration:.2f}s)")
     brightness = _per_second_brightness(args.mp4)
     audio_active = _audio_active_per_second(args.mp4)
 
-    print(f"\nper-second analysis (length: brightness={len(brightness)}, audio={len(audio_active)}):")
-    print(f"{'sec':>4}  {'brightness':>10}  {'audio':>5}  {'flag':>5}")
     dead_seconds: list[int] = []
     for i, b in enumerate(brightness):
         active = audio_active[i] if i < len(audio_active) else False
         flagged = b < args.brightness_threshold and active
         if flagged:
             dead_seconds.append(i)
-        flag_mark = "DEAD" if flagged else ""
-        print(f"{i:>4}  {b:>10.1f}  {str(active):>5}  {flag_mark:>5}")
+        if args.verbose:
+            if i == 0:
+                print(
+                    f"\nper-second analysis (length: brightness={len(brightness)}, audio={len(audio_active)}):"
+                )
+                print(f"{'sec':>4}  {'brightness':>10}  {'audio':>5}  {'flag':>5}")
+            flag_mark = "DEAD" if flagged else ""
+            print(f"{i:>4}  {b:>10.1f}  {str(active):>5}  {flag_mark:>5}")
 
     # Aggregate contiguous dead seconds.
     max_run = 0
@@ -153,8 +162,7 @@ def main() -> int:
             cur_run = 0
 
     verdict = "PASS" if max_run <= args.max_dead_frame_seconds else "FAIL"
-    print(f"\nlongest contiguous dead-frame run: {max_run}s  (limit {args.max_dead_frame_seconds}s)")
-    print(f"VERDICT: {verdict}")
+    print(f"{args.mp4.name}: {duration:.1f}s — dead-frame run {max_run}s (limit {args.max_dead_frame_seconds}s) — {verdict}")
 
     if args.report:
         args.report.write_text(
@@ -171,7 +179,8 @@ def main() -> int:
                 indent=2,
             )
         )
-        print(f"report written: {args.report}")
+        if args.verbose:
+            print(f"report written: {args.report}")
 
     return 0 if verdict == "PASS" else 1
 

@@ -2,7 +2,6 @@ import {
   getAllSubsectionSkills,
   initializeAllSkills,
 } from "@/lib/db/queries/subsection-skills";
-import { createDailyQuest } from "@/lib/db/queries/daily-quest";
 import {
   computeGlobalFloor,
   composeDailyQuestBuckets,

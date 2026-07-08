@@ -8,7 +8,7 @@ function Chip({ chip, tone }: { chip: ReportChip; tone: Tone }) {
   const ringClass =
     tone === "success"
       ? "bg-athena-success/10 text-athena-success"
-      : "bg-athena-amber/10 text-athena-amber";
+      : "bg-primary/10 text-primary";
 
   return (
     <li
@@ -58,7 +58,7 @@ export function StrengthsGrowthGrid({
       </section>
       <section data-testid="growth">
         <header className="mb-3 flex items-center gap-2">
-          <Compass className="h-5 w-5 text-athena-amber" />
+          <Compass className="h-5 w-5 text-primary" />
           <h3 className="text-sm font-semibold uppercase tracking-widest text-foreground">
             Where to grow
           </h3>

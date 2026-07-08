@@ -67,7 +67,7 @@ export function QuizReport({ payload }: { payload: QuizPayload }) {
             first try
           </span>
           <span className="mr-3 inline-flex items-center gap-1">
-            <span className="inline-block h-2 w-2 rounded-sm bg-athena-amber/40" />
+            <span className="inline-block h-2 w-2 rounded-sm bg-primary/30" />
             with help
           </span>
           <span className="inline-flex items-center gap-1">

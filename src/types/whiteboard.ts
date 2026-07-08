@@ -563,10 +563,6 @@ export type FlyInSubstitution = {
   easing?: string;
 };
 
-export type WhiteboardResponse = {
-  steps: WhiteboardStep[];
-};
-
 export type SelectedElement = {
   stepId: number;
   type: "write_text" | "write_math";

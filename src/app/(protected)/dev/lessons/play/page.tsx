@@ -65,7 +65,7 @@ const FLAG_COLOR: Record<FlagKind, string> = {
   "contract": "bg-amber-500",
   "broken-triplet": "bg-rose-700",
   "orphan": "bg-rose-700",
-  "monotony": "bg-yellow-500",
+  "monotony": "bg-athena-success",
   "display-narration-gap": "bg-amber-500",
   "substitution": "bg-amber-600",
   "fidelity": "bg-rose-600",

@@ -21,7 +21,7 @@ export function ReportHeader({
 
   return (
     <header className="flex flex-col gap-1">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-athena-amber">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
         {topicName}
       </p>
       <h1 className="text-3xl font-semibold leading-tight text-foreground">

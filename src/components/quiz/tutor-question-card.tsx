@@ -57,13 +57,10 @@ export function TutorQuestionCard({
             transition={{ duration: 0.15 }}
             className="w-[320px]"
           >
-            <div className="rounded-xl bg-card/95 backdrop-blur-sm shadow-lg border overflow-hidden max-h-[calc(100vh-200px)] overflow-y-auto">
+            <div className="rounded-xl border border-border bg-card shadow-lg overflow-hidden max-h-[calc(100vh-200px)] overflow-y-auto">
               {/* Header */}
               <div className="flex items-center justify-between px-4 pt-3 pb-2">
-                <div className="flex items-center gap-2 text-sm font-semibold">
-                  <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
-                    {questionNumber}
-                  </span>
+                <div className="text-sm font-semibold text-primary">
                   Question {questionNumber}
                 </div>
                 <Button

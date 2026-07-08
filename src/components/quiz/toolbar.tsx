@@ -64,13 +64,13 @@ export function Toolbar({
 
   return (
     <>
-      <div className="grid h-14 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-1 border-b bg-card px-2 sm:px-4">
+      <div className="grid h-14 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-1 border-b border-border bg-card px-2 sm:px-4">
         <div className="flex min-w-0 items-center gap-1 justify-self-start sm:gap-3">
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={() => setShowDirections((d) => !d)}
-            className="shrink-0 px-2 sm:px-3"
+            className="shrink-0 border-primary/30 px-2 text-primary sm:px-3"
             aria-label="Directions"
           >
             <BookOpen className="h-4 w-4" />

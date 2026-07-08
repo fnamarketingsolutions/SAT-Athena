@@ -32,11 +32,6 @@ export function pauseWebSpeech(): void {
   window.speechSynthesis.pause();
 }
 
-export function resumeWebSpeech(): void {
-  if (!isWebSpeechAvailable()) return;
-  window.speechSynthesis.resume();
-}
-
 export function speakWithWebSpeech(
   text: string,
   rate: number,

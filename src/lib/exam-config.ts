@@ -78,7 +78,6 @@ export const MOCK_EXAM_DESCRIPTION =
 
 /** App routes for MBE mock exam (formerly /full-sat). */
 export const MOCK_EXAM_ROUTE = "/mbe-mock";
-export const MOCK_EXAM_API_ROUTE = "/api/mbe-mock";
 
 const MBE_SUBJECT_KEYS = new Set<string>(MBE_SUBJECTS.map((s) => s.key));
 
@@ -101,12 +100,6 @@ export function getSubjectLabel(subject: string): string {
     "social-studies": "Social Studies",
   };
   return legacy[subject] ?? subject;
-}
-
-export function getSubjectLabelsMap(): Record<string, string> {
-  const map: Record<string, string> = {};
-  for (const s of MBE_SUBJECTS) map[s.key] = s.label;
-  return map;
 }
 
 /** Problem sources used for MBE / bar exam content in the DB. */

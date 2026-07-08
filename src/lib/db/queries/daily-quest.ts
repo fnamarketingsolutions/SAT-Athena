@@ -119,54 +119,6 @@ export async function getTodaysQuestWithDetails(
   return { quest: mapQuest(quest), problems: mapped };
 }
 
-export async function createDailyQuest(
-  userId: string,
-  problems: {
-    problemId: string;
-    subtopicId: string;
-    orderIndex: number;
-    bucket: QuestBucket;
-    difficultyLevel: number;
-  }[]
-): Promise<{ quest: DailyQuest; problems: DailyQuestProblem[] }> {
-  const today = new Date().toISOString().split("T")[0];
-
-  const { data: quest, error: questError } = await (supabase as any)
-    .from("daily_quests")
-    .insert({
-      user_id: userId,
-      quest_date: today,
-      total_questions: problems.length,
-    })
-    .select()
-    .single();
-
-  if (questError || !quest) {
-    throw new Error(questError?.message ?? "Failed to create daily quest");
-  }
-
-  const problemRows = problems.map((p) => ({
-    quest_id: quest.id,
-    problem_id: p.problemId,
-    subtopic_id: p.subtopicId,
-    order_index: p.orderIndex,
-    bucket: p.bucket,
-    difficulty_level: p.difficultyLevel,
-  }));
-
-  const { data: insertedProblems, error: problemsError } = await (supabase as any)
-    .from("daily_quest_problems")
-    .insert(problemRows)
-    .select();
-
-  if (problemsError) throw new Error(problemsError.message);
-
-  return {
-    quest: mapQuest(quest),
-    problems: (insertedProblems ?? []).map(mapQuestProblem),
-  };
-}
-
 export async function answerDailyQuestProblem(
   questProblemId: string,
   selectedOption: number,

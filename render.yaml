@@ -1,5 +1,4 @@
 # Render Blueprint — Athena Python agents service
-# Repo: https://github.com/fnamarketingsolutions/SAT-Athena
 #
 # Deploy: Render Dashboard → New → Blueprint → connect repo → branch main
 # After deploy, set AGENT_SERVICE_URL in Vercel to the Render service URL.

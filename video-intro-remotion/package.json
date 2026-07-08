@@ -5,7 +5,6 @@
   "description": "Remotion compositor for Athena intro/motivator videos — consumes a manifest derived from a brief and renders an MP4. White-line-on-black aesthetic, KaTeX-rendered math overlays.",
   "scripts": {
     "dev": "remotion studio src/index.ts",
-    "render": "remotion render src/index.ts IntroVideo out/intro.mp4",
     "render:ex1": "remotion render src/index.ts IntroVideo out/ex1.mp4 --props=./manifests/ex1-stub.json",
     "typecheck": "tsc --noEmit"
   },

@@ -1245,11 +1245,7 @@ export function QuizProblemPageContent() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.25 }}
-                  className="obs-serif text-center text-sm leading-snug text-[var(--obs-muted)] rounded-xl px-3 py-1.5 backdrop-blur-md shadow-lg shadow-black/10 border border-white/5"
-                  style={{
-                    background:
-                      "color-mix(in oklch, var(--obs-surface) 70%, transparent)",
-                  }}
+                  className="text-center text-sm leading-snug text-muted-foreground rounded-lg border border-border bg-card px-3 py-1.5 shadow-sm"
                 >
                   <MathContent content={captionText} />
                 </motion.div>
@@ -1286,36 +1282,7 @@ export function QuizProblemPageContent() {
 
             <IsoContourFrame bottomCenterLabel="" bottomRightLabel="">
               <div className="relative h-full w-full">
-                {/* Canvas-level "Correct!" pulse. Lifted out of the
-                    bottom pane so the feedback lands where the
-                    student is looking. Mirrors the in-lesson
-                    check-in / predict / fill_blank pulses and
-                    PracticeWhiteboardContent. */}
-                <AnimatePresence>
-                  {isCorrect && !isTakeoverActive ? (
-                    <motion.div
-                      key="quiz-correct-pulse"
-                      className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <CorrectConfetti />
-                      <motion.div
-                        initial={{ scale: 0.5, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                        className="relative z-20 flex items-center gap-2 rounded-full border border-green-500/40 bg-green-500/10 px-4 py-2 shadow-lg shadow-green-500/20 backdrop-blur-md"
-                      >
-                        <Check className="h-5 w-5 text-green-500" />
-                        <span className="text-base font-bold text-green-500">
-                          Correct!
-                        </span>
-                      </motion.div>
-                    </motion.div>
-                  ) : null}
-                </AnimatePresence>
+                {/* No global "Correct!" overlay: feedback stays integrated in the card/pane. */}
                 {/* Plain opacity cross-fade on problem swap. The
                     previous y:12 spring stacked with the bottom
                     pane's y:8 keyed remount and made the layout
