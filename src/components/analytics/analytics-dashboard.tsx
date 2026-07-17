@@ -14,14 +14,14 @@ import { ScoreHistory } from "@/components/progress/score-history";
 import { StudyStats } from "@/components/progress/study-stats";
 import { TopicMastery } from "@/components/progress/topic-mastery";
 import { PracticeTestResults } from "@/components/progress/practice-test-results";
-import { JourneyRanks } from "@/components/progress/journey-ranks";
 import { StuckPointsPanel } from "@/components/analytics/stuck-points-panel";
 import { EngagementPanel } from "@/components/analytics/engagement-panel";
 import { ConsistencyPanel } from "@/components/analytics/consistency-panel";
+import { PassProbabilityPanel } from "@/components/analytics/pass-probability-panel";
 import type { StuckPoint, EngagementSummary } from "@/lib/db/queries/analytics";
+import type { PassProbabilityResult } from "@/lib/pass-probability";
 import {
   APP_BRANDING,
-  MBE_RANKS,
   MOCK_EXAM_ROUTE,
   MOCK_EXAM_LABEL,
 } from "@/lib/exam-config";
@@ -95,6 +95,7 @@ type AnalyticsData = {
     passed: boolean;
     completedAt: string | null;
   }[];
+  passProbability: PassProbabilityResult;
 };
 
 const staggerContainer = {
@@ -162,21 +163,9 @@ export function AnalyticsDashboard() {
           />
         </motion.div>
 
-        {data.forecastWeeks &&
-          data.user.startAccuracy > 0 &&
-          data.overallAccuracy < data.targetPercent && (
-          <motion.p
-            variants={staggerItem}
-            className="mt-4 text-sm text-muted-foreground"
-          >
-            At your current pace, you could reach {data.targetPercent}% in about{" "}
-            <span className="font-medium text-foreground">{data.forecastWeeks} weeks</span>
-            {data.user.startAccuracy < data.overallAccuracy && (
-              <> (up from {data.user.startAccuracy}%)</>
-            )}
-            .
-          </motion.p>
-        )}
+        <motion.div className="mt-8" variants={staggerItem}>
+          <PassProbabilityPanel data={data.passProbability} />
+        </motion.div>
 
         <motion.div variants={staggerItem}>
           <h2 className="mb-3 mt-8 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
@@ -264,13 +253,6 @@ export function AnalyticsDashboard() {
           </motion.div>
         )}
 
-        <motion.div className="mt-6" variants={staggerItem}>
-          <JourneyRanks
-            currentScore={data.overallAccuracy}
-            ranks={MBE_RANKS}
-            unit="%"
-          />
-        </motion.div>
       </motion.div>
     </div>
   );

@@ -1,38 +1,82 @@
 import { getProgressData } from "@/lib/db/queries/progress";
 import { MBE_PASS_PERCENT } from "@/lib/exam-config";
+import { EXAM_SESSION_SOURCES } from "@/lib/exam-config";
 import { supabase } from "@/lib/supabase/client";
 
-function computeQuestStreak(
-  questHistory: { quest_date: string }[],
-  today: string
-): number {
-  if (questHistory.length === 0) return 0;
+export type ActivityHeatmapDay = {
+  date: string;
+  count: number;
+  level: 0 | 1 | 2 | 3 | 4;
+};
 
-  const todayDate = new Date(today);
-  const mostRecent = new Date(questHistory[0].quest_date);
-  const daysSinceLast = Math.floor(
-    (todayDate.getTime() - mostRecent.getTime()) / 86_400_000
-  );
+function intensityLevel(count: number): ActivityHeatmapDay["level"] {
+  if (count <= 0) return 0;
+  if (count === 1) return 1;
+  if (count === 2) return 2;
+  if (count <= 4) return 3;
+  return 4;
+}
 
-  if (daysSinceLast > 1) return 0;
+/** Daily study intensity for the last `weeks` weeks (GitHub-style heatmap). */
+async function getActivityHeatmap(
+  userId: string,
+  weeks = 12
+): Promise<ActivityHeatmapDay[]> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const start = new Date(today);
+  start.setDate(today.getDate() - weeks * 7);
+  const startIso = start.toISOString();
+  const startDate = start.toISOString().split("T")[0];
 
-  let streak = 1;
-  for (let i = 1; i < questHistory.length; i++) {
-    const curr = new Date(questHistory[i].quest_date);
-    const prev = new Date(questHistory[i - 1].quest_date);
-    const diffDays = Math.round(
-      (prev.getTime() - curr.getTime()) / 86_400_000
-    );
-    if (diffDays === 1) streak++;
-    else break;
+  const [sessionsRes, questsRes, lessonsRes] = await Promise.all([
+    supabase
+      .from("quiz_sessions")
+      .select("created_at")
+      .eq("user_id", userId)
+      .in("source", [...EXAM_SESSION_SOURCES])
+      .gte("created_at", startIso),
+    supabase
+      .from("daily_quests")
+      .select("quest_date")
+      .eq("user_id", userId)
+      .eq("status", "completed")
+      .gte("quest_date", startDate),
+    (supabase as any)
+      .from("micro_lesson_sessions")
+      .select("created_at")
+      .eq("user_id", userId)
+      .gte("created_at", startIso) as Promise<{
+      data: { created_at: string }[] | null;
+    }>,
+  ]);
+
+  const counts: Record<string, number> = {};
+  const bump = (date: string) => {
+    counts[date] = (counts[date] ?? 0) + 1;
+  };
+
+  for (const s of sessionsRes.data ?? []) {
+    bump(s.created_at.slice(0, 10));
   }
-  return streak;
+  for (const q of questsRes.data ?? []) {
+    bump(q.quest_date);
+  }
+  for (const l of lessonsRes.data ?? []) {
+    bump(l.created_at.slice(0, 10));
+  }
+
+  return Object.entries(counts)
+    .map(([date, count]) => ({
+      date,
+      count,
+      level: intensityLevel(count),
+    }))
+    .sort((a, b) => a.date.localeCompare(b.date));
 }
 
 export async function getProfileData(userId: string) {
-  const today = new Date().toISOString().split("T")[0];
-
-  const [userRes, progress, dailyQuestsRes, streakHistoryRes, lessonSessionsRes] =
+  const [userRes, progress, dailyQuestsRes, lessonSessionsRes, activityHeatmap] =
     await Promise.all([
       supabase
         .from("users")
@@ -48,19 +92,13 @@ export async function getProfileData(userId: string) {
         .select("id")
         .eq("user_id", userId)
         .eq("status", "completed"),
-      supabase
-        .from("daily_quests")
-        .select("quest_date")
-        .eq("user_id", userId)
-        .eq("status", "completed")
-        .order("quest_date", { ascending: false })
-        .limit(60),
       (supabase as any)
         .from("micro_lesson_sessions")
         .select("duration_seconds")
         .eq("user_id", userId) as Promise<{
         data: { duration_seconds: number }[] | null;
       }>,
+      getActivityHeatmap(userId, 12),
     ]);
 
   const userRecord = userRes.data;
@@ -70,12 +108,11 @@ export async function getProfileData(userId: string) {
     0
   );
 
-  const streak = computeQuestStreak(streakHistoryRes.data ?? [], today);
-  const storedBestStreak = userRecord?.best_streak ?? 0;
-  const bestStreak = Math.max(storedBestStreak, streak);
-
   const overallAccuracy = progress.overallStats.accuracy;
   const targetPercent = MBE_PASS_PERCENT;
+
+  // All MBE subjects for topic progress (include not-started)
+  const subjectScores = progress.subjectScores;
 
   return {
     user: userRecord
@@ -84,16 +121,15 @@ export async function getProfileData(userId: string) {
           avatarUrl: userRecord.avatar_url,
           createdAt: new Date(userRecord.created_at),
           targetScore: userRecord.target_score,
-          bestStreak: storedBestStreak,
         }
       : null,
     overallAccuracy,
     targetPercent,
-    questsDone: dailyQuests.length,
-    totalTimeSeconds: progress.overallStats.totalTimeSeconds + lessonTimeSeconds,
+    sessionsCompleted: dailyQuests.length + progress.overallStats.sessionCount,
+    totalTimeSeconds:
+      progress.overallStats.totalTimeSeconds + lessonTimeSeconds,
     accuracy: overallAccuracy,
-    streak,
-    bestStreak,
-    subjectScores: progress.subjectScores,
+    subjectScores,
+    activityHeatmap,
   };
 }

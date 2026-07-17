@@ -187,7 +187,7 @@ export default function PlayPage() {
   }, [subject, mode, data?.topics]);
 
   return (
-    <div className="dashboard-surface fixed inset-0 z-50 overflow-x-hidden overflow-y-auto pt-14">
+    <div className="dashboard-surface fixed inset-0 z-40 overflow-x-hidden overflow-y-auto pt-14 md:left-[15rem] md:pt-0">
       {mode && (
         <div className="relative z-20 px-4 pt-4 sm:px-8 sm:pt-6">
           <button

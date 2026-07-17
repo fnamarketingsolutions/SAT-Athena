@@ -4,6 +4,7 @@ import { getEngagementSummary, getStuckPoints } from "@/lib/db/queries/analytics
 import { getUserAttempts } from "@/lib/db/queries/full-sat";
 import { getProgressData } from "@/lib/db/queries/progress";
 import { MBE_PASS_PERCENT } from "@/lib/exam-config";
+import { computePassProbability } from "@/lib/pass-probability";
 import { supabase } from "@/lib/supabase/client";
 
 type AnalyticsUser = {
@@ -150,6 +151,17 @@ export async function getAnalyticsDashboard(
         )
       : null;
 
+  const latestMockAccuracy =
+    mbeMockAttempts[0]?.percentScore != null
+      ? mbeMockAttempts[0].percentScore
+      : null;
+
+  const passProbability = computePassProbability({
+    targetScore: user.targetScore,
+    practiceAccuracyPercent: overallAccuracy,
+    latestMockAccuracyPercent: latestMockAccuracy,
+  });
+
   return {
     user: {
       displayName: user.displayName,
@@ -171,5 +183,6 @@ export async function getAnalyticsDashboard(
       questsCompletedThisWeek: weekQuestDays.filter((d) => d.completed).length,
     },
     mbeMockAttempts,
+    passProbability,
   };
 }

@@ -145,7 +145,7 @@ export function FlashcardDeckView({
   const totalCards = cards.length;
 
   return (
-    <div className="play-stage fixed inset-x-0 bottom-0 top-14 z-40 overflow-x-hidden overflow-y-auto">
+    <div className="play-stage fixed inset-x-0 bottom-0 top-14 z-40 overflow-x-hidden overflow-y-auto md:left-[15rem] md:top-0">
       <div
         aria-hidden
         className="play-vignette pointer-events-none fixed inset-[-10%] z-0"

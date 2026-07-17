@@ -84,14 +84,14 @@ export function QuestProblemPageContent() {
 
   if (ctx.phase === "completed") {
     return (
-      <div className="fixed inset-x-0 bottom-0 top-14 z-40 flex flex-col overflow-y-auto bg-gradient-to-b from-slate-50 via-white to-blue-50/40">
+      <div className="fixed inset-x-0 bottom-0 top-14 z-40 flex flex-col overflow-y-auto bg-background md:left-[15rem] md:top-0">
         <QuestResultsScreen />
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 top-14 z-40 flex flex-col bg-gradient-to-b from-slate-50 to-blue-50/40">
+    <div className="fixed inset-x-0 bottom-0 top-14 z-40 flex flex-col bg-background md:left-[15rem] md:top-0">
       <Toolbar
         displayTime={ctx.displayTime}
         isLow={ctx.isTimerLow}

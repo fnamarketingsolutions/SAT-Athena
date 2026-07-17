@@ -97,7 +97,7 @@ function MicroLessonPageInner() {
 
   if (metaLoading || lessonLoading) {
     return (
-      <div className="fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] items-center justify-center overflow-hidden observation-record">
+      <div className="fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] md:left-[15rem] md:top-0 md:h-dvh items-center justify-center overflow-hidden observation-record">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--obs-border)] border-t-[var(--obs-glow-mid)]" />
       </div>
     );
@@ -109,7 +109,7 @@ function MicroLessonPageInner() {
   // (but not if we're the one generating)
   if (storedLesson?.status === "generating" && !generatingLocallyRef.current) {
     return (
-      <div className="fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden observation-record">
+      <div className="fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] md:left-[15rem] md:top-0 md:h-dvh flex-col overflow-hidden observation-record">
         <div className="flex items-center justify-center py-6">
           <GenerationProgress />
         </div>
@@ -175,7 +175,7 @@ export default function MicroLessonPage() {
   return (
     <Suspense
       fallback={
-        <div className="fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] items-center justify-center overflow-hidden observation-record">
+        <div className="fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] md:left-[15rem] md:top-0 md:h-dvh items-center justify-center overflow-hidden observation-record">
           <WhiteboardSkeleton />
         </div>
       }

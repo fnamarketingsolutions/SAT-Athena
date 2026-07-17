@@ -77,7 +77,7 @@ export default function FullSatQuestionPage() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-gradient-to-b from-slate-50 to-blue-50/40">
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
       <Toolbar
         displayTime={ctx.displayTime}
         isLow={isLow}

@@ -44,9 +44,9 @@ export async function POST(req: Request) {
 
   if (body.targetScore !== undefined) {
     const target = Math.round(body.targetScore);
-    if (target < 400 || target > 1600) {
+    if (target < 200 || target > 400) {
       return NextResponse.json(
-        { error: "Target score must be between 400 and 1600" },
+        { error: "Target score out of range" },
         { status: 400 }
       );
     }

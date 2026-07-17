@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { MathContent } from "@/components/quiz/math-content";
 import { BottomBar } from "@/components/quiz/bottom-bar";
 import type { OnboardingStep } from "@/lib/db/queries/onboarding";
+import { DEFAULT_UBE_TARGET } from "@/lib/pass-probability";
 
 type WizardStep = Exclude<OnboardingStep, "done">;
 
@@ -114,7 +115,7 @@ export function OnboardingWizard() {
 
   const [rwScore, setRwScore] = useState(500);
   const [mathScore, setMathScore] = useState(500);
-  const [targetScore, setTargetScore] = useState(1200);
+  const [targetScore, setTargetScore] = useState(DEFAULT_UBE_TARGET);
 
   const [activeDays, setActiveDays] = useState<Set<DayOfWeek>>(new Set(["monday", "wednesday", "friday"]));
   const [selectedTime, setSelectedTime] = useState("18:00");
@@ -201,7 +202,6 @@ export function OnboardingWizard() {
         rwScaled: scores.rwScaled,
         mathScaled: scores.mathScaled,
       });
-      setTargetScore(Math.min(1600, scores.composite + 150));
       queryClient.invalidateQueries({ queryKey: ["onboarding"] });
       goToStep("goals");
       toast.success("Diagnostic complete!");
@@ -225,7 +225,6 @@ export function OnboardingWizard() {
         rwScaled: scores.rw,
         mathScaled: scores.math,
       });
-      setTargetScore(Math.min(1600, scores.composite + 150));
       queryClient.invalidateQueries({ queryKey: ["onboarding"] });
       goToStep("goals");
     },
@@ -258,9 +257,6 @@ export function OnboardingWizard() {
     },
     onError: () => toast.error("Failed to finish setup"),
   });
-
-  const currentComposite = resultScores?.composite ?? rwScore + mathScore;
-  const minTarget = Math.min(1600, currentComposite + 50);
 
   const progressPct = useMemo(() => {
     const idx = stepIndex(step);
@@ -324,8 +320,8 @@ export function OnboardingWizard() {
                 {welcome ? "You're in." : "Welcome to Athena"}
               </h1>
               <p className="mx-auto mt-4 max-w-md text-center text-sm leading-relaxed text-muted-foreground">
-                A quick setup helps us calibrate your starting point, set a target score,
-                and build a study schedule around your week.
+              A quick setup helps us calibrate your starting point, set a target
+              score, and build a study schedule around your week.
               </p>
               <button
                 onClick={() => goToStep("baseline")}
@@ -472,21 +468,30 @@ export function OnboardingWizard() {
               <h2 className="text-center font-[family-name:var(--font-instrument-serif)] text-3xl italic text-foreground">
                 Set your target score
               </h2>
-              {resultScores && (
-                <p className="mt-3 text-center text-sm text-muted-foreground">
-                  Starting at {resultScores.composite} · R&amp;W {resultScores.rwScaled} · Math{" "}
-                  {resultScores.mathScaled}
-                </p>
-              )}
-              <div className="mt-10">
-                <ScoreSlider
-                  label="Target composite"
+              <p className="mt-3 text-center text-sm text-muted-foreground">
+                This is the UBE-style total score you are aiming for. Pass
+                Probability uses it as the benchmark for your projected MBE.
+              </p>
+              <div className="mx-auto mt-10 max-w-md">
+                <div className="flex items-end justify-center gap-2">
+                  <span className="text-5xl font-bold tabular-nums text-foreground">
+                    {targetScore}
+                  </span>
+                  <Target className="mb-2 h-5 w-5 text-primary" />
+                </div>
+                <input
+                  type="range"
+                  min={220}
+                  max={330}
+                  step={2}
                   value={targetScore}
-                  min={minTarget}
-                  max={1600}
-                  step={10}
-                  onChange={setTargetScore}
+                  onChange={(e) => setTargetScore(Number(e.target.value))}
+                  className="mt-8 w-full accent-primary"
                 />
+                <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+                  <span>220</span>
+                  <span>330</span>
+                </div>
               </div>
               <button
                 onClick={() => goToStep("schedule")}

@@ -31,7 +31,7 @@ export default async function ProtectedLayout({
 
   if (needsOnboarding) {
     return (
-      <AppShell>
+      <AppShell minimal>
         <OnboardingGate>{children}</OnboardingGate>
       </AppShell>
     );

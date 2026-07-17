@@ -71,7 +71,7 @@ export default function FullSatResultsPage() {
         : "text-foreground";
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-auto bg-gradient-to-b from-slate-50 via-white to-blue-50/40">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-auto bg-background">
       <div className="mx-auto w-full max-w-2xl px-4 py-12">
         {/* Header */}
         <motion.div

@@ -346,7 +346,7 @@ export default function MentorPage() {
   })();
 
   return (
-    <div className="fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden">
+    <div className="fixed inset-x-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden md:left-[15rem] md:top-0 md:h-dvh">
       <ObservationFrame
         className="h-full min-h-0"
         onBack={() => router.push("/dashboard")}
