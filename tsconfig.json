@@ -30,5 +30,11 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "video-intro-remotion", "scripts"]
+  "exclude": [
+    "node_modules",
+    "video-intro-remotion",
+    "scripts",
+    "playwright.config.ts",
+    ".local"
+  ]
 }
