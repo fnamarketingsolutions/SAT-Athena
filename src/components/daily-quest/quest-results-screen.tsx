@@ -13,6 +13,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuestContext } from "./quest-context";
+import {
+  averageSecondsPerQuestion,
+  formatAveragePace,
+  getPaceStatus,
+  PACE_SECONDS_PER_QUESTION,
+} from "@/lib/pacing";
+import { cn } from "@/lib/utils";
 
 function StatCard({
   icon: Icon,
@@ -45,6 +52,13 @@ export function QuestResultsScreen() {
 
   const minutes = Math.floor(ctx.elapsed / 60);
   const seconds = ctx.elapsed % 60;
+
+  const answeredCount =
+    ctx.problems.filter(
+      (p) => p.isCorrect != null || ctx.answers.has(p.id) || p.selectedOption != null
+    ).length || ctx.problems.length;
+  const avgSeconds = averageSecondsPerQuestion(ctx.elapsed, answeredCount);
+  const paceStatus = avgSeconds != null ? getPaceStatus(avgSeconds) : null;
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
@@ -85,6 +99,32 @@ export function QuestResultsScreen() {
             />
             <StatCard icon={Zap} value={`+${ctx.xpEarned}`} label="XP Earned" />
           </div>
+
+          {avgSeconds != null && (
+            <div
+              className={cn(
+                "rounded-xl border px-4 py-3 text-center",
+                paceStatus === "good"
+                  ? "border-emerald-500/40 bg-emerald-500/10"
+                  : "border-orange-500/40 bg-orange-500/10"
+              )}
+            >
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Avg time per question
+              </p>
+              <p className="mt-1 text-xl font-bold tabular-nums text-foreground">
+                {formatAveragePace(avgSeconds)}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Target {Math.floor(PACE_SECONDS_PER_QUESTION / 60)}:
+                {(PACE_SECONDS_PER_QUESTION % 60).toString().padStart(2, "0")}{" "}
+                / q
+                {paceStatus === "good"
+                  ? " · On pace"
+                  : " · Slower than exam pace"}
+              </p>
+            </div>
+          )}
 
           <div className="space-y-2">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">

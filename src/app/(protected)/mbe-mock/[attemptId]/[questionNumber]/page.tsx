@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
 import { MOCK_EXAM_LABEL } from "@/lib/exam-config";
@@ -11,6 +11,8 @@ import { QuestionPanel } from "@/components/quiz/question-panel";
 import { AnswerPanel } from "@/components/quiz/answer-panel";
 import { BottomBar } from "@/components/quiz/bottom-bar";
 import { Calculator } from "@/components/quiz/calculator";
+import { PaceTimer } from "@/components/quiz/pace-timer";
+import { usePaceTimer } from "@/hooks/use-pace-timer";
 
 export default function FullSatQuestionPage() {
   const router = useRouter();
@@ -20,6 +22,14 @@ export default function FullSatQuestionPage() {
 
   const [calcOpen, setCalcOpen] = useState(false);
   const [timerHidden, setTimerHidden] = useState(false);
+
+  const currentProblem = ctx.currentProblem;
+  // Mock Exam: Time Pace is permanently ON (real exam pressure).
+  const pace = usePaceTimer(true, currentProblem?.problemId ?? questionNum);
+
+  const isContinuousMock =
+    ctx.problems.length > 0 &&
+    !ctx.problems.some((p) => p.section === "math");
 
   // Sync URL <-> currentIndex
   const syncedRef = useRef(false);
@@ -40,17 +50,17 @@ export default function FullSatQuestionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ctx.currentIndex]);
 
-  const currentProblem = ctx.currentProblem;
   if (!currentProblem) return null;
 
   // Convert to quiz Problem shape for reused components
+  // Hide correct answers + explanations until the post-submit summary.
   const asProblem = {
     id: currentProblem.problemId,
     orderIndex: currentProblem.orderIndex,
     difficulty: currentProblem.difficulty,
     questionText: currentProblem.questionText,
     options: currentProblem.options,
-    correctOption: -1, // Don't reveal correct answer during test
+    correctOption: -1,
     explanation: "",
     solutionSteps: [],
     hint: "",
@@ -59,17 +69,19 @@ export default function FullSatQuestionPage() {
   };
 
   const isLow = ctx.timeLeft < 300; // 5 minutes warning
-  const isMathSection = ctx.currentSection === "math";
+  const isMathSection = !isContinuousMock && ctx.currentSection === "math";
 
-  // Determine section boundaries for the bottom bar
-  // R&W: questions 1-54, Math: questions 55-98
-  const sectionStart = isMathSection ? 54 : 0;
-  const sectionEnd = isMathSection ? 98 : 54;
+  const sectionStart = isContinuousMock ? 0 : isMathSection ? 54 : 0;
+  const sectionEnd = isContinuousMock
+    ? ctx.totalQuestions
+    : isMathSection
+      ? 98
+      : 54;
   const sectionTotal = sectionEnd - sectionStart;
   const sectionIndex = ctx.currentIndex - sectionStart;
 
   const handleSubmitOrFinishSection = () => {
-    if (isMathSection) {
+    if (isContinuousMock || isMathSection) {
       ctx.submitTest();
     } else {
       ctx.finishSection();
@@ -77,7 +89,7 @@ export default function FullSatQuestionPage() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+    <div className="fixed inset-x-0 bottom-0 top-14 z-40 flex flex-col bg-background md:left-[15rem] md:top-0">
       <Toolbar
         displayTime={ctx.displayTime}
         isLow={isLow}
@@ -119,6 +131,13 @@ export default function FullSatQuestionPage() {
             problem={asProblem}
             questionNumber={sectionIndex + 1}
             emphasize={ctx.answers.has(currentProblem.problemId)}
+            aboveCard={
+              <PaceTimer
+                display={pace.display}
+                zone={pace.zone}
+                isOvertime={pace.isOvertime}
+              />
+            }
           />
           <AnswerPanel
             problem={asProblem}

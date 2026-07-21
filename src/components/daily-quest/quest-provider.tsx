@@ -3,6 +3,10 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { QuestContext } from "./quest-context";
 import { useAnswerQuestProblem, useCompleteQuest } from "@/hooks/use-daily-quest";
+import {
+  readDailyPacePreference,
+  writeDailyPacePreference,
+} from "@/hooks/use-pace-timer";
 import type { DailyQuest, DailyQuestProblemWithDetails } from "@/types/adaptive";
 import type { FeedbackState } from "@/components/quiz/answer-panel";
 import type { QuestionPhase } from "@/components/quiz/types";
@@ -43,6 +47,24 @@ export function QuestProvider({ quest, problems, children }: Props) {
   const [wrongCounts, setWrongCounts] = useState<Map<string, number>>(new Map());
   const [questionPhases, setQuestionPhases] = useState<Map<string, QuestionPhase>>(new Map());
   const [stuckModalShownIds, setStuckModalShownIds] = useState<Set<string>>(new Set());
+
+  // Time Pace preference (Daily Practice)
+  const [pacingEnabled, setPacingEnabled] = useState(false);
+  const [practiceConfigured, setPracticeConfigured] = useState(
+    () =>
+      quest.status === "completed" ||
+      problems.some((p) => p.selectedOption !== null)
+  );
+
+  useEffect(() => {
+    setPacingEnabled(readDailyPacePreference());
+  }, []);
+
+  const configurePractice = useCallback((pacingOn: boolean) => {
+    writeDailyPacePreference(pacingOn);
+    setPacingEnabled(pacingOn);
+    setPracticeConfigured(true);
+  }, []);
 
   // Timer
   const [elapsed, setElapsed] = useState(quest.timeElapsedSeconds);
@@ -241,6 +263,9 @@ export function QuestProvider({ quest, problems, children }: Props) {
         getWrongCount,
         stuckModalShownIds,
         markStuckModalShown,
+        pacingEnabled,
+        practiceConfigured,
+        configurePractice,
       }}
     >
       {children}

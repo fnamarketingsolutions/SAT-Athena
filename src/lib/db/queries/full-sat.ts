@@ -55,6 +55,18 @@ export async function getInProgressAttempt(
   return data ? mapAttempt(data) : null;
 }
 
+export async function getAttemptById(
+  attemptId: string
+): Promise<FullSatAttempt | null> {
+  const { data } = await db
+    .from("full_sat_attempts")
+    .select("*")
+    .eq("id", attemptId)
+    .maybeSingle();
+
+  return data ? mapAttempt(data) : null;
+}
+
 export async function getUserAttempts(
   userId: string
 ): Promise<FullSatAttempt[]> {
@@ -140,7 +152,7 @@ export async function completeAttempt(
 export async function getTestProblems(
   testId: string
 ): Promise<FullSatTestProblem[]> {
-  const { data } = await db
+  const { data, error } = await db
     .from("full_sat_test_problems")
     .select(
       `
@@ -158,15 +170,19 @@ export async function getTestProblems(
         hint,
         detailed_hint,
         subtopic_id,
+        topic_slug,
         difficulty_level,
         difficulty
       )
     `
     )
     .eq("test_id", testId)
-    .order("section")
-    .order("module")
-    .order("order_index");
+    .order("order_index", { ascending: true });
+
+  if (error) {
+    console.error("[full-sat] getTestProblems:", error.message);
+    throw new Error(error.message);
+  }
 
   return (data ?? []).map((row: any) => ({
     id: row.id,
@@ -182,6 +198,7 @@ export async function getTestProblems(
     hint: row.problems.hint ?? "",
     detailedHint: row.problems.detailed_hint,
     subtopicId: row.problems.subtopic_id,
+    topicSlug: row.problems.topic_slug ?? null,
     difficultyLevel: row.problems.difficulty_level,
     difficulty: row.problems.difficulty,
   }));
@@ -297,4 +314,142 @@ function mapAnswer(row: any): FullSatAnswer {
     responseTimeMs: row.response_time_ms,
     answeredAt: row.answered_at,
   };
+}
+
+/**
+ * Persist an Anthropic-generated mock exam as a full_sat_tests row + problems.
+ * Problems use source `practice` / category `generated` (no seed required).
+ */
+export async function createGeneratedMockTest(args: {
+  name: string;
+  problems: {
+    questionText: string;
+    options: string[];
+    correctOption: number;
+    explanation: string;
+    hint: string;
+    difficulty: string;
+    topicSlug?: string;
+  }[];
+}): Promise<FullSatTest> {
+  const { data: maxRow } = await db
+    .from("full_sat_tests")
+    .select("test_number")
+    .order("test_number", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const testNumber = ((maxRow?.test_number as number | undefined) ?? 0) + 1;
+
+  const difficultyLevels: Record<string, number> = {
+    easy: 2,
+    medium: 5,
+    hard: 8,
+  };
+
+  const problemIds: string[] = [];
+
+  try {
+    for (let i = 0; i < args.problems.length; i++) {
+      const p = args.problems[i];
+      const topicSlug = p.topicSlug?.trim() || "torts";
+      // problems_source_linking for `practice` requires subtopic_id OR
+      // (topic_slug AND subtopic_slug). We don't attach curriculum rows for
+      // AI mocks, so both slug fields are set.
+      const { data: problemRow, error: problemError } = await db
+        .from("problems")
+        .insert({
+          source: "practice",
+          category: "generated",
+          topic_slug: topicSlug,
+          subtopic_slug: "mock-exam",
+          order_index: i,
+          difficulty: p.difficulty,
+          difficulty_level: difficultyLevels[p.difficulty] ?? 5,
+          question_text: p.questionText,
+          options: p.options,
+          correct_option: p.correctOption,
+          explanation: p.explanation,
+          solution_steps: [],
+          hint: p.hint,
+          time_recommendation_seconds: 90,
+        })
+        .select("id")
+        .single();
+
+      if (problemError || !problemRow) {
+        throw new Error(
+          problemError?.message ?? `Failed to insert mock problem ${i + 1}`
+        );
+      }
+      problemIds.push(problemRow.id);
+    }
+
+    const { data: testRow, error: testError } = await db
+      .from("full_sat_tests")
+      .insert({
+        test_number: testNumber,
+        name: args.name,
+        status: "active",
+      })
+      .select("*")
+      .single();
+
+    if (testError || !testRow) {
+      throw new Error(testError?.message ?? "Failed to create mock exam test");
+    }
+
+    const links = problemIds.map((problemId, i) => ({
+      test_id: testRow.id,
+      problem_id: problemId,
+      section: "reading_writing",
+      module: 1,
+      order_index: i,
+    }));
+
+    const { error: linkError } = await db
+      .from("full_sat_test_problems")
+      .insert(links);
+
+    if (linkError) {
+      await db.from("full_sat_tests").delete().eq("id", testRow.id);
+      throw new Error(linkError.message);
+    }
+
+    return mapTest(testRow);
+  } catch (err) {
+    if (problemIds.length > 0) {
+      await db.from("problems").delete().in("id", problemIds);
+    }
+    throw err;
+  }
+}
+
+/** Active tests that actually have linked problems (skip orphan empty blueprints). */
+export async function getActiveTestsWithProblems(): Promise<FullSatTest[]> {
+  const tests = await getActiveTests();
+  if (tests.length === 0) return [];
+
+  const { data: links } = await db
+    .from("full_sat_test_problems")
+    .select("test_id")
+    .in(
+      "test_id",
+      tests.map((t) => t.id)
+    );
+
+  const withProblems = new Set(
+    (links ?? []).map((row: { test_id: string }) => row.test_id)
+  );
+
+  const emptyIds = tests.filter((t) => !withProblems.has(t.id)).map((t) => t.id);
+  if (emptyIds.length > 0) {
+    // Retire orphan blueprints left by failed generates (test created, problems not).
+    await db
+      .from("full_sat_tests")
+      .update({ status: "retired" })
+      .in("id", emptyIds);
+  }
+
+  return tests.filter((t) => withProblems.has(t.id));
 }

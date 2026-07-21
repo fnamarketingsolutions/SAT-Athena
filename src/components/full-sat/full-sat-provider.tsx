@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { FullSatContext, type FullSatPhase } from "./full-sat-context";
 import { useAnswerFullSat, useSubmitFullSat } from "@/hooks/use-full-sat";
+import { mockExamTimeLimitSeconds } from "@/lib/mbe-mock/constants";
 import {
   questionToSectionModule,
   MODULE_TIME_LIMITS,
@@ -41,6 +42,12 @@ export function FullSatProvider({
   const answerMutation = useAnswerFullSat();
   const submitMutation = useSubmitFullSat();
 
+  /** MBE mock: single continuous block (no Math section). */
+  const isContinuousMock = useMemo(
+    () => problems.length > 0 && !problems.some((p) => p.section === "math"),
+    [problems]
+  );
+
   // Build initial state from any existing answers
   const [answers, setAnswers] = useState<Map<string, number>>(() => {
     const map = new Map<string, number>();
@@ -62,7 +69,6 @@ export function FullSatProvider({
 
   // Determine starting position
   const resumeIndex = useMemo(() => {
-    // Find first unanswered problem, or start from the beginning
     for (let i = 0; i < problems.length; i++) {
       if (!lockedIds.has(problems[i].problemId)) return i;
     }
@@ -72,28 +78,33 @@ export function FullSatProvider({
   const [currentIndex, setCurrentIndex] = useState(resumeIndex);
   const [direction, setDirection] = useState(1);
 
-  // Phase management
   const [phase, setPhase] = useState<FullSatPhase>(() => {
     if (attempt.status === "completed") return "completed";
     return "active";
   });
 
-  // Current problem derived from index
   const currentProblem = problems[currentIndex] ?? null;
-  const currentPos = questionToSectionModule(currentIndex + 1);
+  const currentPos = isContinuousMock
+    ? {
+        section: "reading_writing" as const,
+        module: 1,
+        orderIndex: currentIndex,
+      }
+    : questionToSectionModule(currentIndex + 1);
 
-  // Timer — countdown per module
-  // Calculate used time per module from answered problems
   const [rwTimeUsed, setRwTimeUsed] = useState(attempt.rwTimeSeconds ?? 0);
   const [mathTimeUsed, setMathTimeUsed] = useState(attempt.mathTimeSeconds ?? 0);
 
-  const moduleTimeLimit = getModuleTimeLimit(currentPos.section, currentPos.module);
-
-  // Track time spent in current section continuously
   const sectionStartRef = useRef(Date.now());
   const [timeLeft, setTimeLeft] = useState(() => {
-    const used = currentPos.section === "reading_writing" ? rwTimeUsed : mathTimeUsed;
-    // Each section has 2 modules; used is for the whole section
+    if (isContinuousMock) {
+      const used = (attempt.rwTimeSeconds ?? 0) + (attempt.mathTimeSeconds ?? 0);
+      return Math.max(0, mockExamTimeLimitSeconds(problems.length) - used);
+    }
+    const used =
+      currentPos.section === "reading_writing"
+        ? attempt.rwTimeSeconds ?? 0
+        : attempt.mathTimeSeconds ?? 0;
     const sectionLimit =
       getModuleTimeLimit(currentPos.section, 1) +
       getModuleTimeLimit(currentPos.section, 2);
@@ -101,6 +112,7 @@ export function FullSatProvider({
   });
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const submitRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     if (phase !== "active") {
@@ -112,7 +124,6 @@ export function FullSatProvider({
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          // Time's up — auto-advance to next section or submit
           clearInterval(timerRef.current!);
           return 0;
         }
@@ -123,26 +134,8 @@ export function FullSatProvider({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [phase, currentPos.section]);
+  }, [phase, currentPos.section, isContinuousMock]);
 
-  // Auto-advance when timer hits 0
-  useEffect(() => {
-    if (timeLeft === 0 && phase === "active") {
-      if (currentPos.section === "reading_writing") {
-        finishSection();
-      } else {
-        submitTest();
-      }
-    }
-  }, [timeLeft, phase, currentPos.section]);
-
-  const displayTime = useMemo(() => {
-    const m = Math.floor(timeLeft / 60);
-    const s = timeLeft % 60;
-    return `${m}:${s.toString().padStart(2, "0")}`;
-  }, [timeLeft]);
-
-  // Navigation
   const goNext = useCallback(() => {
     setDirection(1);
     setCurrentIndex((i) => Math.min(i + 1, problems.length - 1));
@@ -161,20 +154,16 @@ export function FullSatProvider({
     [currentIndex, problems.length]
   );
 
-  // Answer handling — no hint/tutor escalation, just record
   const handleSelectAnswer = useCallback(
     (problemId: string, optionIndex: number) => {
       if (phase !== "active") return;
 
-      // Find the problem to check correctness
       const problem = problems.find((p) => p.problemId === problemId);
       if (!problem) return;
 
-      // Allow re-answering (override previous choice)
       setAnswers((prev) => new Map(prev).set(problemId, optionIndex));
       setLockedIds((prev) => new Set(prev).add(problemId));
 
-      // Fire API call (don't block UI)
       answerMutation.mutate({
         attemptId: attempt.id,
         problemId,
@@ -182,51 +171,37 @@ export function FullSatProvider({
         module: problem.module,
         orderIndex: problem.orderIndex,
         selectedOption: optionIndex,
-        isCorrect: optionIndex === (problem as any).correctOption,
+        isCorrect:
+          optionIndex ===
+          (problem as { correctOption?: number }).correctOption,
         responseTimeMs: undefined,
       });
     },
     [phase, problems, attempt.id, answerMutation]
   );
 
-  // Section transition
-  const finishSection = useCallback(() => {
-    // Record R&W time
-    const elapsed = Math.round((Date.now() - sectionStartRef.current) / 1000);
-    setRwTimeUsed((prev) => prev + elapsed);
-
-    // Move to break phase
-    setPhase("break");
-    router.push(`/mbe-mock/${attempt.id}/break`);
-  }, [attempt.id, router]);
-
-  // Called from break page to start math section
-  const startMathSection = useCallback(() => {
-    setPhase("active");
-    // Find first math problem
-    const mathStart = problems.findIndex((p) => p.section === "math");
-    if (mathStart >= 0) {
-      setCurrentIndex(mathStart);
-      // Reset timer for math section
-      const mathLimit = getModuleTimeLimit("math", 1) + getModuleTimeLimit("math", 2);
-      setTimeLeft(mathLimit);
-      sectionStartRef.current = Date.now();
-    }
-  }, [problems]);
-
-  // Submit test
   const submitTest = useCallback(() => {
-    // Record math time
-    const elapsed = Math.round((Date.now() - sectionStartRef.current) / 1000);
-    const finalMathTime = mathTimeUsed + elapsed;
+    let finalRw = rwTimeUsed;
+    let finalMath = mathTimeUsed;
+
+    if (isContinuousMock) {
+      finalRw = Math.max(
+        0,
+        mockExamTimeLimitSeconds(problems.length) - timeLeft
+      );
+      finalMath = 0;
+    } else {
+      const elapsed = Math.round((Date.now() - sectionStartRef.current) / 1000);
+      finalMath = mathTimeUsed + elapsed;
+    }
 
     setPhase("completed");
 
     submitMutation.mutate(
       {
         attemptId: attempt.id,
-        rwTimeSeconds: rwTimeUsed,
-        mathTimeSeconds: finalMathTime,
+        rwTimeSeconds: finalRw,
+        mathTimeSeconds: finalMath,
       },
       {
         onSuccess: () => {
@@ -234,9 +209,48 @@ export function FullSatProvider({
         },
       }
     );
-  }, [attempt.id, rwTimeUsed, mathTimeUsed, submitMutation, router]);
+  }, [
+    attempt.id,
+    rwTimeUsed,
+    mathTimeUsed,
+    submitMutation,
+    router,
+    isContinuousMock,
+    problems.length,
+    timeLeft,
+  ]);
 
-  // Status helpers
+  submitRef.current = submitTest;
+
+  const finishSection = useCallback(() => {
+    if (isContinuousMock) {
+      submitRef.current();
+      return;
+    }
+
+    const elapsed = Math.round((Date.now() - sectionStartRef.current) / 1000);
+    setRwTimeUsed((prev) => prev + elapsed);
+
+    setPhase("break");
+    router.push(`/mbe-mock/${attempt.id}/break`);
+  }, [attempt.id, router, isContinuousMock]);
+
+  useEffect(() => {
+    if (timeLeft === 0 && phase === "active") {
+      if (isContinuousMock || currentPos.section === "math") {
+        submitRef.current();
+      } else {
+        finishSection();
+      }
+    }
+  }, [timeLeft, phase, currentPos.section, isContinuousMock, finishSection]);
+
+  const displayTime = useMemo(() => {
+    const m = Math.floor(timeLeft / 60);
+    const s = timeLeft % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  }, [timeLeft]);
+
   const getQuestionStatus = useCallback(
     (index: number): "unanswered" | "answered" => {
       const problem = problems[index];
@@ -247,8 +261,12 @@ export function FullSatProvider({
   );
 
   const answeredCount = lockedIds.size;
-  const sectionLabel = getSectionLabel(currentPos.section);
-  const moduleLabel = `Module ${currentPos.module}`;
+  const sectionLabel = isContinuousMock
+    ? "Mock Exam"
+    : getSectionLabel(currentPos.section);
+  const moduleLabel = isContinuousMock
+    ? "All Subjects"
+    : `Module ${currentPos.module}`;
 
   return (
     <FullSatContext.Provider

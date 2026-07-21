@@ -220,7 +220,7 @@ export async function getProgressData(userId: string) {
     })),
     ...dailyQuests.map((q) => ({
       id: q.id,
-      subtopicName: "Daily Quest",
+      subtopicName: "Daily Practice",
       score: q.score,
       totalQuestions: q.total_questions,
       timeElapsedSeconds: q.time_elapsed_seconds,

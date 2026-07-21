@@ -1,24 +1,33 @@
 "use client";
 
-type Session = {
+import {
+  averageSecondsPerQuestion,
+  formatHistoryPace,
+  getPaceStatus,
+} from "@/lib/pacing";
+import { cn } from "@/lib/utils";
+
+export type RecentResultSession = {
   id: string;
-  subtopicName: string;
+  quizName: string;
   score: number;
   totalQuestions: number;
   timeElapsedSeconds: number;
   date: string;
+  /** Precomputed avg seconds/q when available (e.g. mocks with answered count). */
+  avgSecondsPerQuestion?: number | null;
 };
 
 export function PracticeTestResults({
   sessions,
 }: {
-  sessions: Session[];
+  sessions: RecentResultSession[];
 }) {
   if (sessions.length === 0) {
     return (
       <div className="border bg-card p-5">
         <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          Practice Test Results
+          Recent Results
         </h2>
         <p className="mt-3 text-sm text-muted-foreground">
           No practice sessions yet.
@@ -27,39 +36,56 @@ export function PracticeTestResults({
     );
   }
 
-  const displayed = sessions.slice(0, 5);
+  const displayed = sessions.slice(0, 10);
 
   return (
     <div className="border bg-card p-5">
       <h2 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-        Practice Test Results
+        Recent Results
       </h2>
       <div className="space-y-0">
-        {displayed.map((session, idx) => {
+        {displayed.map((session) => {
           const date = new Date(session.date);
           const dateStr = date.toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
+            year: "numeric",
           });
           const pct =
             session.totalQuestions > 0
-              ? Math.round(
-                  (session.score / session.totalQuestions) * 100
-                )
+              ? Math.round((session.score / session.totalQuestions) * 100)
               : 0;
+
+          const avg =
+            session.avgSecondsPerQuestion ??
+            averageSecondsPerQuestion(
+              session.timeElapsedSeconds,
+              session.totalQuestions
+            );
+          const paceStatus = avg != null ? getPaceStatus(avg) : null;
 
           return (
             <div
               key={session.id}
-              className="flex items-center justify-between border-b border-border/40 py-3.5 last:border-0"
+              className="flex items-center justify-between gap-4 border-b border-border/40 py-3.5 last:border-0"
             >
-              <div>
-                <p className="text-sm font-bold">Session {idx + 1}</p>
-                <p className="text-xs text-muted-foreground">
-                  {dateStr} &middot; {session.subtopicName}
-                </p>
+              <div className="min-w-0">
+                <p className="text-sm font-bold">{session.quizName}</p>
+                <p className="text-xs text-muted-foreground">{dateStr}</p>
+                {avg != null && paceStatus && (
+                  <p
+                    className={cn(
+                      "mt-1 text-sm font-semibold tabular-nums",
+                      paceStatus === "good"
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-red-600 dark:text-red-400"
+                    )}
+                  >
+                    {formatHistoryPace(avg)}
+                  </p>
+                )}
               </div>
-              <div className="text-right">
+              <div className="shrink-0 text-right">
                 <span className="text-2xl font-bold tabular-nums">
                   {session.score}/{session.totalQuestions}
                 </span>

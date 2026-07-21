@@ -21,6 +21,12 @@ import { PassProbabilityPanel } from "@/components/analytics/pass-probability-pa
 import type { StuckPoint, EngagementSummary } from "@/lib/db/queries/analytics";
 import type { PassProbabilityResult } from "@/lib/pass-probability";
 import {
+  averageSecondsPerQuestion,
+  formatHistoryPace,
+  getPaceStatus,
+} from "@/lib/pacing";
+import { cn } from "@/lib/utils";
+import {
   APP_BRANDING,
   MOCK_EXAM_ROUTE,
   MOCK_EXAM_LABEL,
@@ -94,6 +100,8 @@ type AnalyticsData = {
     percentScore: number | null;
     passed: boolean;
     completedAt: string | null;
+    totalTimeSeconds: number;
+    answeredCount: number;
   }[];
   passProbability: PassProbabilityResult;
 };
@@ -139,6 +147,34 @@ export function AnalyticsDashboard() {
   }
 
   if (!data) return null;
+
+  const recentResults = [
+    ...data.recentSessions.map((s) => ({
+      id: s.id,
+      quizName:
+        s.subtopicName === "Daily Practice" || s.subtopicName === "Daily Quest"
+          ? "Daily Practice"
+          : s.subtopicName || "Practice",
+      score: s.score,
+      totalQuestions: s.totalQuestions,
+      timeElapsedSeconds: s.timeElapsedSeconds,
+      date: s.date,
+    })),
+    ...data.mbeMockAttempts.map((a) => ({
+      id: a.id,
+      quizName: "Mock Exam",
+      score: a.correct,
+      totalQuestions: a.total,
+      timeElapsedSeconds: a.totalTimeSeconds,
+      date: a.completedAt ?? new Date(0).toISOString(),
+      avgSecondsPerQuestion: averageSecondsPerQuestion(
+        a.totalTimeSeconds,
+        a.answeredCount > 0 ? a.answeredCount : a.total
+      ),
+    })),
+  ]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 10);
 
   return (
     <div className="p-6 pb-16">
@@ -213,45 +249,75 @@ export function AnalyticsDashboard() {
         </motion.div>
 
         <motion.div className="mt-6" variants={staggerItem}>
-          <PracticeTestResults sessions={data.recentSessions} />
+          <PracticeTestResults sessions={recentResults} />
         </motion.div>
 
-        {data.mbeMockAttempts.length > 0 && (
-          <motion.div className="mt-6 border bg-card p-5" variants={staggerItem}>
-            <h2 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              {MOCK_EXAM_LABEL} Attempts
-            </h2>
+        <motion.div className="mt-6 border bg-card p-5" variants={staggerItem}>
+          <h2 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            {MOCK_EXAM_LABEL}
+          </h2>
+          {data.mbeMockAttempts.length > 0 ? (
             <div className="space-y-3">
-              {data.mbeMockAttempts.map((attempt) => (
-                <div
-                  key={attempt.id}
-                  className="flex items-center justify-between border-b border-border/40 py-2 last:border-0"
-                >
-                  <div>
-                    <p className="text-sm font-medium">
-                      {attempt.completedAt
-                        ? new Date(attempt.completedAt).toLocaleDateString()
-                        : "Completed"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {attempt.correct}/{attempt.total} correct
-                      {attempt.passed ? " · Pass target met" : ""}
-                    </p>
+              {data.mbeMockAttempts.map((attempt) => {
+                const avg = averageSecondsPerQuestion(
+                  attempt.totalTimeSeconds,
+                  attempt.answeredCount > 0
+                    ? attempt.answeredCount
+                    : attempt.total
+                );
+                const paceStatus = avg != null ? getPaceStatus(avg) : null;
+                return (
+                  <div
+                    key={attempt.id}
+                    className="flex items-center justify-between border-b border-border/40 py-2 last:border-0"
+                  >
+                    <div>
+                      <p className="text-sm font-medium">
+                        {attempt.completedAt
+                          ? new Date(attempt.completedAt).toLocaleDateString()
+                          : "Completed"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {attempt.correct}/{attempt.total} correct
+                        {attempt.passed ? " · Pass target met" : ""}
+                      </p>
+                      {avg != null && paceStatus && (
+                        <p
+                          className={cn(
+                            "mt-0.5 text-sm font-semibold tabular-nums",
+                            paceStatus === "good"
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : "text-red-600 dark:text-red-400"
+                          )}
+                        >
+                          {formatHistoryPace(avg)}
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-2xl font-bold tabular-nums">
+                      {attempt.percentScore != null
+                        ? `${attempt.percentScore}%`
+                        : "—"}
+                    </span>
                   </div>
-                  <span className="text-2xl font-bold tabular-nums">
-                    {attempt.percentScore != null ? `${attempt.percentScore}%` : "—"}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
-            <Link
-              href={MOCK_EXAM_ROUTE}
-              className="mt-4 inline-block text-xs font-medium text-primary hover:underline"
-            >
-              Take another {MOCK_EXAM_LABEL} →
-            </Link>
-          </motion.div>
-        )}
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No mock exam attempts yet. Generate a timed set across all seven
+              MBE subjects.
+            </p>
+          )}
+          <Link
+            href={MOCK_EXAM_ROUTE}
+            className="mt-4 inline-block text-xs font-medium text-primary hover:underline"
+          >
+            {data.mbeMockAttempts.length > 0
+              ? `Take another ${MOCK_EXAM_LABEL} →`
+              : `Start ${MOCK_EXAM_LABEL} →`}
+          </Link>
+        </motion.div>
 
       </motion.div>
     </div>

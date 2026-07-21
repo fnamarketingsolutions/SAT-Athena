@@ -53,6 +53,27 @@ export function useStartFullSat() {
   });
 }
 
+export function useGenerateFullSat() {
+  const queryClient = useQueryClient();
+
+  return useMutation<{ test: { id: string; name: string }; questionCount: number }, Error>({
+    mutationFn: async () => {
+      const res = await fetch("/api/mbe-mock/generate", { method: "POST" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error ?? "Failed to generate mock exam");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["full-sat"] });
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
+}
+
 export function useAnswerFullSat() {
   return useMutation({
     mutationFn: async (payload: {

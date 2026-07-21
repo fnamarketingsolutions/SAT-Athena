@@ -31,6 +31,11 @@ export type QuestContextValue = {
   getWrongCount: (id: string) => number;
   stuckModalShownIds: Set<string>;
   markStuckModalShown: (id: string) => void;
+  /** Per-question Time Pace monitor (Daily Practice preference). */
+  pacingEnabled: boolean;
+  /** False until user confirms start settings (or resumes mid-quest). */
+  practiceConfigured: boolean;
+  configurePractice: (pacingOn: boolean) => void;
 };
 
 export const QuestContext = createContext<QuestContextValue | null>(null);

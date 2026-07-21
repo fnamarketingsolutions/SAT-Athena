@@ -37,8 +37,21 @@ function zoneFor(projectedMbe: number, mbeTarget: number): PerformanceZone {
   return "Comfortable";
 }
 
+/**
+ * Target-state status line: Below Range if under the cut, On Track once at/above.
+ */
+export function targetStateStatus(
+  projectedMbe: number,
+  mbeTarget: number
+): "Below Range" | "On Track" {
+  return projectedMbe >= mbeTarget ? "On Track" : "Below Range";
+}
+
 /** Logistic pass probability centered on the MBE target. */
-function probabilityNearTarget(projectedMbe: number, mbeTarget: number): number {
+export function probabilityNearTarget(
+  projectedMbe: number,
+  mbeTarget: number
+): number {
   const z = (projectedMbe - mbeTarget) / 8;
   const p = 1 / (1 + Math.exp(-z));
   return Math.round(Math.min(99, Math.max(5, p * 100)));
@@ -50,10 +63,15 @@ function probabilityNearTarget(projectedMbe: number, mbeTarget: number): number 
  */
 export function computePassProbability(input: {
   targetScore?: number | null;
+  /** Direct MBE scaled target (overrides UBE total / 2 when set). */
+  mbeTarget?: number | null;
   practiceAccuracyPercent: number;
   latestMockAccuracyPercent: number | null;
 }): PassProbabilityResult {
-  const mbeTarget = resolveMbeTarget(input.targetScore);
+  const mbeTarget =
+    input.mbeTarget != null && input.mbeTarget > 0
+      ? Math.round(input.mbeTarget)
+      : resolveMbeTarget(input.targetScore);
 
   const hasPracticeData = input.practiceAccuracyPercent > 0;
   const hasMockData =

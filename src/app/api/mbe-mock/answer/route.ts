@@ -3,6 +3,7 @@ import {
   upsertAnswer,
   updateAttemptPosition,
 } from "@/lib/db/queries/full-sat";
+import { supabase } from "@/lib/supabase/client";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -24,7 +25,6 @@ export async function POST(req: Request) {
     module,
     orderIndex,
     selectedOption,
-    isCorrect,
     responseTimeMs,
   } = body as {
     attemptId: string;
@@ -33,13 +33,33 @@ export async function POST(req: Request) {
     module: number;
     orderIndex: number;
     selectedOption: number;
-    isCorrect: boolean;
     responseTimeMs?: number;
   };
 
-  if (!attemptId || !problemId || !section || module == null || orderIndex == null || selectedOption == null || isCorrect == null) {
+  if (
+    !attemptId ||
+    !problemId ||
+    !section ||
+    module == null ||
+    orderIndex == null ||
+    selectedOption == null
+  ) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
+
+  // Grade server-side so the client never needs the answer key mid-exam.
+  const { data: problemRow } = await supabase
+    .from("problems")
+    .select("correct_option")
+    .eq("id", problemId)
+    .maybeSingle();
+
+  const correctOption =
+    typeof problemRow?.correct_option === "number"
+      ? problemRow.correct_option
+      : null;
+  const isCorrect =
+    correctOption != null ? selectedOption === correctOption : false;
 
   await upsertAnswer(attemptId, {
     problemId,
@@ -51,12 +71,12 @@ export async function POST(req: Request) {
     responseTimeMs,
   });
 
-  // Update resume position
   await updateAttemptPosition(attemptId, {
     currentSection: section,
     currentModule: module,
     currentQuestion: orderIndex,
   });
 
+  // Do not return correctness — feedback is delayed until the summary.
   return NextResponse.json({ ok: true });
 }

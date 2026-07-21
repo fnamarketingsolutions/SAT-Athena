@@ -17,6 +17,8 @@ import {
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useAccountabilityStatus } from "@/hooks/use-accountability-status";
 import { DailyQuestHero } from "@/components/dashboard/daily-quest-hero";
+import { PaceStatusWidget } from "@/components/dashboard/pace-status-widget";
+import { ExamCountdownWidget } from "@/components/dashboard/exam-countdown-widget";
 import { cn } from "@/lib/utils";
 import { MBE_SUBJECTS, type MbeSubject } from "@/lib/exam-config";
 
@@ -283,6 +285,10 @@ function ModePicker({
       </div>
 
       <DailyQuestHero status={accountability} isLoading={accountabilityLoading} />
+
+      <ExamCountdownWidget />
+
+      <PaceStatusWidget />
 
       <div className="mt-10 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {MODES.map((m) => (

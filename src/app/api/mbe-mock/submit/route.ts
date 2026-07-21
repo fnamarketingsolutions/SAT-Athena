@@ -38,29 +38,39 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "attemptId is required" }, { status: 400 });
   }
 
-  // Fetch all answers for this attempt
   const answers = await getAttemptAnswers(attemptId);
 
-  // Count correct per section
-  let rwCorrect = 0;
-  let rwTotal = 0;
-  let mathCorrect = 0;
-  let mathTotal = 0;
+  const hasMath = answers.some((a) => a.section === "math");
+  const correctCount = answers.filter((a) => a.isCorrect).length;
+  const totalQuestions = answers.length;
+  const percent =
+    totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
 
-  for (const a of answers) {
-    if (a.section === "reading_writing") {
-      rwTotal++;
-      if (a.isCorrect) rwCorrect++;
-    } else {
-      mathTotal++;
-      if (a.isCorrect) mathCorrect++;
+  let rwCorrect = 0;
+  let mathCorrect = 0;
+  let rwScaled = percent;
+  let mathScaled = 0;
+  let total = percent;
+
+  if (hasMath) {
+    // Legacy SAT-style attempts keep the old scaled scoring path.
+    for (const a of answers) {
+      if (a.section === "reading_writing") {
+        if (a.isCorrect) rwCorrect++;
+      } else if (a.isCorrect) {
+        mathCorrect++;
+      }
     }
+    const scaled = computeFullSatScore(rwCorrect, mathCorrect);
+    rwScaled = scaled.rwScaled;
+    mathScaled = scaled.mathScaled;
+    total = scaled.total;
+  } else {
+    // Continuous MBE mock: store raw correct + percent (0–100).
+    rwCorrect = correctCount;
+    mathCorrect = 0;
   }
 
-  // Compute scaled scores
-  const { rwScaled, mathScaled, total } = computeFullSatScore(rwCorrect, mathCorrect);
-
-  // Save completion
   await completeAttempt(attemptId, {
     rwRawScore: rwCorrect,
     rwScaledScore: rwScaled,
@@ -72,9 +82,7 @@ export async function POST(req: Request) {
     totalTimeSeconds: (rwTimeSeconds ?? 0) + (mathTimeSeconds ?? 0),
   });
 
-  // Update subsection skills for adaptive tracking
   try {
-    // Get the test's problem data for subtopic mapping
     const { data: attemptRow } = await (supabase as any)
       .from("full_sat_attempts")
       .select("test_id")
@@ -85,14 +93,13 @@ export async function POST(req: Request) {
       const problems = await getTestProblems(attemptRow.test_id);
       const problemMap = new Map(problems.map((p) => [p.problemId, p]));
 
-      // Group answers by subtopic
       const bySubtopic = new Map<
         string,
         { isCorrect: boolean; difficultyLevel: number }[]
       >();
 
       for (const a of answers) {
-        if (a.selectedOption == null) continue; // unanswered
+        if (a.selectedOption == null) continue;
         const problem = problemMap.get(a.problemId);
         if (!problem?.subtopicId) continue;
 
@@ -107,7 +114,6 @@ export async function POST(req: Request) {
       let totalXpEarned = 0;
 
       for (const [subtopicId, subtopicAnswers] of bySubtopic) {
-        // Look up section category
         const { data: subtopicData } = await supabase
           .from("subtopics")
           .select("id, topics!inner(subject)")
@@ -163,6 +169,9 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({
+    correct: correctCount,
+    total: totalQuestions,
+    percent,
     rwRawScore: rwCorrect,
     rwScaledScore: rwScaled,
     mathRawScore: mathCorrect,

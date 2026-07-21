@@ -13,6 +13,8 @@ import { Calculator } from "@/components/quiz/calculator";
 import { StuckModal } from "@/components/quiz/stuck-modal";
 import { QuestResultsScreen } from "./quest-results-screen";
 import { MathContent } from "@/components/quiz/math-content";
+import { PaceTimer } from "@/components/quiz/pace-timer";
+import { usePaceTimer } from "@/hooks/use-pace-timer";
 
 export function QuestProblemPageContent() {
   const router = useRouter();
@@ -58,6 +60,17 @@ export function QuestProblemPageContent() {
     if (currentProblem) ctx.markStuckModalShown(currentProblem.id);
     setShowStuckModal(false);
   }, [ctx, currentProblem]);
+
+  const pace = usePaceTimer(
+    ctx.pacingEnabled,
+    currentProblem?.id ?? problemNum
+  );
+
+  useEffect(() => {
+    if (!ctx.practiceConfigured && ctx.phase === "active") {
+      router.replace("/quest");
+    }
+  }, [ctx.practiceConfigured, ctx.phase, router]);
 
   if (!currentProblem) return null;
 
@@ -130,6 +143,15 @@ export function QuestProblemPageContent() {
             problem={asProblem}
             questionNumber={ctx.currentIndex + 1}
             emphasize={ctx.answers.has(currentProblem.id)}
+            aboveCard={
+              ctx.pacingEnabled ? (
+                <PaceTimer
+                  display={pace.display}
+                  zone={pace.zone}
+                  isOvertime={pace.isOvertime}
+                />
+              ) : null
+            }
           />
           <AnswerPanel
             problem={asProblem}

@@ -14,6 +14,8 @@ type QuestionPanelProps = {
   hintRevealed?: boolean;
   /** Subtle highlight to draw attention to the question card */
   emphasize?: boolean;
+  /** Optional pacing timer (or other chrome) rendered above the question card */
+  aboveCard?: React.ReactNode;
   className?: string;
 };
 
@@ -22,6 +24,7 @@ export function QuestionPanel({
   questionNumber,
   hintRevealed = false,
   emphasize = false,
+  aboveCard,
   className,
 }: QuestionPanelProps) {
   const [hintOpen, setHintOpen] = useState(false);
@@ -37,6 +40,7 @@ export function QuestionPanel({
         className,
       )}
     >
+      {aboveCard}
       <div
         className={cn(
           "max-h-[calc(100dvh-220px)] rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6 overflow-hidden",

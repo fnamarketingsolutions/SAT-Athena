@@ -27,7 +27,7 @@ export default function FullSatBreakPage() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
+    <div className="fixed inset-x-0 bottom-0 top-14 z-40 flex items-center justify-center bg-background md:left-[15rem] md:top-0">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}

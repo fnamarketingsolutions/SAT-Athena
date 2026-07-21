@@ -1,6 +1,6 @@
 import { getAuthIdentity, getAppUser } from "@/lib/auth/current-user";
 import {
-  getActiveTests,
+  getActiveTestsWithProblems,
   getLastCompletedAttempt,
   getInProgressAttempt,
 } from "@/lib/db/queries/full-sat";
@@ -19,7 +19,7 @@ export async function GET() {
   }
 
   const [tests, lastAttempt, currentAttempt] = await Promise.all([
-    getActiveTests(),
+    getActiveTestsWithProblems(),
     getLastCompletedAttempt(user.id),
     getInProgressAttempt(user.id),
   ]);

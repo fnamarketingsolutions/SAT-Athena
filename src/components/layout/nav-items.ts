@@ -8,7 +8,9 @@ import {
   Swords,
   MessageCircle,
   Settings,
+  ClipboardList,
 } from "lucide-react";
+import { MOCK_EXAM_ROUTE } from "@/lib/exam-config";
 
 export type NavItem = {
   href: string;
@@ -20,6 +22,7 @@ export const learnerNavItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/quest", label: "Daily Quest", icon: Swords },
+  { href: MOCK_EXAM_ROUTE, label: "Mock Exam", icon: ClipboardList },
   { href: "/learning", label: "Learning", icon: GraduationCap },
   { href: "/queue", label: "My Queue", icon: BookOpen },
   { href: "/mentor", label: "Mentor", icon: MessageCircle },

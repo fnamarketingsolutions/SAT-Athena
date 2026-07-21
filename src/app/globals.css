@@ -392,17 +392,6 @@
 .debug-ops .op-new    { outline: 1px dashed oklch(0.72 0.20 145) !important; outline-offset: 2px; }
 .debug-ops .op-result { outline: 1px dashed oklch(0.72 0.18 270) !important; outline-offset: 2px; }
 .debug-ops .op-cancel { outline: 1px dashed oklch(0.65 0.22 25)  !important; outline-offset: 2px; }
-
-/* Strikethrough overlay for cancelled terms. wb-math's animateTaggedSpans
-   adds the `.striking` class to .op-cancel spans at the start of the
-   COLLAPSE phase. The ::after pseudo-element draws a diagonal line
-   from the top-right corner to the bottom-left of the term, painted
-   into the background as a gradient band so the angle scales with
-   the term's bbox. clip-path grows from the top-right corner along
-   the diagonal so the strike "draws" right-to-left, then the
-   existing opacity fade carries the span (and its strike) out
-   together. The line uses currentColor so it inherits the operand's
-   amber/textcolor styling. */
 .op-cancel.striking {
   position: relative;
 }

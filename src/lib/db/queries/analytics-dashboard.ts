@@ -111,21 +111,27 @@ export async function getAnalyticsDashboard(
     .slice(0, 5);
 
   const attemptIds = completedMocks.map((a) => a.id);
-  const answerCountByAttempt: Record<string, number> = {};
+  const questionCountByAttempt: Record<string, number> = {};
+  const answeredCountByAttempt: Record<string, number> = {};
   if (attemptIds.length > 0) {
     const { data: answerRows } = await supabase
       .from("full_sat_answers")
-      .select("attempt_id")
+      .select("attempt_id, selected_option")
       .in("attempt_id", attemptIds);
     for (const row of answerRows ?? []) {
-      answerCountByAttempt[row.attempt_id] =
-        (answerCountByAttempt[row.attempt_id] ?? 0) + 1;
+      questionCountByAttempt[row.attempt_id] =
+        (questionCountByAttempt[row.attempt_id] ?? 0) + 1;
+      if (row.selected_option != null) {
+        answeredCountByAttempt[row.attempt_id] =
+          (answeredCountByAttempt[row.attempt_id] ?? 0) + 1;
+      }
     }
   }
 
   const mbeMockAttempts = completedMocks.map((a) => {
     const correct = (a.rwRawScore ?? 0) + (a.mathRawScore ?? 0);
-    const total = answerCountByAttempt[a.id] ?? 0;
+    const total = questionCountByAttempt[a.id] ?? 0;
+    const answeredCount = answeredCountByAttempt[a.id] ?? 0;
     const percentScore =
       total > 0 ? Math.round((correct / total) * 100) : null;
     return {
@@ -135,6 +141,8 @@ export async function getAnalyticsDashboard(
       percentScore,
       passed: percentScore != null && percentScore >= targetPercent,
       completedAt: a.completedAt,
+      totalTimeSeconds: a.totalTimeSeconds ?? 0,
+      answeredCount,
     };
   });
 

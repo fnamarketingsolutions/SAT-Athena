@@ -10,6 +10,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { AnimatedSprite } from "@/components/pixel-art/animated-sprite";
 import { ProfileNameEditor } from "@/components/profile/profile-name-editor";
 import { ScheduleEditor } from "@/components/profile/schedule-editor";
+import { ExamDateEditor } from "@/components/profile/exam-date-editor";
 import { ActivityHeatmap } from "@/components/profile/activity-heatmap";
 import { TopicProgressPanel } from "@/components/profile/topic-progress-panel";
 import { PassProbabilityPanel } from "@/components/analytics/pass-probability-panel";
@@ -213,7 +214,8 @@ export default function ProfilePage() {
           </div>
 
           <motion.div variants={staggerContainer} initial="hidden" animate="show">
-            <motion.div variants={staggerItem}>
+            <motion.div variants={staggerItem} className="space-y-4">
+              <ExamDateEditor />
               <ScheduleEditor />
             </motion.div>
           </motion.div>

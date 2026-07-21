@@ -48,6 +48,7 @@ export type FullSatTestProblem = {
   hint: string;
   detailedHint?: string;
   subtopicId: string;
+  topicSlug?: string | null;
   difficultyLevel: number;
   difficulty: string;
 };
