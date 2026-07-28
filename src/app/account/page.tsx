@@ -11,7 +11,6 @@ import {
   isClerkAPIResponseError,
   isReverificationCancelledError,
 } from "@clerk/nextjs/errors";
-import type { EmailAddressResource } from "@clerk/shared/types";
 import {
   Loader2,
   CheckCircle2,
@@ -23,6 +22,10 @@ import {
 } from "lucide-react";
 import { isSupabaseAuth } from "@/lib/auth/provider";
 import { ProfileAvatarEditor } from "@/components/profile/profile-avatar-editor";
+
+type EmailAddressResource = NonNullable<
+  NonNullable<ReturnType<typeof useUser>["user"]>["emailAddresses"]
+>[number];
 
 function clerkErrorMessage(err: unknown): string {
   if (isReverificationCancelledError(err)) {
