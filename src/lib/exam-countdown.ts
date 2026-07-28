@@ -1,6 +1,9 @@
 /**
- * Official-style bar exam sittings (February / July) and countdown helpers.
- * MBE is typically the last Tuesday–Wednesday of February and July.
+ * Official NCBE bar exam sittings (February / July) and countdown helpers.
+ *
+ * Legacy UBE / MBE: MEE+MPT on the Tuesday before the last Wednesday of
+ * February/July; MBE on that Wednesday. NextGen UBE uses the same Tue–Wed window.
+ * @see https://www.ncbex.org/exams/mbe
  */
 
 export const EXAM_DATE_STORAGE_KEY = "athena-exam-date";
@@ -10,8 +13,10 @@ export type ExamSitting = {
   id: string;
   /** "July Exam" | "February Exam" */
   label: string;
-  /** ISO date (YYYY-MM-DD) of the first exam day (Tuesday). */
+  /** ISO date (YYYY-MM-DD) of day 1 — Tuesday before the MBE. */
   date: string;
+  /** ISO date (YYYY-MM-DD) of day 2 — last Wednesday (MBE / NextGen day 2). */
+  endDate: string;
 };
 
 export type StoredExamDate = {
@@ -20,14 +25,27 @@ export type StoredExamDate = {
   sittingId: string;
 };
 
-/** Last Tuesday of a calendar month (0-indexed month). */
-export function lastTuesdayOfMonth(year: number, monthIndex: number): Date {
+/** Last Wednesday of a calendar month (0-indexed month). NCBE MBE day. */
+export function lastWednesdayOfMonth(year: number, monthIndex: number): Date {
   const lastDay = new Date(year, monthIndex + 1, 0);
   const dow = lastDay.getDay(); // 0 Sun … 6 Sat
-  const offset = (dow + 5) % 7; // days since Tuesday
+  const offset = (dow - 3 + 7) % 7; // days since Wednesday
   lastDay.setDate(lastDay.getDate() - offset);
   lastDay.setHours(12, 0, 0, 0);
   return lastDay;
+}
+
+/** Tuesday immediately before the last Wednesday (essay / NextGen day 1). */
+export function examTuesdayForMonth(year: number, monthIndex: number): Date {
+  const wednesday = lastWednesdayOfMonth(year, monthIndex);
+  const tuesday = new Date(wednesday);
+  tuesday.setDate(wednesday.getDate() - 1);
+  return tuesday;
+}
+
+/** @deprecated Use lastWednesdayOfMonth / examTuesdayForMonth — kept for callers. */
+export function lastTuesdayOfMonth(year: number, monthIndex: number): Date {
+  return examTuesdayForMonth(year, monthIndex);
 }
 
 function toIsoDate(d: Date): string {
@@ -41,27 +59,43 @@ function startOfLocalDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
-/** Upcoming February + July sittings (next ~3 years). */
+function sittingForMonth(
+  year: number,
+  monthIndex: number,
+  label: "February Exam" | "July Exam"
+): ExamSitting {
+  const tuesday = examTuesdayForMonth(year, monthIndex);
+  const wednesday = lastWednesdayOfMonth(year, monthIndex);
+  return {
+    id: `${year}-${String(monthIndex + 1).padStart(2, "0")}`,
+    label,
+    date: toIsoDate(tuesday),
+    endDate: toIsoDate(wednesday),
+  };
+}
+
+/**
+ * Upcoming February + July sittings (next ~3 years).
+ * Past sittings (exam week fully over) are omitted.
+ */
 export function getUpcomingExamSittings(
   from: Date = new Date(),
   yearsAhead = 3
 ): ExamSitting[] {
   const sittings: ExamSitting[] = [];
   const startYear = from.getFullYear();
+  const today = startOfLocalDay(from);
 
   for (let y = startYear; y <= startYear + yearsAhead; y++) {
     for (const { month, label } of [
-      { month: 1, label: "February Exam" },
-      { month: 6, label: "July Exam" },
-    ] as const) {
-      const tuesday = lastTuesdayOfMonth(y, month);
-      if (startOfLocalDay(tuesday) < startOfLocalDay(from)) continue;
-      const date = toIsoDate(tuesday);
-      sittings.push({
-        id: `${y}-${String(month + 1).padStart(2, "0")}`,
-        label,
-        date,
-      });
+      { month: 1, label: "February Exam" as const },
+      { month: 6, label: "July Exam" as const },
+    ]) {
+      const sitting = sittingForMonth(y, month, label);
+      const end = startOfLocalDay(new Date(`${sitting.endDate}T12:00:00`));
+      // Keep the sitting through the final exam day; drop once the week is over.
+      if (end < today) continue;
+      sittings.push(sitting);
     }
   }
 
@@ -139,14 +173,36 @@ export function formatExamCountdown(
   };
 }
 
+/** e.g. "February Exam · Feb 22–23, 2028" */
 export function formatSittingOption(sitting: ExamSitting): string {
-  const d = new Date(`${sitting.date}T12:00:00`);
-  const pretty = d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-  return `${sitting.label} · ${pretty}`;
+  const start = new Date(`${sitting.date}T12:00:00`);
+  const end = new Date(`${sitting.endDate}T12:00:00`);
+  const month = start.toLocaleDateString("en-US", { month: "short" });
+  const year = start.getFullYear();
+  return `${sitting.label} · ${month} ${start.getDate()}–${end.getDate()}, ${year}`;
+}
+
+/**
+ * If a saved sitting id still exists, refresh its dates from the official calendar.
+ * Clears storage when the sitting is fully in the past.
+ */
+export function reconcileStoredExamDate(
+  stored: StoredExamDate | null,
+  from: Date = new Date()
+): StoredExamDate | null {
+  if (!stored) return null;
+  const upcoming = getUpcomingExamSittings(from);
+  const match = upcoming.find((s) => s.id === stored.sittingId);
+  if (match) {
+    return {
+      date: match.date,
+      label: match.label,
+      sittingId: match.id,
+    };
+  }
+  // Sitting id not upcoming — drop if past; keep only if somehow still valid date ahead
+  if (daysUntilExam(stored.date, from) < 0) return null;
+  return stored;
 }
 
 export function readStoredExamDate(): StoredExamDate | null {
@@ -156,7 +212,16 @@ export function readStoredExamDate(): StoredExamDate | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as StoredExamDate;
     if (!parsed?.date || !parsed?.label) return null;
-    return parsed;
+    const reconciled = reconcileStoredExamDate(parsed);
+    // Persist corrected official dates (e.g. Feb 29 → Feb 22) or clear past sittings.
+    if (
+      !reconciled ||
+      reconciled.date !== parsed.date ||
+      reconciled.label !== parsed.label
+    ) {
+      writeStoredExamDate(reconciled);
+    }
+    return reconciled;
   } catch {
     return null;
   }

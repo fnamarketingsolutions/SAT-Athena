@@ -69,28 +69,23 @@ export default function LearningPage() {
         <h1 className="text-lg font-bold">Learning</h1>
       </div>
 
-      <div
-        className="mb-4 -mx-1 overflow-x-auto pb-1 sm:mb-6"
-        style={{ scrollbarWidth: "none" }}
-      >
-        <div className="flex w-max min-w-full gap-2 px-1">
-          {SUBJECTS.map((s) => (
-            <button
-              key={s.key}
-              onClick={() => setActiveSubject(s.key)}
-              title={s.label}
-              className={cn(
-                "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors sm:px-4 sm:text-sm",
-                activeSubject === s.key
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
-            >
-              <span className="sm:hidden">{s.shortLabel}</span>
-              <span className="hidden sm:inline">{s.label}</span>
-            </button>
-          ))}
-        </div>
+      <div className="mb-4 flex flex-wrap gap-2 sm:mb-6">
+        {SUBJECTS.map((s) => (
+          <button
+            key={s.key}
+            onClick={() => setActiveSubject(s.key)}
+            title={s.label}
+            className={cn(
+              "rounded-full px-3 py-1.5 text-xs font-medium transition-colors sm:px-4 sm:text-sm",
+              activeSubject === s.key
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            )}
+          >
+            <span className="sm:hidden">{s.shortLabel}</span>
+            <span className="hidden sm:inline">{s.label}</span>
+          </button>
+        ))}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

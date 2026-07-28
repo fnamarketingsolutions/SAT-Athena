@@ -16,9 +16,7 @@ import {
 } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useAccountabilityStatus } from "@/hooks/use-accountability-status";
-import { DailyQuestHero } from "@/components/dashboard/daily-quest-hero";
-import { PaceStatusWidget } from "@/components/dashboard/pace-status-widget";
-import { ExamCountdownWidget } from "@/components/dashboard/exam-countdown-widget";
+import { DashboardCommandCenter } from "@/components/dashboard/command-center";
 import { cn } from "@/lib/utils";
 import { MBE_SUBJECTS, type MbeSubject } from "@/lib/exam-config";
 
@@ -71,7 +69,6 @@ type ModeMeta = {
   title: string;
   desc: string;
   cta: string;
-  Icon: () => React.ReactElement;
 };
 
 const MODES: ModeMeta[] = [
@@ -80,21 +77,18 @@ const MODES: ModeMeta[] = [
     title: "Structured lesson",
     desc: "A full lesson about this topic. Best for beginners — paced from first principles.",
     cta: "Start lesson",
-    Icon: IconLesson,
   },
   {
     key: "practice",
     title: "Practice problems",
     desc: "Calibrated problems. Difficulty adapts as your accuracy stabilizes.",
     cta: "Solve problems",
-    Icon: IconPractice,
   },
   {
     key: "chat",
     title: "Just chat",
     desc: "Open the floor. Ask anything, explore tangents, think out loud.",
     cta: "Get custom help",
-    Icon: IconChat,
   },
 ];
 
@@ -117,7 +111,6 @@ export default function PlayPage() {
   const { data: userData } = useCurrentUser();
   const { data: accountability, isLoading: accountabilityLoading } =
     useAccountabilityStatus();
-  const questLocked = Boolean(accountability?.enabled && accountability.locked);
   const [mode, setMode] = useState<Mode | null>(null);
   const [subject, setSubject] = useState<Subject>("civil-procedure");
   const [expandedTopicId, setExpandedTopicId] = useState<string | null>(null);
@@ -144,13 +137,6 @@ export default function PlayPage() {
   }, [userData]);
 
   function handlePickMode(m: Mode) {
-    if (questLocked) {
-      toast.message("Complete today's practice first", {
-        description: "Finish your daily practice session to open lessons and mentor chat.",
-      });
-      router.push("/quest");
-      return;
-    }
     if (m === "chat") {
       router.push("/mentor");
       return;
@@ -158,16 +144,9 @@ export default function PlayPage() {
     setMode(m);
   }
 
-  useEffect(() => {
-    if (questLocked && mode !== null) {
-      setMode(null);
-      setExpandedTopicId(null);
-    }
-  }, [questLocked, mode]);
-
   // 1 / 2 / 3 keyboard shortcuts on the mode picker.
   useEffect(() => {
-    if (mode !== null || questLocked) return;
+    if (mode !== null) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement) return;
       if (e.target instanceof HTMLTextAreaElement) return;
@@ -177,7 +156,7 @@ export default function PlayPage() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [mode, questLocked]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const topics = (data?.topics ?? []).filter((t) => t.subject === subject);
 
@@ -205,17 +184,23 @@ export default function PlayPage() {
         </div>
       )}
 
-      <div className="relative z-[2] mx-auto grid min-h-full w-full max-w-[1080px] place-items-center px-4 py-8 sm:px-6 sm:py-10 text-center">
+      <div className="relative z-[2] mx-auto min-h-full w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
         <AnimatePresence mode="wait">
           {mode === null ? (
-            <ModePicker
+            <motion.div
               key="mode"
-              onPick={handlePickMode}
-              firstName={firstName}
-              questLocked={questLocked}
-              accountability={accountability}
-              accountabilityLoading={accountabilityLoading}
-            />
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <DashboardCommandCenter
+                firstName={firstName}
+                accountability={accountability}
+                accountabilityLoading={accountabilityLoading}
+                onPickMode={handlePickMode}
+              />
+            </motion.div>
           ) : (
             <TopicPicker
               key="topic"
@@ -244,95 +229,6 @@ export default function PlayPage() {
         </AnimatePresence>
       </div>
     </div>
-  );
-}
-
-// ── Mode picker ──────────────────────────────────────────────────────
-function ModePicker({
-  onPick,
-  firstName,
-  questLocked,
-  accountability,
-  accountabilityLoading,
-}: {
-  onPick: (m: Mode) => void;
-  firstName: string | null;
-  questLocked: boolean;
-  accountability?: import("@/hooks/use-accountability-status").AccountabilityStatus;
-  accountabilityLoading?: boolean;
-}) {
-  return (
-    <div className="flex w-full flex-col items-center">
-      <div className="mb-8 max-w-xl text-center">
-        <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
-          Welcome back
-        </p>
-        <h1 className="mt-2 font-[family-name:var(--font-instrument-serif)] text-4xl font-normal tracking-tight text-foreground md:text-5xl">
-          {firstName ? (
-            <>
-              <span className="italic text-muted-foreground">Hi, </span>
-              {firstName}
-            </>
-          ) : (
-            "Your study plan"
-          )}
-        </h1>
-        <p className="mt-3 text-base text-muted-foreground">
-          {questLocked
-            ? "Complete today's practice to continue with lessons and mentor chat."
-            : "Choose how you want to study next."}
-        </p>
-      </div>
-
-      <DailyQuestHero status={accountability} isLoading={accountabilityLoading} />
-
-      <ExamCountdownWidget />
-
-      <PaceStatusWidget />
-
-      <div className="mt-10 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {MODES.map((m) => (
-          <ModeCard key={m.key} mode={m} onPick={onPick} disabled={questLocked} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ModeCard({
-  mode,
-  onPick,
-  disabled = false,
-}: {
-  mode: ModeMeta;
-  onPick: (m: Mode) => void;
-  disabled?: boolean;
-}) {
-  const Icon = mode.Icon;
-  return (
-    <button
-      type="button"
-      onClick={() => !disabled && onPick(mode.key)}
-      disabled={disabled}
-      className={cn(
-        "flex min-h-[220px] flex-col items-center rounded-2xl border border-border bg-card px-5 py-6 text-center shadow-sm transition",
-        "hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
-        disabled && "cursor-not-allowed opacity-50"
-      )}
-    >
-      <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-        <Icon />
-      </div>
-      <h3 className="font-[family-name:var(--font-instrument-serif)] text-2xl text-foreground">
-        {mode.title}
-      </h3>
-      <p className="mx-auto mt-2 max-w-[28ch] text-sm leading-relaxed text-muted-foreground">
-        {mode.desc}
-      </p>
-      <span className="mt-auto pt-5 text-xs font-semibold uppercase tracking-wide text-primary">
-        {mode.cta}
-      </span>
-    </button>
   );
 }
 
@@ -706,76 +602,5 @@ function TopicPicker({
         })}
       </div>
     </motion.div>
-  );
-}
-
-// ── Animated SVG icons ────────────────────────────────────────────────
-
-function IconLesson() {
-  return (
-    <svg viewBox="0 0 72 72" className="h-full w-full overflow-visible">
-      <path d="M8 18 L36 24 L36 60 L8 54 Z" stroke="var(--p-fg-dim)" strokeWidth="1" strokeLinecap="round" fill="none" />
-      <path d="M64 18 L36 24 L36 60 L64 54 Z" stroke="var(--p-fg-dim)" strokeWidth="1" strokeLinecap="round" fill="none" />
-      <line x1="36" y1="24" x2="36" y2="60" stroke="var(--p-fg-faint)" strokeWidth="1" strokeLinecap="round" />
-      <line x1="14" y1="32" x2="30" y2="35" stroke="var(--p-fg-faint)" strokeWidth="1" strokeLinecap="round" />
-      <line x1="14" y1="38" x2="30" y2="41" stroke="var(--p-fg-faint)" strokeWidth="1" strokeLinecap="round" />
-      <line x1="14" y1="44" x2="26" y2="46.5" stroke="var(--p-fg-faint)" strokeWidth="1" strokeLinecap="round" />
-      <line x1="42" y1="35" x2="58" y2="32" stroke="var(--p-fg-faint)" strokeWidth="1" strokeLinecap="round" />
-      <line x1="42" y1="41" x2="58" y2="38" stroke="var(--p-fg-faint)" strokeWidth="1" strokeLinecap="round" />
-      <line x1="42" y1="46.5" x2="54" y2="44" stroke="var(--p-fg-faint)" strokeWidth="1" strokeLinecap="round" />
-      <g className="page-turn">
-        <path d="M36 24 Q 50 16, 62 22 L 62 56 Q 50 50, 36 58 Z" stroke="var(--accent-stroke,var(--p-accent-deep))" strokeWidth="1" strokeLinecap="round" fill="var(--p-bg)" />
-        <line x1="42" y1="30" x2="56" y2="27" stroke="var(--accent-stroke,var(--p-accent-deep))" strokeWidth="1" strokeLinecap="round" />
-        <line x1="42" y1="36" x2="56" y2="33" stroke="var(--accent-stroke,var(--p-accent-deep))" strokeWidth="1" strokeLinecap="round" />
-        <line x1="42" y1="42" x2="52" y2="40" stroke="var(--accent-stroke,var(--p-accent-deep))" strokeWidth="1" strokeLinecap="round" />
-      </g>
-      <circle className="book-glint" cx="36" cy="22" r="1.6" fill="var(--accent-stroke,var(--p-accent-deep))" />
-    </svg>
-  );
-}
-
-function IconPractice() {
-  return (
-    <svg viewBox="0 0 72 72" className="h-full w-full overflow-visible">
-      <g className="pulse-ring">
-        <circle cx="36" cy="36" r="30" stroke="var(--p-fg-faint)" strokeWidth="1" fill="none" />
-      </g>
-      <circle cx="36" cy="36" r="22" stroke="var(--p-fg-dim)" strokeWidth="1" fill="none" />
-      <circle cx="36" cy="36" r="13" stroke="var(--accent-stroke,var(--p-accent-deep))" strokeWidth="1" fill="none" />
-      <g className="scan">
-        <line x1="36" y1="36" x2="36" y2="14" stroke="var(--accent-stroke,var(--p-accent-deep))" strokeWidth="1" strokeDasharray="2 3" />
-      </g>
-      <line x1="6" y1="36" x2="14" y2="36" stroke="var(--accent-stroke,var(--p-accent-deep))" strokeWidth="1" />
-      <line x1="58" y1="36" x2="66" y2="36" stroke="var(--accent-stroke,var(--p-accent-deep))" strokeWidth="1" />
-      <line x1="36" y1="6" x2="36" y2="14" stroke="var(--accent-stroke,var(--p-accent-deep))" strokeWidth="1" />
-      <line x1="36" y1="58" x2="36" y2="66" stroke="var(--accent-stroke,var(--p-accent-deep))" strokeWidth="1" />
-      <g className="hit">
-        <circle cx="36" cy="36" r="3" fill="var(--accent-stroke,var(--p-accent-deep))" />
-      </g>
-    </svg>
-  );
-}
-
-function IconChat() {
-  return (
-    <svg viewBox="0 0 72 72" className="h-full w-full overflow-visible">
-      <path
-        d="M14 16 L52 16 Q60 16 60 24 L60 42 Q60 50 52 50 L34 50 L26 58 L26 50 L22 50 Q14 50 14 42 Z"
-        stroke="var(--p-fg-faint)"
-        strokeWidth="1"
-        strokeLinecap="round"
-        fill="none"
-      />
-      <path
-        d="M10 12 L48 12 Q56 12 56 20 L56 38 Q56 46 48 46 L30 46 L22 54 L22 46 L18 46 Q10 46 10 38 Z"
-        stroke="var(--accent-stroke,var(--p-accent-deep))"
-        strokeWidth="1"
-        strokeLinecap="round"
-        fill="var(--p-bg)"
-      />
-      <circle className="chat-dot d1" cx="22" cy="29" r="2.6" fill="var(--accent-stroke,var(--p-accent-deep))" />
-      <circle className="chat-dot d2" cx="33" cy="29" r="2.6" fill="var(--accent-stroke,var(--p-accent-deep))" />
-      <circle className="chat-dot d3" cx="44" cy="29" r="2.6" fill="var(--accent-stroke,var(--p-accent-deep))" />
-    </svg>
   );
 }

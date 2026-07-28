@@ -1,5 +1,8 @@
 import { supabase } from "@/lib/supabase/client";
 
+/** Minimum answered attempts before a topic can be flagged as a Weak Area. */
+export const MIN_WEAK_AREA_ATTEMPTS = 4;
+
 export type StuckPoint = {
   subtopicId: string;
   subtopicName: string;
@@ -71,15 +74,17 @@ export async function getStuckPoints(userId: string): Promise<StuckPoint[]> {
     sessionIds.length > 0
       ? (supabase as any)
           .from("quiz_answers")
-          .select("session_id, is_correct, wrong_count, hint_used, tutor_used, practice_completed, response_time_ms")
-          .in("session_id", sessionIds) as Promise<{ data: {
+          .select("session_id, is_correct, wrong_count, hint_used, tutor_used, practice_completed, response_time_ms, selected_option")
+          .in("session_id", sessionIds)
+          .not("selected_option", "is", null) as Promise<{ data: {
             session_id: string;
-            is_correct: boolean;
+            is_correct: boolean | null;
             wrong_count: number | null;
             hint_used: boolean | null;
             tutor_used: boolean | null;
             practice_completed: boolean | null;
             response_time_ms: number | null;
+            selected_option: number | null;
           }[] | null }>
       : Promise.resolve({ data: [] }),
     questIds.length > 0
@@ -171,6 +176,9 @@ export async function getStuckPoints(userId: string): Promise<StuckPoint[]> {
     const info = subtopicInfo.get(subtopicId);
     if (!info) continue;
 
+    // Single incorrect answers are noise — require a real sample size.
+    if (stats.total < MIN_WEAK_AREA_ATTEMPTS) continue;
+
     const accuracy = stats.total > 0 ? (stats.correct / stats.total) * 100 : 0;
     const wrongRate = stats.total > 0 ? (stats.withWrong / stats.total) * 100 : 0;
     const hintRate = stats.total > 0 ? (stats.withHint / stats.total) * 100 : 0;
@@ -191,6 +199,8 @@ export async function getStuckPoints(userId: string): Promise<StuckPoint[]> {
       (tutorRate / 100) * 4 +
       ((100 - accuracy) / 100) * 2 +
       (recentTrend / 10);
+
+    if (stuckScore <= 2) continue;
 
     let recommendation: StuckPoint["recommendation"] = "practice";
     if (!microLessonCompleted) recommendation = "micro-lesson";

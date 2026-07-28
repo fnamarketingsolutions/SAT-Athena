@@ -14,6 +14,8 @@ export type RecentResultSession = {
   totalQuestions: number;
   timeElapsedSeconds: number;
   date: string;
+  /** Questions with an actively selected answer (excludes skips). */
+  answeredCount?: number;
   /** Precomputed avg seconds/q when available (e.g. mocks with answered count). */
   avgSecondsPerQuestion?: number | null;
 };
@@ -25,7 +27,7 @@ export function PracticeTestResults({
 }) {
   if (sessions.length === 0) {
     return (
-      <div className="border bg-card p-5">
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
         <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
           Recent Results
         </h2>
@@ -39,7 +41,7 @@ export function PracticeTestResults({
   const displayed = sessions.slice(0, 10);
 
   return (
-    <div className="border bg-card p-5">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
       <h2 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
         Recent Results
       </h2>
@@ -60,7 +62,7 @@ export function PracticeTestResults({
             session.avgSecondsPerQuestion ??
             averageSecondsPerQuestion(
               session.timeElapsedSeconds,
-              session.totalQuestions
+              session.answeredCount ?? 0
             );
           const paceStatus = avg != null ? getPaceStatus(avg) : null;
 

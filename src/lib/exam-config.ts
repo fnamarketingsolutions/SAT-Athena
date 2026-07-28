@@ -74,7 +74,7 @@ export function getMbeRankProgress(accuracy: number) {
 /** User-facing label for the full-length mock bar exam practice module. */
 export const MOCK_EXAM_LABEL = "Mock Exam";
 export const MOCK_EXAM_DESCRIPTION =
-  "A full test simulation across all seven MBE subjects — locked pacing, no instant feedback, and a score summary only after you submit.";
+  "A continuous 100-question simulation across all seven MBE subjects — locked pacing, no instant feedback, and a score summary only after you submit.";
 
 /** App routes for MBE mock exam (formerly /full-sat). */
 export const MOCK_EXAM_ROUTE = "/mbe-mock";

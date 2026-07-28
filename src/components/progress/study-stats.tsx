@@ -22,7 +22,7 @@ export function StudyStats({ stats }: { stats: Stats }) {
       : 0;
 
   return (
-    <div className="border bg-card p-5">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
       <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
         Study Stats
       </h2>

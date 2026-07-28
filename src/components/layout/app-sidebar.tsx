@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { KeyRound, LogOut, Moon, Sun, X } from "lucide-react";
+import { KeyRound, LogOut, Moon, Shield, Sun, X } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -143,7 +143,7 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
           Toggle theme
         </button>
 
-        {isSupabaseAuth() && (
+        {isSupabaseAuth() ? (
           <Link
             href="/account/password"
             onClick={onClose}
@@ -151,6 +151,17 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
           >
             <KeyRound className="h-4 w-4 shrink-0" />
             Set password
+          </Link>
+        ) : (
+          <Link
+            href="/account"
+            onClick={onClose}
+            className={navLinkClass(
+              pathname === "/account" || pathname.startsWith("/account/")
+            )}
+          >
+            <Shield className="h-4 w-4 shrink-0" />
+            Account security
           </Link>
         )}
 

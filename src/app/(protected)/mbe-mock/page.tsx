@@ -6,9 +6,18 @@ import {
   useStartFullSat,
   useFullSatHistory,
   useGenerateFullSat,
+  useDiscardFullSat,
 } from "@/hooks/use-full-sat";
 import { motion } from "framer-motion";
-import { Clock, Trophy, Lock, ArrowRight, ChevronLeft, Sparkles } from "lucide-react";
+import {
+  Clock,
+  Trophy,
+  Lock,
+  ArrowRight,
+  ChevronLeft,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   MOCK_EXAM_DESCRIPTION,
@@ -16,10 +25,13 @@ import {
 } from "@/lib/exam-config";
 import { MOCK_EXAM_QUESTION_COUNT } from "@/lib/mbe-mock/constants";
 
-function formatDaysUntil(dateString: string): string {
+function formatCooldownUntil(dateString: string): string {
   const diff = new Date(dateString).getTime() - Date.now();
+  if (diff <= 0) return "Available now";
+  const hours = Math.ceil(diff / (1000 * 60 * 60));
+  if (hours <= 1) return "about 1 hour";
+  if (hours < 24) return `${hours} hours`;
   const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-  if (days <= 0) return "Available now";
   if (days === 1) return "1 day";
   return `${days} days`;
 }
@@ -30,6 +42,7 @@ export default function FullSatLandingPage() {
   const { data: history } = useFullSatHistory();
   const startMutation = useStartFullSat();
   const generateMutation = useGenerateFullSat();
+  const discardMutation = useDiscardFullSat();
 
   if (isLoading || !status) {
     return (
@@ -65,7 +78,21 @@ export default function FullSatLandingPage() {
     }
   };
 
-  const busy = generateMutation.isPending || startMutation.isPending;
+  const handleDiscard = async (testId: string, testName: string) => {
+    if (
+      !window.confirm(
+        `Discard “${testName}”? It will be removed from Available Tests.`
+      )
+    ) {
+      return;
+    }
+    await discardMutation.mutateAsync({ testId });
+  };
+
+  const busy =
+    generateMutation.isPending ||
+    startMutation.isPending ||
+    discardMutation.isPending;
   const canGenerate =
     status.canTakeTest && !status.currentAttempt && !busy;
 
@@ -88,7 +115,7 @@ export default function FullSatLandingPage() {
         <p className="mt-2 text-muted-foreground">{MOCK_EXAM_DESCRIPTION}</p>
         <p className="mt-2 text-sm text-muted-foreground">
           {MOCK_EXAM_QUESTION_COUNT} questions · ~14 per subject · Time Pace
-          locked ON · No instant feedback
+          locked ON · No instant feedback · 24h cooldown after submit
         </p>
         <ul className="mt-4 space-y-1.5 text-sm text-muted-foreground">
           <li>• Mixed subjects in one continuous block</li>
@@ -101,13 +128,14 @@ export default function FullSatLandingPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mb-6 flex items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3"
+          className="mb-6 flex items-center gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 px-4 py-3"
         >
           <Lock className="h-5 w-5 shrink-0 text-amber-500" />
           <div>
             <p className="text-sm font-medium">Cooldown Active</p>
             <p className="text-xs text-muted-foreground">
-              Next test available in {formatDaysUntil(status.nextAvailableDate)}
+              Next test available in{" "}
+              {formatCooldownUntil(status.nextAvailableDate)}
             </p>
           </div>
         </motion.div>
@@ -121,7 +149,7 @@ export default function FullSatLandingPage() {
         >
           <button
             onClick={handleResume}
-            className="w-full rounded-lg border-2 border-primary bg-primary/5 px-6 py-4 text-left transition-colors hover:bg-primary/10"
+            className="w-full rounded-2xl border-2 border-primary bg-primary/5 px-6 py-4 text-left transition-colors hover:bg-primary/10"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -142,14 +170,15 @@ export default function FullSatLandingPage() {
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8 rounded-lg border border-border bg-card p-5"
+        className="mb-8 rounded-2xl border border-border bg-card p-5 shadow-sm"
       >
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="font-semibold">Generate a new mock exam</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Questions are created with AI across all seven bar exam subjects.
-              No seeded bank required.
+              Creates a full {MOCK_EXAM_QUESTION_COUNT}-question exam with AI
+              across all seven subjects. Short legacy tests are retired
+              automatically.
             </p>
           </div>
           <button
@@ -177,7 +206,7 @@ export default function FullSatLandingPage() {
               key={test.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-lg border bg-card p-5"
+              className="rounded-2xl border border-border bg-card p-5 shadow-sm"
             >
               <div className="flex items-center justify-between gap-4">
                 <div>
@@ -187,20 +216,39 @@ export default function FullSatLandingPage() {
                       <Clock className="h-3.5 w-3.5" />
                       Timed
                     </span>
+                    <span>{MOCK_EXAM_QUESTION_COUNT} questions</span>
                     <span>MBE subjects</span>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleStart(test.id)}
-                  disabled={
-                    !status.canTakeTest ||
-                    !!status.currentAttempt ||
-                    startMutation.isPending
-                  }
-                  className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {startMutation.isPending ? "Starting..." : "Start"}
-                </button>
+                <div className="flex shrink-0 items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleDiscard(test.id, test.name)}
+                    disabled={
+                      busy ||
+                      (status.currentAttempt?.testId === test.id)
+                    }
+                    title="Discard this unused mock exam"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    {discardMutation.isPending &&
+                    discardMutation.variables?.testId === test.id
+                      ? "Discarding…"
+                      : "Discard"}
+                  </button>
+                  <button
+                    onClick={() => handleStart(test.id)}
+                    disabled={
+                      !status.canTakeTest ||
+                      !!status.currentAttempt ||
+                      busy
+                    }
+                    className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {startMutation.isPending ? "Starting..." : "Start"}
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))}
@@ -217,7 +265,7 @@ export default function FullSatLandingPage() {
             .map((attempt) => (
               <div
                 key={attempt.id}
-                className="flex items-center justify-between rounded-lg border bg-card p-4"
+                className="flex items-center justify-between rounded-2xl border border-border bg-card p-4 shadow-sm"
               >
                 <div>
                   <p className="text-sm font-medium">

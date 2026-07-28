@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
+import { MOCK_EXAM_MIN_QUESTION_COUNT } from "@/lib/mbe-mock/constants";
 import type {
   FullSatTest,
   FullSatAttempt,
@@ -425,7 +426,49 @@ export async function createGeneratedMockTest(args: {
   }
 }
 
-/** Active tests that actually have linked problems (skip orphan empty blueprints). */
+/**
+ * Retire an unused mock exam so it no longer appears under Available Tests.
+ * Blocks if any attempt is still in progress on this test.
+ */
+export async function discardMockTest(testId: string): Promise<void> {
+  const { data: test } = await db
+    .from("full_sat_tests")
+    .select("id, status")
+    .eq("id", testId)
+    .maybeSingle();
+
+  if (!test) {
+    throw new Error("Test not found");
+  }
+  if (test.status === "retired") {
+    return;
+  }
+
+  const { data: inProgress } = await db
+    .from("full_sat_attempts")
+    .select("id")
+    .eq("test_id", testId)
+    .eq("status", "in_progress")
+    .limit(1)
+    .maybeSingle();
+
+  if (inProgress) {
+    throw new Error(
+      "This exam is in progress and cannot be discarded. Finish or resume it first."
+    );
+  }
+
+  const { error } = await db
+    .from("full_sat_tests")
+    .update({ status: "retired" })
+    .eq("id", testId);
+
+  if (error) {
+    throw new Error(error.message ?? "Failed to discard mock exam");
+  }
+}
+
+/** Active full-length mock tests only (retire empty / short legacy blueprints). */
 export async function getActiveTestsWithProblems(): Promise<FullSatTest[]> {
   const tests = await getActiveTests();
   if (tests.length === 0) return [];
@@ -438,18 +481,25 @@ export async function getActiveTestsWithProblems(): Promise<FullSatTest[]> {
       tests.map((t) => t.id)
     );
 
-  const withProblems = new Set(
-    (links ?? []).map((row: { test_id: string }) => row.test_id)
-  );
+  const countByTest = new Map<string, number>();
+  for (const row of links ?? []) {
+    const id = (row as { test_id: string }).test_id;
+    countByTest.set(id, (countByTest.get(id) ?? 0) + 1);
+  }
 
-  const emptyIds = tests.filter((t) => !withProblems.has(t.id)).map((t) => t.id);
-  if (emptyIds.length > 0) {
-    // Retire orphan blueprints left by failed generates (test created, problems not).
+  const retireIds = tests
+    .filter((t) => (countByTest.get(t.id) ?? 0) < MOCK_EXAM_MIN_QUESTION_COUNT)
+    .map((t) => t.id);
+
+  if (retireIds.length > 0) {
+    // Empty blueprints or legacy short mocks (e.g. 14q) should not be startable.
     await db
       .from("full_sat_tests")
       .update({ status: "retired" })
-      .in("id", emptyIds);
+      .in("id", retireIds);
   }
 
-  return tests.filter((t) => withProblems.has(t.id));
+  return tests.filter(
+    (t) => (countByTest.get(t.id) ?? 0) >= MOCK_EXAM_MIN_QUESTION_COUNT
+  );
 }

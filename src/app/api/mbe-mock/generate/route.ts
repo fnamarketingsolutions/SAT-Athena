@@ -7,11 +7,13 @@ import {
 import {
   generateMockExamQuestions,
 } from "@/lib/mbe-mock/generate";
-import { MOCK_EXAM_QUESTION_COUNT } from "@/lib/mbe-mock/constants";
-import { FULL_SAT_COOLDOWN_MS } from "@/types/full-sat";
+import {
+  MOCK_EXAM_COOLDOWN_MS,
+  MOCK_EXAM_QUESTION_COUNT,
+} from "@/lib/mbe-mock/constants";
 import { NextResponse } from "next/server";
 
-/** 100-question generation runs 7 subject batches in parallel. */
+/** 100-question generation runs chunked subject batches (can take several minutes). */
 export const maxDuration = 300;
 
 export async function POST() {
@@ -39,9 +41,9 @@ export async function POST() {
   const lastCompleted = await getLastCompletedAttempt(user.id);
   if (lastCompleted?.completedAt) {
     const elapsed = Date.now() - new Date(lastCompleted.completedAt).getTime();
-    if (elapsed < FULL_SAT_COOLDOWN_MS) {
+    if (elapsed < MOCK_EXAM_COOLDOWN_MS) {
       const nextDate = new Date(
-        new Date(lastCompleted.completedAt).getTime() + FULL_SAT_COOLDOWN_MS
+        new Date(lastCompleted.completedAt).getTime() + MOCK_EXAM_COOLDOWN_MS
       ).toISOString();
       return NextResponse.json(
         { error: "Cooldown active", nextAvailableDate: nextDate },

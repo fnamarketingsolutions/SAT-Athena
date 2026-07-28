@@ -159,7 +159,7 @@ export function ScheduleEditor() {
     : null;
 
   return (
-    <div className="border bg-card p-4">
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Study Schedule

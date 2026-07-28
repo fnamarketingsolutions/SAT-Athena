@@ -206,7 +206,7 @@ export default function SubtopicPage() {
       >
         {/* Learning Objectives */}
         {subtopic.learningObjectives.length > 0 && (
-          <motion.div variants={fadeUp} className="border bg-card">
+          <motion.div variants={fadeUp} className="rounded-2xl border border-border bg-card shadow-sm">
             <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-3 sm:px-5">
               <div className="flex h-6 w-6 items-center justify-center bg-green-500/10">
                 <Target className="h-3.5 w-3.5 text-green-500" />
@@ -228,7 +228,7 @@ export default function SubtopicPage() {
         )}
 
         {/* Conceptual Overview */}
-        <motion.div variants={fadeUp} className="border bg-card">
+        <motion.div variants={fadeUp} className="rounded-2xl border border-border bg-card shadow-sm">
           <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-3 sm:px-5">
             <div className="flex h-6 w-6 items-center justify-center bg-blue-500/10">
               <BookText className="h-3.5 w-3.5 text-blue-500" />
@@ -253,7 +253,7 @@ export default function SubtopicPage() {
 
         {/* Key Formulas */}
         {subtopic.keyFormulas.length > 0 && (
-          <motion.div variants={fadeUp} className="border bg-card">
+          <motion.div variants={fadeUp} className="rounded-2xl border border-border bg-card shadow-sm">
             <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-3 sm:px-5">
               <div className="flex h-6 w-6 items-center justify-center bg-purple-500/10">
                 <FlaskConical className="h-3.5 w-3.5 text-purple-500" />
@@ -274,7 +274,7 @@ export default function SubtopicPage() {
 
         {/* Tips & Tricks */}
         {subtopic.tipsAndTricks.length > 0 && (
-          <motion.div variants={fadeUp} className="border bg-card">
+          <motion.div variants={fadeUp} className="rounded-2xl border border-border bg-card shadow-sm">
             <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-3 sm:px-5">
               <div className="flex h-6 w-6 items-center justify-center bg-athena-amber/10">
                 <Lightbulb className="h-3.5 w-3.5 text-athena-amber" />
@@ -295,7 +295,7 @@ export default function SubtopicPage() {
 
         {/* Common Mistakes */}
         {subtopic.commonMistakes.length > 0 && (
-          <motion.div variants={fadeUp} className="border bg-card">
+          <motion.div variants={fadeUp} className="rounded-2xl border border-border bg-card shadow-sm">
             <div className="flex items-center gap-2 border-b border-border bg-destructive/5 px-4 py-3 sm:px-5">
               <div className="flex h-6 w-6 items-center justify-center bg-destructive/10">
                 <AlertTriangle className="h-3.5 w-3.5 text-destructive" />

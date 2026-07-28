@@ -11,6 +11,15 @@ export const MOCK_EXAM_QUESTION_COUNT =
   MBE_SUBJECTS.length * MOCK_EXAM_QUESTIONS_PER_SUBJECT +
   MOCK_EXAM_EXTRA_QUESTIONS;
 
+/** Reject / retire blueprints shorter than a full mock. */
+export const MOCK_EXAM_MIN_QUESTION_COUNT = MOCK_EXAM_QUESTION_COUNT;
+
+/**
+ * Practice mock cooldown (not the old SAT 14-day lock).
+ * One full exam per day is enough friction without blocking study.
+ */
+export const MOCK_EXAM_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+
 /** Official MBE-style block length: 1:48 per question × total questions. */
 export function mockExamTimeLimitSeconds(
   questionCount = MOCK_EXAM_QUESTION_COUNT

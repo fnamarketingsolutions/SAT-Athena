@@ -24,6 +24,7 @@ export type RecentPaceSummary = {
 /**
  * Last up to 3 completed practice sessions (daily quest + mock exam),
  * pooled average seconds per question for dashboard pacing status.
+ * Only questions with an actively selected answer count toward the average.
  */
 export async function getRecentPaceSummary(
   userId: string
@@ -48,10 +49,29 @@ export async function getRecentPaceSummary(
   ]);
 
   const sessions: PaceSessionSummary[] = [];
+  const questList = quests ?? [];
+  const questIds = questList.map((q: { id: string }) => q.id);
 
-  for (const q of quests ?? []) {
+  const answeredByQuest = new Map<string, number>();
+  if (questIds.length > 0) {
+    const { data: questAnswers } = await db
+      .from("daily_quest_problems")
+      .select("quest_id, selected_option, is_correct")
+      .in("quest_id", questIds);
+
+    for (const row of questAnswers ?? []) {
+      // Count only actively answered questions (choice selected or graded).
+      if (row.selected_option == null && row.is_correct == null) continue;
+      answeredByQuest.set(
+        row.quest_id,
+        (answeredByQuest.get(row.quest_id) ?? 0) + 1
+      );
+    }
+  }
+
+  for (const q of questList) {
     const totalSeconds = Number(q.time_elapsed_seconds) || 0;
-    const answeredCount = Number(q.total_questions) || 0;
+    const answeredCount = answeredByQuest.get(q.id) ?? 0;
     const avg = averageSecondsPerQuestion(totalSeconds, answeredCount);
     if (avg == null) continue;
     sessions.push({

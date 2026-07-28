@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ChevronLeft } from "lucide-react";
@@ -20,6 +20,7 @@ import { ConsistencyPanel } from "@/components/analytics/consistency-panel";
 import { PassProbabilityPanel } from "@/components/analytics/pass-probability-panel";
 import type { StuckPoint, EngagementSummary } from "@/lib/db/queries/analytics";
 import type { PassProbabilityResult } from "@/lib/pass-probability";
+import { readPassTargetPercent } from "@/lib/pass-target";
 import {
   averageSecondsPerQuestion,
   formatHistoryPace,
@@ -58,6 +59,7 @@ type AnalyticsData = {
     score: number;
     totalQuestions: number;
     timeElapsedSeconds: number;
+    answeredCount: number;
     date: string;
   }[];
   overallStats: {
@@ -159,6 +161,10 @@ export function AnalyticsDashboard() {
       totalQuestions: s.totalQuestions,
       timeElapsedSeconds: s.timeElapsedSeconds,
       date: s.date,
+      avgSecondsPerQuestion: averageSecondsPerQuestion(
+        s.timeElapsedSeconds,
+        s.answeredCount
+      ),
     })),
     ...data.mbeMockAttempts.map((a) => ({
       id: a.id,
@@ -169,12 +175,40 @@ export function AnalyticsDashboard() {
       date: a.completedAt ?? new Date(0).toISOString(),
       avgSecondsPerQuestion: averageSecondsPerQuestion(
         a.totalTimeSeconds,
-        a.answeredCount > 0 ? a.answeredCount : a.total
+        a.answeredCount
       ),
     })),
   ]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 10);
+
+  return (
+    <AnalyticsDashboardBody data={data} recentResults={recentResults} />
+  );
+}
+
+function AnalyticsDashboardBody({
+  data,
+  recentResults,
+}: {
+  data: AnalyticsData;
+  recentResults: {
+    id: string;
+    quizName: string;
+    score: number;
+    totalQuestions: number;
+    timeElapsedSeconds: number;
+    date: string;
+    avgSecondsPerQuestion?: number | null;
+  }[];
+}) {
+  const [passTargetPercent, setPassTargetPercent] = useState(
+    data.targetPercent
+  );
+
+  useEffect(() => {
+    setPassTargetPercent(readPassTargetPercent(data.targetPercent));
+  }, [data.targetPercent]);
 
   return (
     <div className="p-6 pb-16">
@@ -213,11 +247,12 @@ export function AnalyticsDashboard() {
           <motion.div className="grid gap-6 lg:col-span-3" variants={staggerItem}>
             <MbeSubjectScores
               subjects={data.subjectScores}
-              targetPercent={data.targetPercent}
+              targetPercent={passTargetPercent}
             />
             <OverallAccuracy
               accuracy={data.overallAccuracy}
               targetPercent={data.targetPercent}
+              onTargetChange={setPassTargetPercent}
             />
           </motion.div>
           <motion.div className="lg:col-span-2" variants={staggerItem}>
@@ -252,7 +287,7 @@ export function AnalyticsDashboard() {
           <PracticeTestResults sessions={recentResults} />
         </motion.div>
 
-        <motion.div className="mt-6 border bg-card p-5" variants={staggerItem}>
+        <motion.div className="mt-6 rounded-2xl border border-border bg-card p-5 shadow-sm" variants={staggerItem}>
           <h2 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             {MOCK_EXAM_LABEL}
           </h2>
@@ -261,9 +296,7 @@ export function AnalyticsDashboard() {
               {data.mbeMockAttempts.map((attempt) => {
                 const avg = averageSecondsPerQuestion(
                   attempt.totalTimeSeconds,
-                  attempt.answeredCount > 0
-                    ? attempt.answeredCount
-                    : attempt.total
+                  attempt.answeredCount
                 );
                 const paceStatus = avg != null ? getPaceStatus(avg) : null;
                 return (

@@ -4,7 +4,7 @@ import {
   getLastCompletedAttempt,
   getInProgressAttempt,
 } from "@/lib/db/queries/full-sat";
-import { FULL_SAT_COOLDOWN_MS } from "@/types/full-sat";
+import { MOCK_EXAM_COOLDOWN_MS } from "@/lib/mbe-mock/constants";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -29,7 +29,7 @@ export async function GET() {
 
   if (lastAttempt?.completedAt) {
     const completedTime = new Date(lastAttempt.completedAt).getTime();
-    const nextTime = completedTime + FULL_SAT_COOLDOWN_MS;
+    const nextTime = completedTime + MOCK_EXAM_COOLDOWN_MS;
     if (Date.now() < nextTime) {
       canTakeTest = false;
       nextAvailableDate = new Date(nextTime).toISOString();

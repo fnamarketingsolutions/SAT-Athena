@@ -60,7 +60,7 @@ export async function getProgressData(userId: string) {
     sessionIds.length > 0
       ? supabase
           .from("quiz_answers")
-          .select("id, session_id, problem_id, is_correct")
+          .select("id, session_id, problem_id, is_correct, selected_option")
           .in("session_id", sessionIds)
       : Promise.resolve({ data: [] }),
     subtopicIds.length > 0
@@ -75,7 +75,10 @@ export async function getProgressData(userId: string) {
       .order("order_index", { ascending: true }),
   ]);
 
-  const quizAnswers = answersRes.data ?? [];
+  const quizAnswers = (answersRes.data ?? []).filter(
+    (a: { selected_option?: number | null; is_correct?: boolean | null }) =>
+      a.selected_option != null || a.is_correct != null
+  );
   const subtopics = subtopicsRes.data ?? [];
   const topics = topicsRes.data ?? [];
 
@@ -208,7 +211,21 @@ export async function getProgressData(userId: string) {
     };
   });
 
-  // 4. Recent sessions with subtopic name
+  // 4. Recent sessions with subtopic name + answered-only pace counts
+  const answeredBySession = new Map<string, number>();
+  for (const a of quizAnswers) {
+    answeredBySession.set(
+      a.session_id,
+      (answeredBySession.get(a.session_id) ?? 0) + 1
+    );
+  }
+  for (const p of questProblems) {
+    answeredBySession.set(
+      p.quest_id,
+      (answeredBySession.get(p.quest_id) ?? 0) + 1
+    );
+  }
+
   const recentSessions = [
     ...sessions.map((s) => ({
       id: s.id,
@@ -216,6 +233,7 @@ export async function getProgressData(userId: string) {
       score: s.score,
       totalQuestions: s.total_questions,
       timeElapsedSeconds: s.time_elapsed_seconds,
+      answeredCount: answeredBySession.get(s.id) ?? 0,
       date: s.created_at,
     })),
     ...dailyQuests.map((q) => ({
@@ -224,6 +242,7 @@ export async function getProgressData(userId: string) {
       score: q.score,
       totalQuestions: q.total_questions,
       timeElapsedSeconds: q.time_elapsed_seconds,
+      answeredCount: answeredBySession.get(q.id) ?? 0,
       date: q.created_at,
     })),
   ]

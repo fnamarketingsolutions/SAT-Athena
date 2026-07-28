@@ -159,6 +159,11 @@ export async function getAnalyticsDashboard(
         )
       : null;
 
+  const completedMockExamCount = mockAttempts.filter(
+    (a) => a.status === "completed"
+  ).length;
+  const completedDailyPractices = (streakHistoryRes.data ?? []).length;
+
   const latestMockAccuracy =
     mbeMockAttempts[0]?.percentScore != null
       ? mbeMockAttempts[0].percentScore
@@ -168,6 +173,8 @@ export async function getAnalyticsDashboard(
     targetScore: user.targetScore,
     practiceAccuracyPercent: overallAccuracy,
     latestMockAccuracyPercent: latestMockAccuracy,
+    completedDailyPractices,
+    completedMockExams: completedMockExamCount,
   });
 
   return {
@@ -182,7 +189,7 @@ export async function getAnalyticsDashboard(
     targetPercent,
     forecastWeeks,
     ...progress,
-    stuckPoints: stuckPoints.slice(0, 6),
+    stuckPoints,
     engagement,
     consistency: {
       questStreak,

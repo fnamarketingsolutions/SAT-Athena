@@ -74,6 +74,29 @@ export function useGenerateFullSat() {
   });
 }
 
+export function useDiscardFullSat() {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, { testId: string }>({
+    mutationFn: async ({ testId }) => {
+      const res = await fetch(`/api/mbe-mock/tests/${testId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error ?? "Failed to discard mock exam");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["full-sat"] });
+      toast.success("Mock exam discarded");
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
+}
+
 export function useAnswerFullSat() {
   return useMutation({
     mutationFn: async (payload: {

@@ -15,10 +15,13 @@ function ClerkSignIn() {
   )}`;
 
   return (
-    <SignIn
-      forceRedirectUrl={redirectUrl}
-      signUpUrl={signUpUrl}
-    />
+    <div className="w-full max-w-md space-y-4">
+      <SignIn forceRedirectUrl={redirectUrl} signUpUrl={signUpUrl} />
+      <p className="text-center text-xs text-muted-foreground">
+        Forgot your password? Enter your email on the form above, then click{" "}
+        <span className="font-medium text-foreground">Forgot password</span>.
+      </p>
+    </div>
   );
 }
 

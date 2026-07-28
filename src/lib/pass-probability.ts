@@ -12,21 +12,41 @@ export type PassProbabilityResult = {
   hasMockData: boolean;
   hasPracticeData: boolean;
   summarySource: string;
+  /** True only after ≥3 completed Daily Practices and ≥1 Full Mock Exam. */
+  unlocked: boolean;
+  completedDailyPractices: number;
+  completedMockExams: number;
+  requiredDailyPractices: number;
+  requiredMockExams: number;
 };
 
-/** Default UBE-style cut score when the user has no personal target set. */
-export const DEFAULT_UBE_TARGET = 270;
+/** National MBE scaled benchmark when no target state is selected. */
+export const NATIONAL_MBE_TARGET = 135;
 
-/** Map overall % correct onto the national MBE scaled range (40–200). */
+/** Default UBE-style cut (= National Benchmark × 2). */
+export const DEFAULT_UBE_TARGET = NATIONAL_MBE_TARGET * 2;
+
+export const MAX_PROJECTED_MBE = 190;
+export const MAX_PASS_PROBABILITY = 95;
+export const MIN_PROJECTED_MBE = 40;
+export const MIN_PASS_PROBABILITY = 5;
+
+export const REQUIRED_DAILY_PRACTICES = 3;
+export const REQUIRED_MOCK_EXAMS = 1;
+
+/** Map overall % correct onto the national MBE scaled range (40–190 cap). */
 export function accuracyToScaledMbe(accuracyPercent: number): number {
   const pct = Math.min(100, Math.max(0, accuracyPercent));
-  return Math.round(40 + (pct / 100) * 160);
+  // Map 0–100% onto 40–200, then clamp to product max of 190.
+  const raw = Math.round(40 + (pct / 100) * 160);
+  return Math.min(MAX_PROJECTED_MBE, Math.max(MIN_PROJECTED_MBE, raw));
 }
 
 function resolveMbeTarget(ubeTarget: number | null | undefined): number {
-  const cut =
-    ubeTarget != null && ubeTarget > 0 ? ubeTarget : DEFAULT_UBE_TARGET;
-  return Math.round(cut / 2);
+  if (ubeTarget != null && ubeTarget > 0) {
+    return Math.round(ubeTarget / 2);
+  }
+  return NATIONAL_MBE_TARGET;
 }
 
 function zoneFor(projectedMbe: number, mbeTarget: number): PerformanceZone {
@@ -47,14 +67,26 @@ export function targetStateStatus(
   return projectedMbe >= mbeTarget ? "On Track" : "Below Range";
 }
 
-/** Logistic pass probability centered on the MBE target. */
+/** Logistic pass probability centered on the MBE target (capped at 95%). */
 export function probabilityNearTarget(
   projectedMbe: number,
   mbeTarget: number
 ): number {
   const z = (projectedMbe - mbeTarget) / 8;
   const p = 1 / (1 + Math.exp(-z));
-  return Math.round(Math.min(99, Math.max(5, p * 100)));
+  return Math.round(
+    Math.min(MAX_PASS_PROBABILITY, Math.max(MIN_PASS_PROBABILITY, p * 100))
+  );
+}
+
+export function isPassProbabilityUnlocked(
+  completedDailyPractices: number,
+  completedMockExams: number
+): boolean {
+  return (
+    completedDailyPractices >= REQUIRED_DAILY_PRACTICES &&
+    completedMockExams >= REQUIRED_MOCK_EXAMS
+  );
 }
 
 /**
@@ -67,7 +99,16 @@ export function computePassProbability(input: {
   mbeTarget?: number | null;
   practiceAccuracyPercent: number;
   latestMockAccuracyPercent: number | null;
+  completedDailyPractices?: number;
+  completedMockExams?: number;
 }): PassProbabilityResult {
+  const completedDailyPractices = input.completedDailyPractices ?? 0;
+  const completedMockExams = input.completedMockExams ?? 0;
+  const unlocked = isPassProbabilityUnlocked(
+    completedDailyPractices,
+    completedMockExams
+  );
+
   const mbeTarget =
     input.mbeTarget != null && input.mbeTarget > 0
       ? Math.round(input.mbeTarget)
@@ -100,7 +141,10 @@ export function computePassProbability(input: {
       "Complete practice or a full mock exam to personalize this estimate.";
   }
 
-  projectedMbe = Math.min(200, Math.max(40, projectedMbe));
+  projectedMbe = Math.min(
+    MAX_PROJECTED_MBE,
+    Math.max(MIN_PROJECTED_MBE, projectedMbe)
+  );
 
   return {
     passProbability: probabilityNearTarget(projectedMbe, mbeTarget),
@@ -110,5 +154,10 @@ export function computePassProbability(input: {
     hasMockData,
     hasPracticeData,
     summarySource,
+    unlocked,
+    completedDailyPractices,
+    completedMockExams,
+    requiredDailyPractices: REQUIRED_DAILY_PRACTICES,
+    requiredMockExams: REQUIRED_MOCK_EXAMS,
   };
 }

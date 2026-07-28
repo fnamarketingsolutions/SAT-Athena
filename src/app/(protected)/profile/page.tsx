@@ -7,14 +7,15 @@ import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { AnimatedSprite } from "@/components/pixel-art/animated-sprite";
 import { ProfileNameEditor } from "@/components/profile/profile-name-editor";
+import { ProfileAvatarEditor } from "@/components/profile/profile-avatar-editor";
 import { ScheduleEditor } from "@/components/profile/schedule-editor";
 import { ExamDateEditor } from "@/components/profile/exam-date-editor";
 import { ActivityHeatmap } from "@/components/profile/activity-heatmap";
 import { TopicProgressPanel } from "@/components/profile/topic-progress-panel";
 import { PassProbabilityPanel } from "@/components/analytics/pass-probability-panel";
 import { APP_BRANDING } from "@/lib/exam-config";
+import { isSupabaseAuth } from "@/lib/auth/provider";
 import type { PassProbabilityResult } from "@/lib/pass-probability";
 import type { ActivityHeatmapDay } from "@/lib/db/queries/profile";
 
@@ -140,17 +141,31 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_280px]">
           <div>
             <motion.div variants={staggerItem} className="flex items-start gap-4">
-              <AnimatedSprite
-                src="/images/pixel-art/profile-avatar.png"
-                alt="Avatar"
-                width={64}
-                height={64}
-              />
+              {isSupabaseAuth() ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={user.avatarUrl || "/images/pixel-art/profile-avatar.png"}
+                  alt="Avatar"
+                  width={64}
+                  height={64}
+                  className="h-16 w-16 rounded-full object-cover"
+                />
+              ) : (
+                <ProfileAvatarEditor size={64} />
+              )}
               <div className="min-w-0 flex-1">
                 <ProfileNameEditor displayName={user.displayName} />
                 <p className="text-sm text-muted-foreground">
                   Prep started {formatDate(user.createdAt)}
                 </p>
+                {!isSupabaseAuth() && (
+                  <Link
+                    href="/account"
+                    className="mt-1 inline-block text-xs text-primary underline-offset-4 hover:underline"
+                  >
+                    Account security
+                  </Link>
+                )}
               </div>
             </motion.div>
 

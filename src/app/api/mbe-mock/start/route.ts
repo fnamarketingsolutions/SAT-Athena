@@ -7,7 +7,10 @@ import {
   createAnswerRows,
   getAttemptAnswers,
 } from "@/lib/db/queries/full-sat";
-import { FULL_SAT_COOLDOWN_MS } from "@/types/full-sat";
+import {
+  MOCK_EXAM_COOLDOWN_MS,
+  MOCK_EXAM_MIN_QUESTION_COUNT,
+} from "@/lib/mbe-mock/constants";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -49,13 +52,13 @@ export async function POST(req: Request) {
     });
   }
 
-  // Enforce cooldown
+  // Enforce cooldown (24h for practice mocks)
   const lastCompleted = await getLastCompletedAttempt(user.id);
   if (lastCompleted?.completedAt) {
     const elapsed = Date.now() - new Date(lastCompleted.completedAt).getTime();
-    if (elapsed < FULL_SAT_COOLDOWN_MS) {
+    if (elapsed < MOCK_EXAM_COOLDOWN_MS) {
       const nextDate = new Date(
-        new Date(lastCompleted.completedAt).getTime() + FULL_SAT_COOLDOWN_MS
+        new Date(lastCompleted.completedAt).getTime() + MOCK_EXAM_COOLDOWN_MS
       ).toISOString();
       return NextResponse.json(
         { error: "Cooldown active", nextAvailableDate: nextDate },
@@ -64,12 +67,14 @@ export async function POST(req: Request) {
     }
   }
 
-  // Load test problems
+  // Load test problems — reject legacy short blueprints
   const problems = await getTestProblems(testId);
-  if (problems.length === 0) {
+  if (problems.length < MOCK_EXAM_MIN_QUESTION_COUNT) {
     return NextResponse.json(
-      { error: "Test has no problems" },
-      { status: 404 }
+      {
+        error: `This test is incomplete (${problems.length}/${MOCK_EXAM_MIN_QUESTION_COUNT} questions). Generate a new full mock exam.`,
+      },
+      { status: 400 }
     );
   }
 

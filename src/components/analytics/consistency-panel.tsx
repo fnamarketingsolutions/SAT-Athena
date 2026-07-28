@@ -20,7 +20,7 @@ export function ConsistencyPanel({
   questsCompletedThisWeek: number;
 }) {
   return (
-    <div className="border border-border bg-card p-5">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
       <div className="flex items-center justify-between">
         <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
           Study consistency

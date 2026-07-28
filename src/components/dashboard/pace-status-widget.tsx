@@ -17,7 +17,11 @@ type PaceSummaryResponse = {
   sessionCount: number;
 };
 
-export function PaceStatusWidget() {
+export function PaceStatusWidget({
+  embedded = false,
+}: {
+  embedded?: boolean;
+}) {
   const { data, isLoading } = useQuery<PaceSummaryResponse>({
     queryKey: ["pacing-summary"],
     queryFn: async () => {
@@ -28,14 +32,38 @@ export function PaceStatusWidget() {
     staleTime: 60_000,
   });
 
+  const wrap = (node: React.ReactNode) => (
+    <div className={cn(!embedded && "mb-10 w-full max-w-xl")}>{node}</div>
+  );
+
   if (isLoading) {
-    return (
-      <div className="mb-10 h-36 w-full max-w-xl animate-pulse rounded-2xl border border-border bg-card" />
+    return wrap(
+      <div className="h-36 animate-pulse rounded-2xl border border-border bg-card" />
     );
   }
 
   if (!data || data.sessionCount === 0 || data.status == null) {
-    return null;
+    if (!embedded) return null;
+    return wrap(
+      <div className="rounded-2xl border border-dashed border-border bg-card/60 p-5 text-left">
+        <div className="flex items-start gap-3">
+          <Gauge className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+          <div>
+            <p className="text-sm font-medium text-foreground">Pacing monitor</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Complete a practice session to see your average time per question.
+            </p>
+            <Link
+              href={PACE_PRACTICE_HREF}
+              className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+            >
+              Practice with pacing
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const good = data.status === "good";
@@ -44,10 +72,10 @@ export function PaceStatusWidget() {
       ? formatAveragePace(data.avgSecondsPerQuestion)
       : null;
 
-  return (
+  return wrap(
     <div
       className={cn(
-        "mb-10 w-full max-w-xl rounded-2xl border p-6 text-left shadow-sm",
+        "rounded-2xl border p-5 text-left shadow-sm",
         good
           ? "border-emerald-500/40 bg-emerald-500/10"
           : "border-red-500/50 bg-red-500/15"

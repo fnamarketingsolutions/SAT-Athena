@@ -46,7 +46,7 @@ export function ExamDateEditor() {
   };
 
   return (
-    <div className="border border-border bg-card p-4 shadow-sm">
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
       <div className="flex items-center gap-2">
         <CalendarDays className="h-4 w-4 text-muted-foreground" />
         <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">

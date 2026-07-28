@@ -21,7 +21,7 @@ export function SatSkills({
   const practiced = topics.filter((t) => t.total > 0);
 
   return (
-    <div className="border bg-card p-5 h-full">
+    <div className="h-full rounded-2xl border border-border bg-card p-5 shadow-sm">
       <h2 className="mb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
         {title}
       </h2>

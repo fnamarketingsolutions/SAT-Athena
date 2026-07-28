@@ -38,7 +38,7 @@ function SubjectCard({
   const atTarget = subject.total > 0 && subject.accuracy >= targetPercent;
 
   return (
-    <div className="border bg-card p-4">
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
       <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
         {subject.shortLabel}
       </p>

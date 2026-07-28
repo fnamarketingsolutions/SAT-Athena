@@ -53,7 +53,7 @@ export async function GET(_req: Request, { params }: Params) {
     total > 0 ? Math.round((correctCount / total) * 100) : 0;
   const avgSeconds = averageSecondsPerQuestion(
     attempt.totalTimeSeconds,
-    answeredCount > 0 ? answeredCount : total
+    answeredCount
   );
 
   const subjectStats = new Map<

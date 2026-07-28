@@ -149,7 +149,7 @@ export default function MyLearningTopicPage() {
       >
         {/* Learning Objectives */}
         {topic.learningObjectives.length > 0 && (
-          <motion.div variants={fadeUp} className="border bg-card">
+          <motion.div variants={fadeUp} className="rounded-2xl border border-border bg-card shadow-sm">
             <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
               <div className="flex h-6 w-6 items-center justify-center bg-green-500/10">
                 <Target className="h-3.5 w-3.5 text-green-500" />
@@ -172,7 +172,7 @@ export default function MyLearningTopicPage() {
 
         {/* Tips & Tricks */}
         {topic.tipsAndTricks.length > 0 && (
-          <motion.div variants={fadeUp} className="border bg-card">
+          <motion.div variants={fadeUp} className="rounded-2xl border border-border bg-card shadow-sm">
             <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
               <div className="flex h-6 w-6 items-center justify-center bg-athena-amber/10">
                 <Lightbulb className="h-3.5 w-3.5 text-athena-amber" />
@@ -193,7 +193,7 @@ export default function MyLearningTopicPage() {
 
         {/* Common Mistakes */}
         {topic.commonMistakes.length > 0 && (
-          <motion.div variants={fadeUp} className="border bg-card">
+          <motion.div variants={fadeUp} className="rounded-2xl border border-border bg-card shadow-sm">
             <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-destructive/5">
               <div className="flex h-6 w-6 items-center justify-center bg-destructive/10">
                 <AlertTriangle className="h-3.5 w-3.5 text-destructive" />

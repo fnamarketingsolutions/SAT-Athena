@@ -53,10 +53,9 @@ export function QuestResultsScreen() {
   const minutes = Math.floor(ctx.elapsed / 60);
   const seconds = ctx.elapsed % 60;
 
-  const answeredCount =
-    ctx.problems.filter(
-      (p) => p.isCorrect != null || ctx.answers.has(p.id) || p.selectedOption != null
-    ).length || ctx.problems.length;
+  const answeredCount = ctx.problems.filter(
+    (p) => p.isCorrect != null || ctx.answers.has(p.id) || p.selectedOption != null
+  ).length;
   const avgSeconds = averageSecondsPerQuestion(ctx.elapsed, answeredCount);
   const paceStatus = avgSeconds != null ? getPaceStatus(avgSeconds) : null;
 

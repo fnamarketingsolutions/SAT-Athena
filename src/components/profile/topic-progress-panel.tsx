@@ -21,7 +21,7 @@ export function TopicProgressPanel({
 }) {
   if (subjects.length === 0) {
     return (
-      <div className="border border-border bg-card p-5">
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Progress by exam topic
         </h3>
@@ -41,7 +41,7 @@ export function TopicProgressPanel({
   });
 
   return (
-    <div className="border border-border bg-card p-5">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         Progress by exam topic
       </h3>

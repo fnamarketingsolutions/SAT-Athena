@@ -3,13 +3,17 @@ import "server-only";
 import { getTodaysQuest } from "@/lib/db/queries/daily-quest";
 import { supabase } from "@/lib/supabase/client";
 
-/** When on, learners must finish today's daily quest before other app surfaces. */
+/** Progress/status for today's practice — no longer gates the rest of the app. */
 export function questAccountabilityEnabled() {
   return /^(1|true|on)$/i.test(process.env.QUEST_ACCOUNTABILITY ?? "");
 }
 
 export type QuestAccountabilityStatus = {
   enabled: boolean;
+  /**
+   * Formerly blocked other routes until the daily quest was done.
+   * Always false — learners can use the full app anytime.
+   */
   locked: boolean;
   quest: {
     id: string;
@@ -74,18 +78,16 @@ export async function getQuestAccountabilityStatus(
   const streak = computeQuestStreak(questHistory ?? [], today);
 
   if (!result) {
-    return { enabled: true, locked: true, quest: null, streak };
+    return { enabled: true, locked: false, quest: null, streak };
   }
 
   const answeredCount = result.problems.filter(
     (p) => p.isCorrect !== null
   ).length;
 
-  const locked = result.quest.status !== "completed";
-
   return {
     enabled: true,
-    locked,
+    locked: false,
     quest: {
       id: result.quest.id,
       status: result.quest.status,

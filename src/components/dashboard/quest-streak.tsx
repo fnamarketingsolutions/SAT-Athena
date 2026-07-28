@@ -14,7 +14,7 @@ export function QuestStreak({ days }: { days: StudyDay[]; streak?: number }) {
   const completedCount = days.filter((d) => d.completed).length;
 
   return (
-    <div className="border border-border bg-card p-5">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           This week

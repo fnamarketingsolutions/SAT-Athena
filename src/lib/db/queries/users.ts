@@ -223,6 +223,7 @@ export async function updateUser(
   data: Partial<{
     displayName: string;
     avatarUrl: string;
+    email: string;
     skillScore: number;
     targetScore: number;
     bestStreak: number;
@@ -238,6 +239,7 @@ export async function updateUser(
   const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (data.displayName !== undefined) update.display_name = data.displayName;
   if (data.avatarUrl !== undefined) update.avatar_url = data.avatarUrl;
+  if (data.email !== undefined) update.email = data.email;
   if (data.skillScore !== undefined) update.skill_score = data.skillScore;
   if (data.targetScore !== undefined) update.target_score = data.targetScore;
   if (data.bestStreak !== undefined) update.best_streak = data.bestStreak;

@@ -24,7 +24,11 @@ function loadCountdown(): {
   };
 }
 
-export function ExamCountdownWidget() {
+export function ExamCountdownWidget({
+  embedded = false,
+}: {
+  embedded?: boolean;
+}) {
   const [mounted, setMounted] = useState(false);
   const { data } = useQuery({
     queryKey: ["exam-countdown"],
@@ -37,15 +41,19 @@ export function ExamCountdownWidget() {
     setMounted(true);
   }, []);
 
+  const wrap = (node: React.ReactNode) => (
+    <div className={cn(!embedded && "mb-10 w-full max-w-xl")}>{node}</div>
+  );
+
   if (!mounted) {
-    return (
-      <div className="mb-10 h-24 w-full max-w-xl animate-pulse rounded-2xl border border-border bg-card" />
+    return wrap(
+      <div className="h-24 animate-pulse rounded-2xl border border-border bg-card" />
     );
   }
 
   if (!data?.stored || !data.countdown) {
-    return (
-      <div className="mb-10 w-full max-w-xl rounded-2xl border border-dashed border-border bg-card/60 p-5 text-left">
+    return wrap(
+      <div className="rounded-2xl border border-dashed border-border bg-card/60 p-5 text-left">
         <div className="flex items-start gap-3">
           <CalendarClock className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
           <div>
@@ -71,10 +79,10 @@ export function ExamCountdownWidget() {
   const { countdown, stored } = data;
   const urgent = !countdown.isPast && countdown.days <= 30;
 
-  return (
+  return wrap(
     <div
       className={cn(
-        "mb-10 w-full max-w-xl rounded-2xl border p-5 text-left shadow-sm",
+        "rounded-2xl border p-5 text-left shadow-sm",
         countdown.isPast
           ? "border-amber-500/40 bg-amber-500/10"
           : urgent
@@ -95,16 +103,19 @@ export function ExamCountdownWidget() {
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Exam Countdown
           </p>
-          <p className="mt-1 font-[family-name:var(--font-instrument-serif)] text-2xl text-foreground">
+          <p className="mt-1 font-[family-name:var(--font-instrument-serif)] text-xl text-foreground sm:text-2xl">
             {countdown.headline}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {new Date(`${stored.date}T12:00:00`).toLocaleDateString("en-US", {
-              weekday: "long",
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })}
+            {(() => {
+              const start = new Date(`${stored.date}T12:00:00`);
+              const end = new Date(start);
+              end.setDate(start.getDate() + 1);
+              const month = start.toLocaleDateString("en-US", {
+                month: "long",
+              });
+              return `${month} ${start.getDate()}–${end.getDate()}, ${start.getFullYear()}`;
+            })()}
           </p>
           <Link
             href="/profile"

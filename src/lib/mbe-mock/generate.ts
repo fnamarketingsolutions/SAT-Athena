@@ -2,6 +2,7 @@ import { MBE_SUBJECTS } from "@/lib/exam-config";
 import {
   allocateMockExamSubjectCounts,
   MOCK_EXAM_QUESTION_COUNT,
+  MOCK_EXAM_QUESTIONS_PER_SUBJECT,
 } from "@/lib/mbe-mock/constants";
 
 export type GeneratedMockQuestion = {
@@ -13,6 +14,10 @@ export type GeneratedMockQuestion = {
   hint: string;
   difficulty: "easy" | "medium" | "hard";
 };
+
+/** Smaller chunks avoid truncated Anthropic JSON for 14-question subject sets. */
+const SUBJECT_CHUNK_SIZE = 5;
+const SUBJECT_CHUNK_RETRIES = 2;
 
 function extractJson(text: string): unknown {
   const trimmed = text.trim();
@@ -79,7 +84,7 @@ function normalizeQuestions(
   return normalized;
 }
 
-async function generateSubjectBatch(
+async function generateSubjectChunk(
   apiKey: string,
   userId: string,
   subjectKey: string,
@@ -121,7 +126,7 @@ Rules:
     },
     body: JSON.stringify({
       model: "claude-sonnet-4-6",
-      max_tokens: 16000,
+      max_tokens: 8192,
       messages: [{ role: "user", content: prompt }],
       metadata: { user_id: userId },
     }),
@@ -138,12 +143,46 @@ Rules:
     content?: { type: string; text?: string }[];
   };
   const text = data.content?.find((c) => c.type === "text")?.text ?? "";
-  const parsed = extractJson(text) as {
-    questions?: Record<string, unknown>[];
-  };
+  let parsed: { questions?: Record<string, unknown>[] };
+  try {
+    parsed = extractJson(text) as { questions?: Record<string, unknown>[] };
+  } catch {
+    return [];
+  }
 
   const questions = Array.isArray(parsed.questions) ? parsed.questions : [];
   return normalizeQuestions(questions, subjectKey).slice(0, count);
+}
+
+async function generateSubjectQuestions(
+  apiKey: string,
+  userId: string,
+  subjectKey: string,
+  subjectLabel: string,
+  count: number
+): Promise<GeneratedMockQuestion[]> {
+  const out: GeneratedMockQuestion[] = [];
+
+  while (out.length < count) {
+    const need = Math.min(SUBJECT_CHUNK_SIZE, count - out.length);
+    let chunk: GeneratedMockQuestion[] = [];
+
+    for (let attempt = 0; attempt <= SUBJECT_CHUNK_RETRIES; attempt++) {
+      chunk = await generateSubjectChunk(
+        apiKey,
+        userId,
+        subjectKey,
+        subjectLabel,
+        need
+      );
+      if (chunk.length > 0) break;
+    }
+
+    if (chunk.length === 0) break;
+    out.push(...chunk);
+  }
+
+  return out.slice(0, count);
 }
 
 /** Generate a timed MBE-style mock set via Anthropic (no DB seed required). */
@@ -159,20 +198,20 @@ export async function generateMockExamQuestions(
 
   const batches = await Promise.all(
     MBE_SUBJECTS.map((subject) =>
-      generateSubjectBatch(
+      generateSubjectQuestions(
         apiKey,
         userId,
         subject.key,
         subject.label,
-        counts[subject.key] ?? 14
+        counts[subject.key] ?? MOCK_EXAM_QUESTIONS_PER_SUBJECT
       )
     )
   );
 
   const usable = shuffle(batches.flat());
-  if (usable.length < Math.floor(MOCK_EXAM_QUESTION_COUNT * 0.7)) {
+  if (usable.length < MOCK_EXAM_QUESTION_COUNT) {
     throw new Error(
-      `Mock exam generation returned too few valid questions (${usable.length}/${MOCK_EXAM_QUESTION_COUNT})`
+      `Mock exam generation returned too few valid questions (${usable.length}/${MOCK_EXAM_QUESTION_COUNT}). Try again.`
     );
   }
 

@@ -18,7 +18,7 @@ export function JourneyRanks({
   unit?: string;
 }) {
   return (
-    <div className="border bg-card p-5">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
       <h2 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
         Journey
       </h2>

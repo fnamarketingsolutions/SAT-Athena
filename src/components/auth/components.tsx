@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { LogOut, User, KeyRound, LayoutDashboard, Settings } from "lucide-react";
+import { LogOut, User, KeyRound, LayoutDashboard, Settings, Shield } from "lucide-react";
 import { useAuthUser } from "./auth-context";
 import { isSupabaseAuth } from "@/lib/auth/provider";
 import { adminNavItem } from "@/components/layout/nav-items";
@@ -130,7 +130,7 @@ export function AuthUserButton() {
               {adminNavItem.label}
             </Link>
           )}
-          {isSupabaseAuth() && (
+          {isSupabaseAuth() ? (
             <a
               href="/account/password"
               className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-foreground transition hover:bg-accent"
@@ -138,6 +138,15 @@ export function AuthUserButton() {
               <KeyRound size={14} />
               Set password
             </a>
+          ) : (
+            <Link
+              href="/account"
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-foreground transition hover:bg-accent"
+            >
+              <Shield size={14} />
+              Account security
+            </Link>
           )}
           <button
             onClick={() => signOut()}

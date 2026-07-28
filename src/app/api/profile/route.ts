@@ -1,7 +1,10 @@
 import { getAuthIdentity, getAppUser } from "@/lib/auth/current-user";
 import { updateUser } from "@/lib/db/queries/users";
 import { getProfileData } from "@/lib/db/queries/profile";
-import { getLastCompletedAttempt } from "@/lib/db/queries/full-sat";
+import {
+  getLastCompletedAttempt,
+  getUserAttempts,
+} from "@/lib/db/queries/full-sat";
 import { computePassProbability } from "@/lib/pass-probability";
 import { supabase } from "@/lib/supabase/client";
 import { NextResponse } from "next/server";
@@ -17,10 +20,17 @@ export async function GET() {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  const [profileData, lastAttempt] = await Promise.all([
-    getProfileData(user.id),
-    getLastCompletedAttempt(user.id),
-  ]);
+  const [profileData, lastAttempt, allAttempts, completedQuestsRes] =
+    await Promise.all([
+      getProfileData(user.id),
+      getLastCompletedAttempt(user.id),
+      getUserAttempts(user.id),
+      supabase
+        .from("daily_quests")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("status", "completed"),
+    ]);
 
   let latestMockAccuracy: number | null = null;
 
@@ -37,10 +47,17 @@ export async function GET() {
       total > 0 ? Math.round((correct / total) * 100) : null;
   }
 
+  const completedMockExams = allAttempts.filter(
+    (a) => a.status === "completed"
+  ).length;
+  const completedDailyPractices = completedQuestsRes.count ?? 0;
+
   const passProbability = computePassProbability({
     targetScore: user.targetScore,
     practiceAccuracyPercent: profileData.overallAccuracy,
     latestMockAccuracyPercent: latestMockAccuracy,
+    completedDailyPractices,
+    completedMockExams,
   });
 
   return NextResponse.json({
