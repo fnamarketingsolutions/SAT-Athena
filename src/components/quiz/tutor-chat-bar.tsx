@@ -82,7 +82,7 @@ export function TutorChatBar({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ type: "spring", stiffness: 400, damping: 30, delay: 0.15 }}
-      className="fixed bottom-0 inset-x-0 z-[62]"
+      className="fixed bottom-0 inset-x-0 z-[62] md:left-[15rem]"
     >
       {/* Expandable message history */}
       <AnimatePresence>

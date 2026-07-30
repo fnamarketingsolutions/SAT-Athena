@@ -37,6 +37,7 @@ import { PassagePanel } from "@/components/learning/passage-panel";
 import { MathContent } from "@/components/quiz/math-content";
 import { resolveProblemPassage } from "@/lib/rw/parse-question";
 import { ObservationFrame } from "@/components/learning/observation/observation-frame";
+import { DraggableOrb } from "@/components/learning/observation/draggable-orb";
 import { ObservationOrb } from "@/components/learning/observation/observation-orb";
 import { PresenceLayer } from "@/components/learning/observation/presence-layer";
 import type { StepFocus } from "@/components/whiteboard/pen-tip";
@@ -1065,7 +1066,7 @@ export function QuizProblemPageContent() {
   if (quiz.phase === "submitted") {
     if (showPractice) {
       return (
-        <div className="fixed inset-0 z-50 flex flex-col bg-background">
+        <div className="fixed inset-0 z-50 flex flex-col bg-background md:left-[15rem]">
           <PostLessonPractice
             topic={topicName}
             subtopic={subtopicName}
@@ -1082,7 +1083,7 @@ export function QuizProblemPageContent() {
       );
     }
     return (
-      <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      <div className="fixed inset-0 z-50 flex flex-col bg-background md:left-[15rem]">
         <div className="px-6 pt-4 pb-2">
           <Link
             href="/dashboard"
@@ -1231,27 +1232,32 @@ export function QuizProblemPageContent() {
               stepFocusRef={stepFocusRef}
             />
           ) : (
-          <div className="absolute top-3 left-3 z-20 hidden w-[220px] flex-col items-center gap-2 pointer-events-none sm:flex">
-            <ObservationOrb
-              state={displayOrbState}
-              amplitude={isTakeoverActive ? chat.amplitude : 0}
-              size={100}
-            />
-            <AnimatePresence mode="wait">
-              {captionText ? (
-                <motion.div
-                  key={captionText}
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.25 }}
-                  className="text-center text-sm leading-snug text-muted-foreground rounded-lg border border-border bg-card px-3 py-1.5 shadow-sm"
-                >
-                  <MathContent content={captionText} />
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
-          </div>
+          <DraggableOrb
+            className="hidden sm:flex"
+            orb={
+              <ObservationOrb
+                state={displayOrbState}
+                amplitude={isTakeoverActive ? chat.amplitude : 0}
+                size={100}
+              />
+            }
+            caption={
+              <AnimatePresence mode="wait">
+                {captionText ? (
+                  <motion.div
+                    key={captionText}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.25 }}
+                    className="text-center text-sm leading-snug text-muted-foreground rounded-lg border border-border bg-card px-3 py-1.5 shadow-sm"
+                  >
+                    <MathContent content={captionText} />
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            }
+          />
           )}
           {/* Question + options pinned ABOVE the canvas only when the canvas
               is in use — the tutor's walkthrough during takeover, or a

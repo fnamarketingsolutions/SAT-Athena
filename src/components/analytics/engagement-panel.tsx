@@ -29,8 +29,11 @@ export function EngagementPanel({
         ? "Needs attention"
         : "Stable";
 
+  // `flex-1` absorbs whatever height the analytics side rail has left over
+  // below the consistency panel, so the rail ends level with the taller
+  // subject-accuracy column beside it instead of trailing short.
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+    <div className="flex-1 rounded-2xl border border-border bg-card p-5 shadow-sm">
       <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
         Engagement
       </h2>

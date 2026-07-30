@@ -6,6 +6,7 @@ import { useQuizState } from "@/components/learning/quiz/use-quiz-state";
 import { useQuizTimer } from "@/components/learning/quiz/use-quiz-timer";
 import { QuizRouteContext } from "@/components/learning/quiz/quiz-route-context";
 import { NarrationProvider } from "@/components/learning/quiz/narration-provider";
+import { useBodyScrollLock } from "@/hooks/use-body-scroll-lock";
 import type { Problem } from "@/components/quiz/types";
 import type { FeedbackState } from "@/components/quiz/answer-panel";
 import type { QuizSubject } from "@/lib/exam-config";
@@ -117,10 +118,7 @@ export function QuizLayoutProvider({
   }, [onTutorRoute]);
 
   // Lock body scroll for the entire quiz flow
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
-  }, []);
+  useBodyScrollLock();
 
   const handleSelectAnswer = useCallback(
     (problemId: string, optionIndex: number) => {

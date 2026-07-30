@@ -1,6 +1,7 @@
 import { getProgressData } from "@/lib/db/queries/progress";
 import { MBE_PASS_PERCENT } from "@/lib/exam-config";
 import { EXAM_SESSION_SOURCES } from "@/lib/exam-config";
+import { PROFILE_HEATMAP_WEEKS } from "@/lib/profile-heatmap";
 import { supabase } from "@/lib/supabase/client";
 
 export type ActivityHeatmapDay = {
@@ -20,7 +21,7 @@ function intensityLevel(count: number): ActivityHeatmapDay["level"] {
 /** Daily study intensity for the last `weeks` weeks (GitHub-style heatmap). */
 async function getActivityHeatmap(
   userId: string,
-  weeks = 12
+  weeks = PROFILE_HEATMAP_WEEKS
 ): Promise<ActivityHeatmapDay[]> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -98,7 +99,7 @@ export async function getProfileData(userId: string) {
         .eq("user_id", userId) as Promise<{
         data: { duration_seconds: number }[] | null;
       }>,
-      getActivityHeatmap(userId, 12),
+      getActivityHeatmap(userId, PROFILE_HEATMAP_WEEKS),
     ]);
 
   const userRecord = userRes.data;

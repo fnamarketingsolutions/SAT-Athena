@@ -166,8 +166,9 @@ export function PassProbabilityPanel({
     }
   };
 
+  // Compact is the dashboard tile, where the cell spans two grid rows.
   const cardClass = compact
-    ? "rounded-2xl border border-border bg-card p-4 shadow-sm"
+    ? "h-full rounded-2xl border border-border bg-card p-4 shadow-sm"
     : "rounded-2xl border border-border bg-card p-6 shadow-sm";
 
   if (!data.unlocked) {

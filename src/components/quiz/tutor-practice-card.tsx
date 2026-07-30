@@ -163,7 +163,7 @@ export function TutorPracticeCard({
       {revealedCorrect ? (
         <motion.div
           key="practice-correct-pulse"
-          className="fixed inset-0 z-[61] flex items-center justify-center pointer-events-none"
+          className="fixed inset-0 z-[61] flex items-center justify-center pointer-events-none md:left-[15rem]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -191,7 +191,7 @@ export function TutorPracticeCard({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ type: "spring", stiffness: 400, damping: 30, delay: 0.1 }}
-      className="fixed top-20 left-6 z-[61]"
+      className="fixed top-20 left-6 z-[61] md:left-[calc(15rem+1.5rem)]"
     >
       {/* Compact floating panel — observation-themed but flat. The
           floating tutor chat occupies the rest of the viewport, so we

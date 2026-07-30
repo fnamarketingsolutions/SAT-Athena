@@ -35,24 +35,19 @@ function QuestStartContent() {
   }, [forcePace]);
 
   useEffect(() => {
-    if (
-      forcePace &&
-      !autoStartedRef.current &&
-      !ctx.practiceConfigured &&
-      ctx.phase === "active"
-    ) {
+    if (forcePace && !autoStartedRef.current && !ctx.practiceConfigured) {
       autoStartedRef.current = true;
       ctx.configurePractice(true);
     }
-  }, [forcePace, ctx.practiceConfigured, ctx.phase, ctx]);
+  }, [forcePace, ctx.practiceConfigured, ctx]);
 
   useEffect(() => {
-    if (ctx.phase === "completed" || ctx.practiceConfigured) {
+    if (ctx.practiceConfigured) {
       router.replace(`/quest/${ctx.currentIndex + 1}`);
     }
-  }, [ctx.phase, ctx.practiceConfigured, ctx.currentIndex, router]);
+  }, [ctx.practiceConfigured, ctx.currentIndex, router]);
 
-  if (ctx.phase === "completed" || ctx.practiceConfigured) {
+  if (ctx.practiceConfigured) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />

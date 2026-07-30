@@ -126,7 +126,11 @@ export function ProfileAvatarEditor({
         )}
       </div>
 
-      <div className="mt-2 flex items-center gap-2">
+      {/* Stacked, not side by side: laid out in a row these two links are
+          wider than the avatar, and since they set the component's width,
+          anything placed beside the avatar gets pushed out by their overhang
+          rather than sitting next to the picture. */}
+      <div className="mt-2 flex flex-col items-start gap-1">
         <button
           type="button"
           disabled={busy}

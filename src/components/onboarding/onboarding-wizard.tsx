@@ -9,7 +9,15 @@ import { cn } from "@/lib/utils";
 import { MathContent } from "@/components/quiz/math-content";
 import { BottomBar } from "@/components/quiz/bottom-bar";
 import type { OnboardingStep } from "@/lib/db/queries/onboarding";
-import { DEFAULT_UBE_TARGET } from "@/lib/pass-probability";
+import {
+  accuracyToScaledMbe,
+  DEFAULT_UBE_TARGET,
+} from "@/lib/pass-probability";
+import {
+  MAX_UBE_TOTAL,
+  MIN_UBE_TOTAL,
+  ubeTargetFromMbe,
+} from "@/lib/target-states";
 
 type WizardStep = Exclude<OnboardingStep, "done">;
 
@@ -24,9 +32,8 @@ type DayOfWeek =
 
 type DiagnosticProblem = {
   id: string;
-  orderIndex: number;
-  category: string;
-  difficulty: string;
+  subject: string;
+  subjectLabel: string;
   questionText: string;
   options: string[];
 };
@@ -40,8 +47,6 @@ type OnboardingState = {
   scores: {
     targetScore: number | null;
     currentComposite: number | null;
-    currentReadingWriting: number | null;
-    currentMath: number | null;
   };
 };
 
@@ -113,8 +118,7 @@ export function OnboardingWizard() {
 
   const [step, setStep] = useState<WizardStep>("welcome");
 
-  const [rwScore, setRwScore] = useState(500);
-  const [mathScore, setMathScore] = useState(500);
+  const [currentScore, setCurrentScore] = useState(DEFAULT_UBE_TARGET);
   const [targetScore, setTargetScore] = useState(DEFAULT_UBE_TARGET);
 
   const [activeDays, setActiveDays] = useState<Set<DayOfWeek>>(new Set(["monday", "wednesday", "friday"]));
@@ -125,11 +129,6 @@ export function OnboardingWizard() {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [selectedOption, setSelectedOption] = useState<number | undefined>();
   const [diagnosticStartedAt, setDiagnosticStartedAt] = useState<number | null>(null);
-  const [resultScores, setResultScores] = useState<{
-    composite: number;
-    rwScaled: number;
-    mathScaled: number;
-  } | null>(null);
 
   useEffect(() => {
     if (!data || data.completed) return;
@@ -137,15 +136,13 @@ export function OnboardingWizard() {
     if (saved && saved !== "done") {
       setStep(saved);
     }
-    if (data.scores.currentReadingWriting) setRwScore(data.scores.currentReadingWriting);
-    if (data.scores.currentMath) setMathScore(data.scores.currentMath);
     if (data.scores.targetScore) setTargetScore(data.scores.targetScore);
     if (data.scores.currentComposite) {
-      setResultScores({
-        composite: data.scores.currentComposite,
-        rwScaled: data.scores.currentReadingWriting ?? 400,
-        mathScaled: data.scores.currentMath ?? 400,
-      });
+      // Stored as accuracy × 16 (see `accuracyToComposite`), so this walks back
+      // to the total a returning student last reported.
+      setCurrentScore(
+        ubeTargetFromMbe(accuracyToScaledMbe(data.scores.currentComposite / 16))
+      );
     }
   }, [data]);
 
@@ -170,11 +167,17 @@ export function OnboardingWizard() {
   );
 
   const loadDiagnostic = useMutation({
-    mutationFn: () =>
-      fetch("/api/onboarding/diagnostic").then((r) => {
-        if (!r.ok) throw new Error("Failed to load diagnostic");
-        return r.json() as Promise<{ problems: DiagnosticProblem[] }>;
-      }),
+    mutationFn: async () => {
+      const res = await fetch("/api/onboarding/diagnostic");
+      const payload = await res.json().catch(() => null);
+      if (!res.ok) {
+        // Surface the server's reason. Collapsing every failure into one
+        // message is what made an empty question library look like a bug in
+        // the button itself.
+        throw new Error(payload?.error ?? "Could not load diagnostic questions");
+      }
+      return payload as { problems: DiagnosticProblem[] };
+    },
     onSuccess: (payload) => {
       setDiagnosticProblems(payload.problems);
       setQuestionIndex(0);
@@ -183,7 +186,8 @@ export function OnboardingWizard() {
       setDiagnosticStartedAt(Date.now());
       goToStep("diagnostic");
     },
-    onError: () => toast.error("Could not load diagnostic questions"),
+    onError: (err: Error) =>
+      toast.error(err.message || "Could not load diagnostic questions"),
   });
 
   const submitDiagnostic = useMutation({
@@ -196,15 +200,12 @@ export function OnboardingWizard() {
         if (!r.ok) throw new Error("Failed to submit diagnostic");
         return r.json();
       }),
-    onSuccess: (scores) => {
-      setResultScores({
-        composite: scores.composite,
-        rwScaled: scores.rwScaled,
-        mathScaled: scores.mathScaled,
-      });
+    onSuccess: (result: { correct: number; totalQuestions: number; projectedMbe: number }) => {
       queryClient.invalidateQueries({ queryKey: ["onboarding"] });
       goToStep("goals");
-      toast.success("Diagnostic complete!");
+      toast.success(
+        `Diagnostic complete — ${result.correct}/${result.totalQuestions} correct, projected MBE ${result.projectedMbe}`
+      );
     },
     onError: () => toast.error("Failed to save diagnostic results"),
   });
@@ -214,17 +215,12 @@ export function OnboardingWizard() {
       fetch("/api/onboarding/baseline", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ readingWriting: rwScore, math: mathScore }),
+        body: JSON.stringify({ ubeScore: currentScore }),
       }).then((r) => {
         if (!r.ok) throw new Error("Failed to save baseline");
         return r.json();
       }),
-    onSuccess: (scores) => {
-      setResultScores({
-        composite: scores.composite,
-        rwScaled: scores.rw,
-        mathScaled: scores.math,
-      });
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["onboarding"] });
       goToStep("goals");
     },
@@ -356,7 +352,8 @@ export function OnboardingWizard() {
                     {loadDiagnostic.isPending ? "Loading…" : "12-question diagnostic"}
                   </div>
                   <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                    ~10 minutes. We estimate your Reading & Writing and Math baselines.
+                    ~10 minutes. Questions rotate through all seven MBE
+                    subjects to estimate your starting point.
                   </p>
                 </button>
                 <button
@@ -367,10 +364,11 @@ export function OnboardingWizard() {
                 >
                   <Target className="mb-3 h-5 w-5 text-primary" />
                   <div className="text-base font-medium text-foreground">
-                    I know my scores
+                    I know my score
                   </div>
                   <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                    Enter your latest R&amp;W and Math section scores (200–800 each).
+                    Enter your most recent practice bar score ({MIN_UBE_TOTAL}–
+                    {MAX_UBE_TOTAL}).
                   </p>
                 </button>
               </div>
@@ -382,19 +380,22 @@ export function OnboardingWizard() {
           <div className="flex flex-1 flex-col justify-center">
             <div className="rounded-2xl border border-border bg-card p-8 shadow-sm md:p-10">
               <h2 className="text-center font-[family-name:var(--font-instrument-serif)] text-3xl italic text-foreground">
-                Your current scores
+                Your current score
               </h2>
+              <p className="mt-3 text-center text-sm text-muted-foreground">
+                Your most recent practice bar score, on the same{" "}
+                {MIN_UBE_TOTAL}–{MAX_UBE_TOTAL} scale as the target you set
+                next. Most jurisdictions pass around 260–280.
+              </p>
               <div className="mt-10 space-y-8">
                 <ScoreSlider
-                  label="Reading & Writing"
-                  value={rwScore}
-                  onChange={setRwScore}
+                  label="Total score"
+                  value={currentScore}
+                  onChange={setCurrentScore}
+                  min={MIN_UBE_TOTAL}
+                  max={MAX_UBE_TOTAL}
+                  step={2}
                 />
-                <ScoreSlider label="Math" value={mathScore} onChange={setMathScore} />
-                <p className="text-center text-sm text-muted-foreground">
-                  Composite estimate:{" "}
-                  <span className="font-medium text-primary">{rwScore + mathScore}</span>
-                </p>
               </div>
               <button
                 onClick={() => submitBaseline.mutate()}
@@ -414,7 +415,9 @@ export function OnboardingWizard() {
               Diagnostic · Question {questionIndex + 1} of {diagnosticProblems.length}
             </h2>
             <div className="flex-1 overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-sm">
-              <div className="mb-4 text-xs text-muted-foreground">{currentProblem.category}</div>
+              <div className="mb-4 text-xs text-muted-foreground">
+                {currentProblem.subjectLabel}
+              </div>
               <div className="text-foreground">
                 <MathContent content={currentProblem.questionText} />
               </div>

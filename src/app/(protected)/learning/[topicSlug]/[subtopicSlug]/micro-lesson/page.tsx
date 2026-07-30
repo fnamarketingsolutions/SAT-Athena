@@ -8,6 +8,7 @@ import { MicroLesson } from "@/components/learning/micro-lesson";
 import { getWrapUp } from "@/lib/wrap-ups";
 import { WhiteboardSkeleton } from "@/components/whiteboard/whiteboard-skeleton";
 import { GenerationProgress } from "@/components/lessons/generation-progress";
+import { useBodyScrollLock } from "@/hooks/use-body-scroll-lock";
 import { parseDebugFlags, hasDebugFlag } from "@/lib/debug/search-params";
 
 function MicroLessonPageInner() {
@@ -38,13 +39,7 @@ function MicroLessonPageInner() {
     };
   }, [debugOps]);
 
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, []);
+  useBodyScrollLock();
 
   const {
     data,

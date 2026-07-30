@@ -192,7 +192,7 @@ export function QuizTutorFab({ topicName, subtopicName, currentProblem, question
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
             onClick={() => setOpen(true)}
-            className="fixed bottom-4 left-4 z-40 flex items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
+            className="fixed bottom-4 left-4 z-40 flex items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors md:left-[calc(15rem+1rem)]"
             style={{ width: 60, height: 60 }}
           >
             {/* Breathing pulse */}

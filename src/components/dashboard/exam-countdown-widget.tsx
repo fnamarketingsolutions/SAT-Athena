@@ -10,6 +10,7 @@ import {
   type ExamCountdown,
   type StoredExamDate,
 } from "@/lib/exam-countdown";
+import { EMBEDDED_TILE } from "@/components/dashboard/embedded-tile";
 import { cn } from "@/lib/utils";
 
 function loadCountdown(): {
@@ -42,7 +43,9 @@ export function ExamCountdownWidget({
   }, []);
 
   const wrap = (node: React.ReactNode) => (
-    <div className={cn(!embedded && "mb-10 w-full max-w-xl")}>{node}</div>
+    <div className={cn(embedded ? EMBEDDED_TILE : "mb-10 w-full max-w-xl")}>
+      {node}
+    </div>
   );
 
   if (!mounted) {

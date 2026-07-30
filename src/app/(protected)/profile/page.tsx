@@ -15,6 +15,7 @@ import { ActivityHeatmap } from "@/components/profile/activity-heatmap";
 import { TopicProgressPanel } from "@/components/profile/topic-progress-panel";
 import { PassProbabilityPanel } from "@/components/analytics/pass-probability-panel";
 import { APP_BRANDING } from "@/lib/exam-config";
+import { PROFILE_HEATMAP_WEEKS } from "@/lib/profile-heatmap";
 import { isSupabaseAuth } from "@/lib/auth/provider";
 import type { PassProbabilityResult } from "@/lib/pass-probability";
 import type { ActivityHeatmapDay } from "@/lib/db/queries/profile";
@@ -205,7 +206,10 @@ export default function ProfilePage() {
             <div className="my-8 border-b" />
 
             <motion.div variants={staggerItem}>
-              <ActivityHeatmap days={activityHeatmap} weeks={12} />
+              <ActivityHeatmap
+                days={activityHeatmap}
+                weeks={PROFILE_HEATMAP_WEEKS}
+              />
             </motion.div>
 
             <div className="my-8 border-b" />

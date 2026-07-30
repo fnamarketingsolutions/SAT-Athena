@@ -1,16 +1,13 @@
 import { getAuthIdentity, getAppUser } from "@/lib/auth/current-user";
 import {
-  getOnboardingProblemsWithAnswers,
+  getProblemAnswers,
   updateOnboardingProgress,
 } from "@/lib/db/queries/onboarding";
 import { updateUser } from "@/lib/db/queries/users";
-import { scaleMathScore, scaleRwScore } from "@/lib/full-sat/scoring";
+import { accuracyToComposite } from "@/lib/onboarding-diagnostic";
+import { accuracyToScaledMbe } from "@/lib/pass-probability";
 import { supabase } from "@/lib/supabase/client";
 import { NextResponse } from "next/server";
-
-function isMathCategory(category: string) {
-  return /math/i.test(category);
-}
 
 export async function POST(req: Request) {
   const { userId: externalId } = await getAuthIdentity();
@@ -32,13 +29,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "answers required" }, { status: 400 });
   }
 
-  const problems = await getOnboardingProblemsWithAnswers();
-  const byId = new Map(problems.map((p) => [p.id, p]));
-
-  let rwCorrect = 0;
-  let rwTotal = 0;
-  let mathCorrect = 0;
-  let mathTotal = 0;
+  const problems = await getProblemAnswers(
+    body.answers.map((a) => a.problemId)
+  );
+  const correctById = new Map(problems.map((p) => [p.id, p.correct_option]));
 
   const answerRows: {
     problem_id: string;
@@ -47,36 +41,34 @@ export async function POST(req: Request) {
   }[] = [];
 
   for (const answer of body.answers) {
-    const problem = byId.get(answer.problemId);
-    if (!problem) continue;
-
-    const isCorrect = answer.selectedOption === problem.correct_option;
+    const correctOption = correctById.get(answer.problemId);
+    if (correctOption == null) continue;
     answerRows.push({
       problem_id: answer.problemId,
       selected_option: answer.selectedOption,
-      is_correct: isCorrect,
+      is_correct: answer.selectedOption === correctOption,
     });
-
-    if (isMathCategory(problem.category ?? "")) {
-      mathTotal += 1;
-      if (isCorrect) mathCorrect += 1;
-    } else {
-      rwTotal += 1;
-      if (isCorrect) rwCorrect += 1;
-    }
   }
 
-  const rwScaled = rwTotal > 0 ? scaleRwScore(rwCorrect, rwTotal) : 400;
-  const mathScaled = mathTotal > 0 ? scaleMathScore(mathCorrect, mathTotal) : 400;
-  const composite = rwScaled + mathScaled;
+  if (answerRows.length === 0) {
+    return NextResponse.json(
+      { error: "None of the submitted answers matched a known problem" },
+      { status: 400 }
+    );
+  }
+
+  const correct = answerRows.filter((row) => row.is_correct).length;
+  const accuracy = Math.round((correct / answerRows.length) * 100);
+  const projectedMbe = accuracyToScaledMbe(accuracy);
+  const composite = accuracyToComposite(accuracy);
 
   const { data: session, error: sessionError } = await supabase
     .from("quiz_sessions")
     .insert({
       user_id: user.id,
       source: "onboarding",
-      score: rwCorrect + mathCorrect,
-      total_questions: body.answers.length,
+      score: correct,
+      total_questions: answerRows.length,
       time_elapsed_seconds: body.timeElapsedSeconds ?? 0,
     })
     .select("id")
@@ -84,33 +76,27 @@ export async function POST(req: Request) {
 
   if (sessionError) throw sessionError;
 
-  if (answerRows.length > 0) {
-    const { error: answersError } = await supabase.from("quiz_answers").insert(
-      answerRows.map((row) => ({
-        session_id: session.id,
-        problem_id: row.problem_id,
-        selected_option: row.selected_option,
-        is_correct: row.is_correct,
-      }))
-    );
-    if (answersError) throw answersError;
-  }
+  const { error: answersError } = await supabase.from("quiz_answers").insert(
+    answerRows.map((row) => ({
+      session_id: session.id,
+      problem_id: row.problem_id,
+      selected_option: row.selected_option,
+      is_correct: row.is_correct,
+    }))
+  );
+  if (answersError) throw answersError;
 
   await updateUser(externalId, {
     startComposite: composite,
     currentComposite: composite,
-    currentReadingWriting: rwScaled,
-    currentMath: mathScaled,
   });
 
   await updateOnboardingProgress(user.id, { currentStep: "goals" });
 
   return NextResponse.json({
-    rwScaled,
-    mathScaled,
-    composite,
-    rwCorrect,
-    mathCorrect,
-    totalQuestions: body.answers.length,
+    accuracy,
+    projectedMbe,
+    correct,
+    totalQuestions: answerRows.length,
   });
 }

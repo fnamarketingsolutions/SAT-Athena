@@ -42,6 +42,19 @@ export function accuracyToScaledMbe(accuracyPercent: number): number {
   return Math.min(MAX_PROJECTED_MBE, Math.max(MIN_PROJECTED_MBE, raw));
 }
 
+/**
+ * Inverse of `accuracyToScaledMbe`, for turning a scaled score a student
+ * reports from elsewhere back into the accuracy the rest of the app stores.
+ * Not a perfect round trip at the ends, since the forward map clamps.
+ */
+export function scaledMbeToAccuracy(scaledMbe: number): number {
+  const scaled = Math.min(
+    MAX_PROJECTED_MBE,
+    Math.max(MIN_PROJECTED_MBE, scaledMbe)
+  );
+  return Math.round(((scaled - 40) / 160) * 100);
+}
+
 function resolveMbeTarget(ubeTarget: number | null | undefined): number {
   if (ubeTarget != null && ubeTarget > 0) {
     return Math.round(ubeTarget / 2);

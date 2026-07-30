@@ -11,7 +11,6 @@ import { AnswerPanel } from "@/components/quiz/answer-panel";
 import { BottomBar } from "@/components/quiz/bottom-bar";
 import { Calculator } from "@/components/quiz/calculator";
 import { StuckModal } from "@/components/quiz/stuck-modal";
-import { QuestResultsScreen } from "./quest-results-screen";
 import { MathContent } from "@/components/quiz/math-content";
 import { PaceTimer } from "@/components/quiz/pace-timer";
 import { usePaceTimer } from "@/hooks/use-pace-timer";
@@ -67,10 +66,10 @@ export function QuestProblemPageContent() {
   );
 
   useEffect(() => {
-    if (!ctx.practiceConfigured && ctx.phase === "active") {
+    if (!ctx.practiceConfigured) {
       router.replace("/quest");
     }
-  }, [ctx.practiceConfigured, ctx.phase, router]);
+  }, [ctx.practiceConfigured, router]);
 
   if (!currentProblem) return null;
 
@@ -94,14 +93,6 @@ export function QuestProblemPageContent() {
     detailedHint: currentProblem.detailedHint,
     timeRecommendationSeconds: 90,
   };
-
-  if (ctx.phase === "completed") {
-    return (
-      <div className="fixed inset-x-0 bottom-0 top-14 z-40 flex flex-col overflow-y-auto bg-background md:left-[15rem] md:top-0">
-        <QuestResultsScreen />
-      </div>
-    );
-  }
 
   return (
     <div className="fixed inset-x-0 bottom-0 top-14 z-40 flex flex-col bg-background md:left-[15rem] md:top-0">
@@ -224,7 +215,7 @@ export function QuestProblemPageContent() {
       />
 
       <AnimatePresence>
-        {calcOpen && ctx.phase === "active" && <Calculator />}
+        {calcOpen && <Calculator />}
       </AnimatePresence>
 
       <AnimatePresence>

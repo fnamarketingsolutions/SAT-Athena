@@ -62,6 +62,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { MathContent } from "@/components/quiz/math-content";
 import { ObservationFrame } from "@/components/learning/observation/observation-frame";
+import { DraggableOrb } from "@/components/learning/observation/draggable-orb";
 import { ObservationOrb } from "@/components/learning/observation/observation-orb";
 import { PresenceLayer } from "@/components/learning/observation/presence-layer";
 import { IsoContourFrame } from "@/components/learning/observation/iso-contour-frame";
@@ -756,23 +757,26 @@ export function PracticeWhiteboardContent({
             stepFocusRef={stepFocusRef}
           />
         ) : (
-        <div className="absolute top-3 left-3 z-20 flex flex-col items-center gap-2 pointer-events-none w-[220px]">
-          <ObservationOrb state={orbState} amplitude={0} size={100} />
-          <AnimatePresence mode="wait">
-            {transientCaption ? (
-              <motion.div
-                key={transientCaption}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.25 }}
-                className="text-center text-sm leading-snug text-muted-foreground rounded-lg border border-border bg-card px-3 py-1.5 shadow-sm"
-              >
-                <MathContent content={transientCaption} />
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
-        </div>
+        <DraggableOrb
+          className="flex"
+          orb={<ObservationOrb state={orbState} amplitude={0} size={100} />}
+          caption={
+            <AnimatePresence mode="wait">
+              {transientCaption ? (
+                <motion.div
+                  key={transientCaption}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.25 }}
+                  className="text-center text-sm leading-snug text-muted-foreground rounded-lg border border-border bg-card px-3 py-1.5 shadow-sm"
+                >
+                  <MathContent content={transientCaption} />
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+          }
+        />
         )}
 
         <IsoContourFrame bottomCenterLabel="" bottomRightLabel="">

@@ -198,7 +198,6 @@ export default function PlayPage() {
                 firstName={firstName}
                 accountability={accountability}
                 accountabilityLoading={accountabilityLoading}
-                onPickMode={handlePickMode}
               />
             </motion.div>
           ) : (

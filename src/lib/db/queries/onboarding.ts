@@ -1,4 +1,9 @@
 import { supabase } from "@/lib/supabase/client";
+import { getSubjectLabel, MBE_SUBJECTS } from "@/lib/exam-config";
+import {
+  DIAGNOSTIC_QUESTION_COUNT,
+  selectDiagnosticSpread,
+} from "@/lib/onboarding-diagnostic";
 
 export type OnboardingStep =
   | "welcome"
@@ -94,40 +99,77 @@ export async function updateOnboardingProgress(
 
 export type DiagnosticProblem = {
   id: string;
-  orderIndex: number;
-  category: string;
-  difficulty: string;
+  subject: string;
+  subjectLabel: string;
   questionText: string;
   options: string[];
 };
 
+type CandidateRow = {
+  id: string;
+  question_text: string;
+  options: unknown;
+  subtopics: { topics: { subject: string } | null } | null;
+};
+
+/**
+ * A 12-question sample of the MBE library, rotated across the seven bar
+ * subjects.
+ *
+ * The subject filter runs on the joined `topics` row rather than on
+ * `problems.source`, because the library still holds legacy SAT problems
+ * alongside the bar ones and the two are not distinguished by source.
+ */
 export async function getOnboardingDiagnosticProblems(): Promise<
   DiagnosticProblem[]
 > {
   const { data, error } = await supabase
     .from("problems")
-    .select("id, order_index, category, difficulty, question_text, options")
-    .eq("source", "onboarding")
-    .order("order_index");
+    .select(
+      "id, question_text, options, subtopics!inner(topics!inner(subject))"
+    )
+    .in(
+      "subtopics.topics.subject",
+      MBE_SUBJECTS.map((s) => s.key)
+    )
+    // Ascending difficulty, so `selectDiagnosticSpread` can stride through each
+    // subject's range instead of collecting only its easiest problems.
+    .order("difficulty_level", { ascending: true })
+    .order("id", { ascending: true });
 
   if (error) throw error;
 
-  return (data ?? []).map((p) => ({
-    id: p.id,
-    orderIndex: p.order_index,
-    category: p.category ?? "",
-    difficulty: p.difficulty,
-    questionText: p.question_text,
-    options: (p.options as string[]) ?? [],
-  }));
+  const rows = (data ?? []) as unknown as CandidateRow[];
+  const bySubject = MBE_SUBJECTS.map((subject) =>
+    rows.filter((row) => row.subtopics?.topics?.subject === subject.key)
+  );
+
+  return selectDiagnosticSpread(bySubject, DIAGNOSTIC_QUESTION_COUNT).map(
+    (row) => {
+      const subject = row.subtopics?.topics?.subject ?? "";
+      return {
+        id: row.id,
+        subject,
+        subjectLabel: getSubjectLabel(subject),
+        questionText: row.question_text,
+        options: (row.options as string[]) ?? [],
+      };
+    }
+  );
 }
 
-export async function getOnboardingProblemsWithAnswers() {
+/**
+ * Correct answers for the problems a student actually submitted. The
+ * diagnostic set is sampled per request rather than stored, so scoring has to
+ * look up the served problems by id instead of re-reading a fixed set.
+ */
+export async function getProblemAnswers(problemIds: string[]) {
+  if (problemIds.length === 0) return [];
+
   const { data, error } = await supabase
     .from("problems")
-    .select("id, category, correct_option")
-    .eq("source", "onboarding")
-    .order("order_index");
+    .select("id, correct_option")
+    .in("id", problemIds);
 
   if (error) throw error;
   return data ?? [];

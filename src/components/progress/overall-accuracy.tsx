@@ -49,8 +49,10 @@ export function OverallAccuracy({
     setEditing(false);
   };
 
+  // Mirrors the `flex-1` on the engagement panel opposite: whichever of the two
+  // analytics columns runs short pads out here, so both end on the same line.
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+    <div className="flex-1 rounded-2xl border border-border bg-card p-6 shadow-sm">
       <div className="flex items-baseline justify-between gap-4">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">

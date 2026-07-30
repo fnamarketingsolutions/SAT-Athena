@@ -32,6 +32,7 @@ import { WhiteboardCanvasCorkboard } from "@/components/whiteboard/whiteboard-ca
 import { useStepPlayer } from "@/hooks/use-step-player";
 import { VoiceOrb } from "@/components/lessons/voice-orb";
 import { ObservationFrame } from "@/components/learning/observation/observation-frame";
+import { DraggableOrb } from "@/components/learning/observation/draggable-orb";
 import { ObservationOrb } from "@/components/learning/observation/observation-orb";
 import { PresenceLayer } from "@/components/learning/observation/presence-layer";
 import { isDiagramStep, type StepFocus, type OrbSpotlight } from "@/components/whiteboard/pen-tip";
@@ -57,6 +58,7 @@ import {
 import type { Problem } from "@/components/quiz/types";
 import { WhiteboardSkeleton } from "@/components/whiteboard/whiteboard-skeleton";
 import { GenerationProgress } from "@/components/lessons/generation-progress";
+import { useBodyScrollLock } from "@/hooks/use-body-scroll-lock";
 import { useVoiceActivity } from "@/hooks/use-voice-activity";
 import { cleanTranscript, isAmbientNoiseTranscript } from "@/lib/voice/transcript-filters";
 import type { WrapUpBeat } from "@/lib/wrap-ups";
@@ -1219,13 +1221,7 @@ export function MicroLesson({
   }, [currentProblemIndex]);
 
   // Lock page scroll — only the whiteboard canvas should scroll.
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, []);
+  useBodyScrollLock();
 
   const activePracticeProblems = providedPracticeProblems ?? fetchedPracticeProblems;
   const currentPracticeProblem = activePracticeProblems[currentProblemIndex] ?? null;
@@ -3299,20 +3295,16 @@ export function MicroLesson({
                 );
               })()
             ) : (
-            <div className="absolute top-3 left-3 z-20 hidden w-[220px] flex-col items-center gap-2 pointer-events-none sm:flex">
-              {/* Re-enable pointer events on the orb itself — the
-                  surrounding container keeps `pointer-events-none` so
-                  the caption below doesn't block lesson-canvas
-                  interaction, but the orb core needs clicks to open
-                  the character + voice picker. */}
-              <div className="pointer-events-auto">
+            <DraggableOrb
+              className="hidden sm:flex"
+              orb={
                 <ObservationOrb
                   state={orbState}
                   amplitude={chat.amplitude}
                   size={100}
                 />
-              </div>
-              {(() => {
+              }
+              caption={(() => {
                 // Caption text mirrors what the tutor is currently
                 // saying — but the `narration` field is the phonetic
                 // string we feed to TTS (no LaTeX, no `$`, no
@@ -3351,7 +3343,7 @@ export function MicroLesson({
                   </AnimatePresence>
                 );
               })()}
-            </div>
+            />
             )}
             {/* Replay-button removed per UX feedback. The `R` keyboard
                 shortcut still calls `replayCurrent` via the playback

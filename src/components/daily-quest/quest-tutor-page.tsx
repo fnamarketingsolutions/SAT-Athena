@@ -27,14 +27,30 @@ export function QuestTutorPageContent() {
   const questionPhase = currentProblem ? ctx.getQuestionPhase(currentProblem.id) : "question";
   const problemNum = ctx.currentIndex + 1;
 
-  // Navigate away when the problem is locked (correct answer given via tutor)
+  // Navigate away once the problem is solved *in this tutor session*.
+  // `lockedIds` is seeded with every problem that was already answered
+  // correctly, so without the entry snapshot, opening the tutor on a solved
+  // problem would bounce straight to the next one.
+  const entryLockRef = useRef<{ problemId: string; wasLocked: boolean } | null>(
+    null,
+  );
   useEffect(() => {
-    if (currentProblem && ctx.lockedIds.has(currentProblem.id)) {
-      const nextNum = Math.min(ctx.currentIndex + 2, ctx.problems.length);
-      setTimeout(() => {
-        router.push(`/quest/${nextNum}`);
-      }, 1200);
+    if (!currentProblem) return;
+    const problemId = currentProblem.id;
+    if (entryLockRef.current?.problemId !== problemId) {
+      entryLockRef.current = {
+        problemId,
+        wasLocked: ctx.lockedIds.has(problemId),
+      };
     }
+    if (entryLockRef.current.wasLocked) return;
+    if (!ctx.lockedIds.has(problemId)) return;
+
+    const nextNum = Math.min(ctx.currentIndex + 2, ctx.problems.length);
+    const timer = setTimeout(() => {
+      router.push(`/quest/${nextNum}`);
+    }, 1200);
+    return () => clearTimeout(timer);
   }, [ctx.lockedIds, currentProblem, ctx.currentIndex, ctx.problems.length, router]);
 
   if (!currentProblem) {
@@ -62,7 +78,7 @@ export function QuestTutorPageContent() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background">
+    <div className="fixed inset-0 z-50 bg-background md:left-[15rem]">
       <QuizTutorFab
         key={`${currentProblem.id}-tutor`}
         topicName={currentProblem.topicName}

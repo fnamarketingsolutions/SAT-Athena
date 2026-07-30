@@ -2,6 +2,7 @@
 
 import { CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { stripEmbeddedOptions } from "@/lib/strip-embedded-options";
 import { MathContent } from "./math-content";
 import type { Problem } from "./types";
 
@@ -46,7 +47,9 @@ export function ReviewItem({ problem, index, selectedOption }: ReviewItemProps) 
         )}
       </div>
 
-      <MathContent content={problem.questionText} />
+      <MathContent
+        content={stripEmbeddedOptions(problem.questionText, problem.options)}
+      />
 
       <div className="space-y-1.5">
         {problem.options.map((option, i) => {

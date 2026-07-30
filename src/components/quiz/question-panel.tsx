@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { ChevronDown, ChevronUp, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { stripEmbeddedOptions } from "@/lib/strip-embedded-options";
 import { MathContent } from "./math-content";
 import type { Problem } from "./types";
 
@@ -33,6 +34,11 @@ export function QuestionPanel({
     if (hintRevealed) setHintOpen(true);
   }, [hintRevealed]);
 
+  const stem = useMemo(
+    () => stripEmbeddedOptions(problem.questionText, problem.options),
+    [problem.questionText, problem.options],
+  );
+
   return (
     <div
       className={cn(
@@ -54,7 +60,7 @@ export function QuestionPanel({
         </div>
 
         <div className="min-h-0 overflow-y-auto pr-1">
-          <MathContent content={problem.questionText} />
+          <MathContent content={stem} />
         </div>
 
       {problem.hint && hintRevealed && (

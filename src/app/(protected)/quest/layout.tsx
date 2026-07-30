@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTodaysQuest } from "@/hooks/use-daily-quest";
 import { QuestProvider } from "@/components/daily-quest/quest-provider";
+import { QuestCompletionGate } from "@/components/daily-quest/quest-completion-gate";
 
 export default function QuestLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -41,7 +42,7 @@ export default function QuestLayout({ children }: { children: React.ReactNode })
 
   return (
     <QuestProvider quest={data.quest} problems={data.problems}>
-      {children}
+      <QuestCompletionGate>{children}</QuestCompletionGate>
     </QuestProvider>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { stripEmbeddedOptions } from "@/lib/strip-embedded-options";
 import { MathContent } from "@/components/quiz/math-content";
 import type { Problem } from "@/components/quiz/types";
 import type { FeedbackState } from "@/components/quiz/answer-panel";
@@ -33,7 +34,7 @@ export function TutorQuestionCard({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ type: "spring", stiffness: 400, damping: 30, delay: 0.1 }}
-      className="fixed top-20 left-6 z-[61]"
+      className="fixed top-20 left-6 z-[61] md:left-[calc(15rem+1.5rem)]"
     >
       <AnimatePresence initial={false} mode="wait">
         {collapsed ? (
@@ -75,7 +76,12 @@ export function TutorQuestionCard({
 
               {/* Question text */}
               <div className="px-4 pb-3">
-                <MathContent content={problem.questionText} />
+                <MathContent
+                  content={stripEmbeddedOptions(
+                    problem.questionText,
+                    problem.options,
+                  )}
+                />
               </div>
 
               {/* Answer options */}

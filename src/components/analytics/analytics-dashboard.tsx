@@ -244,7 +244,10 @@ function AnalyticsDashboardBody({
         </motion.div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-          <motion.div className="grid gap-6 lg:col-span-3" variants={staggerItem}>
+          <motion.div
+            className="flex flex-col gap-6 lg:col-span-3"
+            variants={staggerItem}
+          >
             <MbeSubjectScores
               subjects={data.subjectScores}
               targetPercent={passTargetPercent}
@@ -255,19 +258,18 @@ function AnalyticsDashboardBody({
               onTargetChange={setPassTargetPercent}
             />
           </motion.div>
-          <motion.div className="lg:col-span-2" variants={staggerItem}>
+          <motion.div
+            className="flex flex-col gap-6 lg:col-span-2"
+            variants={staggerItem}
+          >
             <ConsistencyPanel {...data.consistency} />
-          </motion.div>
-        </div>
-
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <motion.div variants={staggerItem}>
-            <StuckPointsPanel stuckPoints={data.stuckPoints} />
-          </motion.div>
-          <motion.div variants={staggerItem}>
             <EngagementPanel engagement={data.engagement} />
           </motion.div>
         </div>
+
+        <motion.div className="mt-6" variants={staggerItem}>
+          <StuckPointsPanel stuckPoints={data.stuckPoints} />
+        </motion.div>
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-5">
           <motion.div className="lg:col-span-3" variants={staggerItem}>

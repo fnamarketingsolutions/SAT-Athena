@@ -11,7 +11,7 @@ export async function GET() {
   const problems = await getOnboardingDiagnosticProblems();
   if (problems.length === 0) {
     return NextResponse.json(
-      { error: "No diagnostic problems configured" },
+      { error: "No MBE practice questions are available to build a diagnostic" },
       { status: 404 }
     );
   }

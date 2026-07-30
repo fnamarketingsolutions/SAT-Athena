@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { QuestContext } from "./quest-context";
 import { useAnswerQuestProblem, useCompleteQuest } from "@/hooks/use-daily-quest";
+import { useBodyScrollLock } from "@/hooks/use-body-scroll-lock";
 import {
   readDailyPacePreference,
   writeDailyPacePreference,
@@ -50,10 +51,8 @@ export function QuestProvider({ quest, problems, children }: Props) {
 
   // Time Pace preference (Daily Practice)
   const [pacingEnabled, setPacingEnabled] = useState(false);
-  const [practiceConfigured, setPracticeConfigured] = useState(
-    () =>
-      quest.status === "completed" ||
-      problems.some((p) => p.selectedOption !== null)
+  const [practiceConfigured, setPracticeConfigured] = useState(() =>
+    problems.some((p) => p.selectedOption !== null)
   );
 
   useEffect(() => {
@@ -230,10 +229,7 @@ export function QuestProvider({ quest, problems, children }: Props) {
   );
 
   // Lock body scroll
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
-  }, []);
+  useBodyScrollLock();
 
   return (
     <QuestContext.Provider

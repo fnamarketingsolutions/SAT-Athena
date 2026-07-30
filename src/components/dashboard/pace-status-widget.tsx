@@ -9,6 +9,7 @@ import {
   PACE_SECONDS_PER_QUESTION,
   type PaceStatus,
 } from "@/lib/pacing";
+import { EMBEDDED_TILE } from "@/components/dashboard/embedded-tile";
 import { cn } from "@/lib/utils";
 
 type PaceSummaryResponse = {
@@ -33,7 +34,9 @@ export function PaceStatusWidget({
   });
 
   const wrap = (node: React.ReactNode) => (
-    <div className={cn(!embedded && "mb-10 w-full max-w-xl")}>{node}</div>
+    <div className={cn(embedded ? EMBEDDED_TILE : "mb-10 w-full max-w-xl")}>
+      {node}
+    </div>
   );
 
   if (isLoading) {

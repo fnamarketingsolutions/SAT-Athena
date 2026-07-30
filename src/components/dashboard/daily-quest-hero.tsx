@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, BarChart3, BookOpen, CheckCircle2 } from "lucide-react";
 import type { AccountabilityStatus } from "@/hooks/use-accountability-status";
+import { EMBEDDED_TILE } from "@/components/dashboard/embedded-tile";
 import { cn } from "@/lib/utils";
 
 type DailyPracticeCardProps = {
@@ -19,7 +20,9 @@ export function DailyQuestHero({
   embedded = false,
 }: DailyPracticeCardProps) {
   const shell = (node: React.ReactNode) => (
-    <div className={cn(!embedded && "mb-10 w-full max-w-xl")}>{node}</div>
+    <div className={cn(embedded ? EMBEDDED_TILE : "mb-10 w-full max-w-xl")}>
+      {node}
+    </div>
   );
 
   if (isLoading) {

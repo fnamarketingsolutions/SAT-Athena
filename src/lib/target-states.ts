@@ -75,9 +75,25 @@ export function getTargetState(code: string | null | undefined): TargetState | n
   return BY_CODE.get(code.toUpperCase()) ?? null;
 }
 
+/** Bounds of the UBE-style total score stored in profile `target_score`. */
+export const MIN_UBE_TOTAL = 200;
+export const MAX_UBE_TOTAL = 400;
+
 /** UBE-style total used by profile `target_score` (MBE × 2). */
 export function ubeTargetFromMbe(mbeTarget: number): number {
-  return Math.min(400, Math.max(200, Math.round(mbeTarget * 2)));
+  return Math.min(
+    MAX_UBE_TOTAL,
+    Math.max(MIN_UBE_TOTAL, Math.round(mbeTarget * 2))
+  );
+}
+
+/** Inverse of `ubeTargetFromMbe`: the MBE half of a UBE-style total. */
+export function mbeFromUbeTotal(ubeTotal: number): number {
+  const total = Math.min(
+    MAX_UBE_TOTAL,
+    Math.max(MIN_UBE_TOTAL, Math.round(ubeTotal))
+  );
+  return Math.round(total / 2);
 }
 
 export function readStoredTargetStateCode(): string | null {

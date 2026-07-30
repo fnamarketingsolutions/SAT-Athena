@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { TopicSidebar } from "@/components/learning/topic-sidebar";
 import { TopicHeader } from "@/components/learning/topic-header";
 import { SubtopicCard } from "@/components/learning/subtopic-card";
+import { decodeSlugParam } from "@/lib/route-slug";
 import { cn } from "@/lib/utils";
 
 type Subtopic = {
@@ -51,7 +52,8 @@ export default function TopicPage() {
     load();
   }, []);
 
-  const activeTopic = topics.find((t) => t.slug === params.topicSlug) ?? topics[0];
+  const topicSlug = decodeSlugParam(params.topicSlug);
+  const activeTopic = topics.find((t) => t.slug === topicSlug);
 
   if (loading) {
     return (
@@ -74,7 +76,19 @@ export default function TopicPage() {
     );
   }
 
-  if (!activeTopic) return null;
+  if (!activeTopic) {
+    return (
+      <div className="mx-auto min-w-0 max-w-5xl px-4 py-4 sm:p-6">
+        <h1 className="mb-2 text-lg font-bold">Topic not found</h1>
+        <p className="mb-4 text-sm text-muted-foreground">
+          We couldn&apos;t find a topic at this address.
+        </p>
+        <Link href="/learning" className="text-sm font-medium text-primary hover:underline">
+          Browse all topics
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto min-w-0 max-w-5xl px-4 py-4 sm:p-6">

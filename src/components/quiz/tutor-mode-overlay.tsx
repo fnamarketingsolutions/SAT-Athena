@@ -118,7 +118,7 @@ export function TutorModeOverlay({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.35 }}
-      className="fixed inset-0 z-[60] flex flex-col bg-background"
+      className="fixed inset-0 z-[60] flex flex-col bg-background md:left-[15rem]"
     >
       {/* Whiteboard canvas (full background, fades in when steps exist or in practice mode) */}
       <motion.div

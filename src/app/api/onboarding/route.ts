@@ -44,8 +44,6 @@ export async function GET() {
     scores: {
       targetScore: user.targetScore,
       currentComposite: user.currentComposite,
-      currentReadingWriting: user.currentReadingWriting,
-      currentMath: user.currentMath,
       startComposite: user.startComposite,
     },
   });

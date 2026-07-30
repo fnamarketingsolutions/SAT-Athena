@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -30,36 +29,6 @@ type AnalyticsPayload = {
 type ProfilePayload = {
   activityHeatmap: ActivityHeatmapDay[];
 };
-
-type Mode = "lesson" | "practice" | "chat";
-
-type ModeMeta = {
-  key: Mode;
-  title: string;
-  desc: string;
-  cta: string;
-};
-
-const STUDY_MODES: ModeMeta[] = [
-  {
-    key: "lesson",
-    title: "Structured lesson",
-    desc: "Paced teaching from first principles.",
-    cta: "Start lesson",
-  },
-  {
-    key: "practice",
-    title: "Practice problems",
-    desc: "Adaptive MCQs for weak spots.",
-    cta: "Solve problems",
-  },
-  {
-    key: "chat",
-    title: "Mentor chat",
-    desc: "Ask strategy or rule questions.",
-    cta: "Open mentor",
-  },
-];
 
 function WidgetShell({
   children,
@@ -223,12 +192,10 @@ export function DashboardCommandCenter({
   firstName,
   accountability,
   accountabilityLoading,
-  onPickMode,
 }: {
   firstName: string | null;
   accountability?: AccountabilityStatus;
   accountabilityLoading?: boolean;
-  onPickMode: (mode: Mode) => void;
 }) {
   const { data: analytics, isLoading: analyticsLoading } =
     useQuery<AnalyticsPayload>({
@@ -273,35 +240,30 @@ export function DashboardCommandCenter({
       </header>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {/* Row 1 */}
-        <div className="min-h-[10rem]">
-          <DailyQuestHero
-            status={accountability}
-            isLoading={accountabilityLoading}
-            embedded
-          />
-        </div>
+        <DailyQuestHero
+          status={accountability}
+          isLoading={accountabilityLoading}
+          embedded
+        />
 
-        <div className="min-h-[10rem]">
-          <ExamCountdownWidget embedded />
-        </div>
+        <ExamCountdownWidget embedded />
 
-        <div className="min-h-[10rem] overflow-hidden rounded-2xl">
+        {/* Roughly twice the height of every other tile. Spanning two rows lets
+            it sit alongside them instead of forcing one row tall enough to
+            leave a hole under each of its neighbours. */}
+        <div className="min-h-[10rem] sm:row-span-2">
           {analyticsLoading || !analytics ? (
-            <div className="h-40 animate-pulse rounded-2xl border border-border bg-muted/60" />
+            <div className="h-full min-h-[10rem] animate-pulse rounded-2xl border border-border bg-muted/60" />
           ) : (
             <PassProbabilityPanel data={analytics.passProbability} compact />
           )}
         </div>
 
-        {/* Row 2 */}
-        <div className="min-h-[10rem]">
-          <PaceStatusWidget embedded />
-        </div>
+        <PaceStatusWidget embedded />
 
         <div className="min-h-[10rem] overflow-hidden rounded-2xl">
           {profileLoading || !profile ? (
-            <div className="h-40 animate-pulse rounded-2xl border border-border bg-muted/60" />
+            <div className="h-full min-h-[10rem] animate-pulse rounded-2xl border border-border bg-muted/60" />
           ) : (
             <div className="h-full rounded-2xl border border-border bg-card shadow-sm [&_>div]:border-0 [&_>div]:p-4">
               <ActivityHeatmap days={profile.activityHeatmap} weeks={1} />
@@ -311,40 +273,8 @@ export function DashboardCommandCenter({
 
         <WeakAreasWidget points={analytics?.stuckPoints ?? []} />
 
-        {/* Row 3 */}
         <ReviewProgressCard />
         <QuickLinksWidget />
-
-        <WidgetShell className="p-4 sm:p-5">
-          <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            Study next
-          </h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Pick a mode to open lessons or practice.
-          </p>
-          <div className="mt-3 space-y-2">
-            {STUDY_MODES.map((mode) => (
-              <button
-                key={mode.key}
-                type="button"
-                onClick={() => onPickMode(mode.key)}
-                className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-3 py-2.5 text-left transition-colors hover:border-primary/40 hover:bg-muted/40"
-              >
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {mode.title}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {mode.desc}
-                  </p>
-                </div>
-                <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-primary">
-                  {mode.cta}
-                </span>
-              </button>
-            ))}
-          </div>
-        </WidgetShell>
       </div>
     </div>
   );

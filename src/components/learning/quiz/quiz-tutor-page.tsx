@@ -74,7 +74,7 @@ export function QuizTutorPageContent() {
     : undefined;
 
   return (
-    <div className="fixed inset-0 z-50 bg-background">
+    <div className="fixed inset-0 z-50 bg-background md:left-[15rem]">
       <QuizTutorFab
         key={`${currentProblem.id}-tutor`}
         topicName={topicName}
